@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검 강화 & 사냥터 온라인 v3.0</title>
+    <style>
+        :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; }
+        body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; overflow-x: hidden; }
+        #game-container { background: var(--panel); max-width: 650px; margin: 0 auto; padding: 20px; border-radius: 15px; border: 2px solid var(--point); box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 95vh; box-sizing: border-box; }
+        .page { display: none; } .page.active { display: block; }
+        
+        /* 스탯 헤더 */
+        .stat-header { background: #0f3460; padding: 12px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; border-bottom: 3px solid var(--point); font-size: 0.85em; }
+        .stat-value { font-weight: bold; color: var(--money); display: block; font-size: 1.1em; }
+        #emergency-btn { background: var(--point); color: white; border-radius: 5px; font-size: 0.8em; padding: 4px; cursor: pointer; display: none; margin-top: 5px; font-weight: bold; width: 100%; }
+
+        /* 강화 UI */
+        .main-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .panel-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; font-size: 0.8em; text-align: left; }
+        .item-icon { width: 22px; height: 22px; vertical-align: middle; margin-right: 5px; border-radius: 4px; }
+
+        /* 그리드 시스템 (광산/사냥터) */
+        .grid-wrapper { display: flex; justify-content: center; align-items: flex-start; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .cell { width: 65px; height: 65px; background: #0f3460; border: 1px solid #1a1a2e; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.4em; position: relative; }
+        .monster-lv { position: absolute; bottom: 1px; right: 1px; font-size: 0.75em; font-weight: bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; }
+
+        /* 정보 테이블 */
+        .info-table { font-size: 0.7em; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 5px; border-collapse: collapse; width: 100%; max-width: 180px; }
+        .info-table td { border-bottom: 1px solid #333; padding: 4px; }
+
+        /* 버튼 */
+        button { padding: 12px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; margin: 3px 0; width: 100%; box-sizing: border-box; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-upgrade { background: var(--point); color: white; height: 55px; font-size: 1.1em; box-shadow: 0 4px #a02d41; }
+        .btn-upgrade:active { box-shadow: 0 0; transform: translateY(4px); }
+        .btn-nav { background: #533483; color: white; border-bottom: 3px solid #3d2663; }
+        
+        #log, #hunt-log { height: 90px; overflow-y: auto; background: #1a1a2e; border: 1px solid #0f3460; padding: 8px; margin: 10px 0; border-radius: 8px; font-size: 0.8em; text-align: left; color: #95a5a6; line-height: 1.4; }
+        .shop-row { display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; margin-bottom: 8px; text-align: left; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="stat-header">
+        <div>현재 검<span class="stat-value">+<span id="level">0</span></span></div>
+        <div>장착 중<span class="stat-value" style="color:var(--hunt);">+<span id="equipped-lv">N/A</span></span></div>
+        <div>보유 골드<span class="stat-value"><span id="gold">100,000</span>G</span><div id="emergency-btn" onclick="getEmergencyMoney()">🆘 긴급 구제 (+1000G)</div></div>
+        <div><img src="https://placehold.co/30x30/e74c3c/ffffff?text=🧩" class="item-icon">조각<span class="stat-value"><span id="shards">0</span>개</span></div>
+    </div>
+
+    <div id="page-main" class="page active">
+        <div class="main-layout">
+            <div class="panel-box">
+                <h4 style="margin: 0 0 8px 0; color: var(--money);">🛡️ 방지권 체크</h4>
+                <label><input type="radio" name="prot" value="0" id="prot-none" checked> 사용 안 함</label><br>
+                <label><input type="radio" name="prot" value="1"><img src="https://placehold.co/30x30/3498db/ffffff?text=📜" class="item-icon">일반 (<span id="inv-1">0</span>)</label><br>
+                <label><input type="radio" name="prot" value="2"><img src="https://placehold.co/30x30/9b59b6/ffffff?text=📜" class="item-icon">고급 (<span id="inv-2">0</span>)</label><br>
+                <label><input type="radio" name="prot" value="3"><img src="https://placehold.co/30x30/f1c40f/000000?text=📜" class="item-icon">최고급 (<span id="inv-3">0</span>)</label>
+            </div>
+            <div class="panel-box" style="display:flex; flex-direction:column; justify-content:center;">
+                <div style="margin-bottom:8px;">성공 <span id="chance" style="color:#4ecca3;">0</span>% / 파괴 <span id="break" style="color:var(--point);">0</span>%</div>
+                <div style="margin-bottom:8px;">비용 <span id="cost">0</span>G</div>
+                <button style="background: var(--hunt); color: white; padding: 6px;" onclick="equipWeapon()">무기 장착</button>
+                <button style="background: #4ecca3; color: black; padding: 6px;" onclick="sellWeapon()">판매: <span id="sell-p">0</span></button>
+            </div>
+        </div>
+        <button class="btn-upgrade" id="manual-btn" onclick="tryUpgrade()">강 화 시 작</button>
+        <button class="btn-nav" style="background: #3498db;" id="auto-btn" onclick="startAutoUpgrade()">목표: +10강 자동 도전</button>
+        <div id="log">시스템 준비 완료. 강화 데이터는 실시간으로 저장됩니다.</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <button class="btn-nav" onclick="showPage('page-shop')">💰 상점</button>
+            <button class="btn-nav" style="background: var(--mine); color: black;" onclick="showPage('page-mine')">⛏️ 광산</button>
+            <button class="btn-nav" style="background: var(--hunt);" onclick="showPage('page-hunt')">⚔️ 사냥</button>
+        </div>
+        <button onclick="resetGame()" style="background: #333; font-size: 0.7em; margin-top: 15px; width: auto; padding: 5px 10px;">게임 데이터 초기화</button>
+    </div>
+
+    <div id="page-shop" class="page">
+        <h2 style="color: var(--money);">💰 상점</h2>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/3498db/ffffff?text=📜" style="width:40px; border-radius:5px;">
+            <div style="flex:1; margin-left:10px;">일반 방지권<br><small>100,000G (-2단계)</small></div>
+            <button style="width:70px; padding:8px; background:var(--money); color:black;" onclick="buyItem(1, 100000)">구매</button>
+        </div>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/9b59b6/ffffff?text=📜" style="width:40px; border-radius:5px;">
+            <div style="flex:1; margin-left:10px;">고급 방지권<br><small>300,000G (-1단계)</small></div>
+            <button style="width:70px; padding:8px; background:var(--money); color:black;" onclick="buyItem(2, 300000)">구매</button>
+        </div>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/f1c40f/000000?text=📜" style="width:40px; border-radius:5px;">
+            <div style="flex:1; margin-left:10px;">최고급 방지권<br><small>1,000,000G (유지)</small></div>
+            <button style="width:70px; padding:8px; background:var(--money); color:black;" onclick="buyItem(3, 1000000)">구매</button>
+        </div>
+        <div class="shop-row" style="background:rgba(83, 52, 131, 0.2);">
+            <img src="https://placehold.co/50x50/e74c3c/ffffff?text=🧩" style="width:40px; border-radius:5px;">
+            <div style="flex:1; margin-left:10px;">조각 환전<br><small>+50,000G 지급</small></div>
+            <button style="width:70px; padding:8px; background:#533483; color:white;" onclick="exchangeShards()">환전</button>
+        </div>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 돌아가기</button>
+    </div>
+
+    <div id="page-mine" class="page">
+        <h2 style="color: var(--mine);">⛏️ 광산 탐색</h2>
+        <div class="grid-wrapper">
+            <div class="game-grid" id="mine-grid"></div>
+            <table class="info-table" id="mine-info"></table>
+        </div>
+        <button id="mine-scan-btn" onclick="scanMine()" style="background: var(--mine); color: black; margin-top:15px;" disabled>📡 광석 탐색 (1,000G 소모)</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 돌아가기</button>
+    </div>
+
+    <div id="page-hunt" class="page">
+        <h2 style="color: var(--hunt);">⚔️ 사냥터</h2>
+        <div class="grid-wrapper">
+            <div class="game-grid" id="hunt-grid"></div>
+        </div>
+        <div id="hunt-log">몬스터 탐색 후 전투를 시작하세요.</div>
+        <button onclick="scanHunt()" style="background: var(--hunt); color: white;">📡 몬스터 탐색 (2,000G 소모)</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 돌아가기</button>
+    </div>
+</div>
+
+<script>
+    // 1. 초기 데이터 및 저장 시스템
+    let data = {
+        level: 0, equippedLv: -1, gold: 100000, shards: 0,
+        inv: { item1: 0, item2: 0, item3: 0 }
+    };
+
+    function save() { localStorage.setItem('swordRPG_save', JSON.stringify(data)); updateUI(); }
+    function load() {
+        const saved = localStorage.getItem('swordRPG_save');
+        if (saved) data = JSON.parse(saved);
+        updateUI();
+    }
+    function resetGame() { if(confirm("초기화하시겠습니까?")) { localStorage.removeItem('swordRPG_save'); location.reload(); } }
+
+    // 2. 강화 로직
+    let isAuto = false;
+    let mineData = [], huntData = [];
+    const oreTypes = [
+        { n: "빈 공간", e: "", p: 0, c: 30 }, { n: "돌", e: "🪨", p: 100, c: 35 }, { n: "구리", e: "🟫", p: 500, c: 15 },
+        { n: "청동", e: "🥉", p: 1000, c: 10 }, { n: "철", e: "⛓️", p: 2000, c: 7 }, { n: "은", e: "🥈", p: 10000, c: 2.4 },
+        { n: "금", e: "🥇", p: 30000, c: 0.5 }, { n: "다이아", e: "💎", p: 100000, c: 0.1 }
+    ];
+
+    function getUpgradeData(lv) {
+        const cost = 10 * Math.pow(2, lv);
+        let sp = lv === 0 ? 0 : lv <= 10 ? Math.floor(cost * 0.6) : Math.floor(cost * (2.5 + (lv - 10) * 0.5));
+        const sc = lv < 3 ? 100 : lv < 6 ? 85 : lv < 9 ? 60 : lv === 9 ? 50 : 40;
+        const bc = lv >= 10 ? Math.min(50, 5 + (lv - 10) * 5) : 0;
+        return { sc, bc, cost, sp };
+    }
+
+    function updateUI() {
+        const d = getUpgradeData(data.level);
+        document.getElementById('level').innerText = data.level;
+        document.getElementById('equipped-lv').innerText = data.equippedLv === -1 ? "N/A" : data.equippedLv;
+        document.getElementById('gold').innerText = data.gold.toLocaleString();
+        document.getElementById('shards').innerText = data.shards;
+        document.getElementById('inv-1').innerText = data.inv.item1;
+        document.getElementById('inv-2').innerText = data.inv.item2;
+        document.getElementById('inv-3').innerText = data.inv.item3;
+        document.getElementById('chance').innerText = d.sc;
+        document.getElementById('break').innerText = d.bc;
+        document.getElementById('cost').innerText = d.cost.toLocaleString();
+        document.getElementById('sell-p').innerText = d.sp.toLocaleString();
+        
+        const oresLeft = mineData.filter(m => m && m.p > 0).length;
+        document.getElementById('mine-scan-btn').disabled = oresLeft > 0;
+        document.getElementById('emergency-btn').style.display = (data.gold < 1000 && data.equippedLv === -1) ? "block" : "none";
+        document.getElementById('auto-btn').innerText = isAuto ? "자동 강화 중단" : "목표: +10강 자동 도전";
+    }
+
+    function tryUpgrade() {
+        const d = getUpgradeData(data.level);
+        if (data.gold < d.cost) { isAuto = false; addLog("골드가 부족합니다."); return false; }
+        
+        const sel = document.querySelector('input[name="prot"]:checked').value;
+        if (sel !== "0") {
+            if (data.inv[`item${sel}`] > 0) data.inv[`item${sel}`]--;
+            else { isAuto = false; addLog("방지권이 부족합니다."); return false; }
+        }
+
+        const isEquipped = (data.level === data.equippedLv && data.level > 0);
+        data.gold -= d.cost;
+        let rand = Math.random() * 100;
+
+        if (rand < d.sc) {
+            data.level++; addLog(`+${data.level} 성공!`, "#4ecca3");
+            if (isEquipped) data.equippedLv = data.level;
+        } else {
+            let bRand = Math.random() * 100;
+            if (bRand < d.bc) {
+                if (sel === "3") addLog("최고급 방지권! 단계 유지");
+                else if (sel === "2") { data.level = Math.max(0, data.level-1); addLog("고급 방지권! -1단계"); }
+                else if (sel === "1") { data.level = Math.max(0, data.level-2); addLog("일반 방지권! -2단계"); }
+                else { 
+                    if(isEquipped) data.equippedLv = -1;
+                    data.shards++; data.level = 0; addLog("검이 파괴되었습니다!", "#e94560"); isAuto = false; 
+                }
+            } else { 
+                data.level = Math.max(0, data.level - 1); addLog("강화 실패 (등급 하락)"); 
+                if (isEquipped) data.equippedLv = data.level;
+            }
+        }
+        document.getElementById('prot-none').checked = true; save(); return true;
+    }
+
+    function startAutoUpgrade() {
+        if (isAuto) { isAuto = false; return; }
+        if (data.level >= 10) { addLog("이미 +10강 이상입니다."); return; }
+        isAuto = true;
+        const itv = setInterval(() => {
+            if (!isAuto || data.level >= 10) { clearInterval(itv); isAuto = false; save(); return; }
+            tryUpgrade();
+        }, 350);
+    }
+
+    // 3. 페이지 및 기타 기능
+    function showPage(p) {
+        document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+        document.getElementById(p).classList.add('active');
+        if(p === 'page-mine') {
+            document.getElementById('mine-info').innerHTML = oreTypes.filter(o => o.p > 0).map(o => `<tr><td>${o.e} ${o.n}</td><td>${o.c}%</td><td>${o.p}G</td></tr>`).join('');
+            renderMine();
+        }
+    }
+
+    function scanMine() {
+        if (data.gold < 1000) return; data.gold -= 1000;
+        mineData = Array.from({length:16}, () => {
+            let r = Math.random() * 100, s = 0;
+            for (let o of oreTypes) { s += o.c; if (r <= s) return o; }
+            return oreTypes[0];
+        });
+        renderMine(); save();
+    }
+
+    function renderMine() {
+        const g = document.getElementById('mine-grid'); g.innerHTML = "";
+        mineData.forEach((ore, i) => {
+            const c = document.createElement('div'); c.className = "cell";
+            if (ore) c.innerText = ore.e;
+            c.onclick = () => { if(!mineData[i]) return; data.gold += mineData[i].p; mineData[i] = null; renderMine(); save(); };
+            g.appendChild(c);
+        });
+    }
+
+    function scanHunt() {
+        if (data.equippedLv === -1) { alert("무기를 장착해 주세요!"); return; }
+        if (data.gold < 2000) return; data.gold -= 2000;
+        const icons = ["🐭", "🐍", "🐺", "🐗", "👹", "💀", "🐉", "👾"];
+        huntData = Array.from({length:16}, () => ({
+            icon: icons[Math.floor(Math.random() * icons.length)],
+            lv: Math.max(0, data.equippedLv + Math.floor(Math.random() * 5) - 2)
+        }));
+        renderHunt(); save();
+    }
+
+    function renderHunt() {
+        const g = document.getElementById('hunt-grid'); g.innerHTML = "";
+        huntData.forEach((m, i) => {
+            const c = document.createElement('div'); c.className = "cell";
+            if (m) {
+                let color = "#e94560"; // Red
+                if (m.lv < data.equippedLv) color = "#2ecc71"; // Green
+                else if (m.lv === data.equippedLv) color = "#f1c40f"; // Yellow
+                c.innerHTML = `${m.icon} <span class="monster-lv" style="color:${color}">+${m.lv}</span>`;
+                c.onclick = () => {
+                    const diff = data.equippedLv - m.lv;
+                    const chance = (diff >= 2) ? 100 : (diff === 1) ? 75 : (diff === 0) ? 50 : 50 * Math.pow(0.5, Math.abs(diff));
+                    const price = getUpgradeData(m.lv).sp;
+                    if (Math.random() * 100 < chance) {
+                        data.gold += price; addHuntLog(`승리! +${price.toLocaleString()}G`, "#4ecca3");
+                    } else {
+                        const loss = Math.floor(price / 2); const prevGold = data.gold;
+                        data.gold = Math.max(0, data.gold - loss); addHuntLog(`패배... -${loss.toLocaleString()}G`, "#e94560");
+                        if (prevGold === 0) { data.equippedLv = -1; data.level = 0; data.shards++; addHuntLog("자산 고갈로 무기 파괴!", "#ff4757"); }
+                    }
+                    huntData[i] = null; renderHunt(); save();
+                };
+            }
+            g.appendChild(c);
+        });
+    }
+
+    function addLog(m, c) { const l = document.getElementById('log'); const div = document.createElement('div'); div.innerHTML = `> ${m}`; if(c) div.style.color = c; l.prepend(div); if(l.children.length > 15) l.lastChild.remove(); }
+    function addHuntLog(m, c) { document.getElementById('hunt-log').innerHTML = `<span style="color:${c}">> ${m}</span>`; }
+    function getEmergencyMoney() { data.gold += 1000; save(); addLog("구제금 지급 완료"); }
+    function buyItem(t, p) { if(data.gold < p) return; data.gold -= p; data.inv[`item${t}`]++; save(); }
+    function sellWeapon() { const d = getUpgradeData(data.level); data.gold += d.sp; if(data.equippedLv === data.level) data.equippedLv = -1; data.level = 0; save(); }
+    function equipWeapon() { if(data.level === 0) return; data.equippedLv = data.level; save(); }
+    function exchangeShards() { if(data.shards <= 0) return; data.shards--; data.gold += 50000; save(); }
+
+    load();
+</script>
+</body>
+</html>
