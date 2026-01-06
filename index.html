@@ -236,14 +236,25 @@
                 if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
                 data = users[id].data;
             } else {
-                data = { level:1, exp:0, gold:10000, hp:100, inventory:[], equipment:{weapon:null, armor:null, belt:null}, potions:0, potionCount:0, mineGrid:[], scrolls: {} };
+                data = { 
+                    level:1, exp:0, gold:100000, hp:100, 
+                    inventory:[], equipment:{weapon:null, armor:null, belt:null}, 
+                    potions:0, potionCount:0, // 구버전 데이터 호환용
+                    potionBuffer: 0, // [NEW] 포션 사용 누적치
+                    mineGrid: [], scrolls: {} 
+                };
                 users[id] = { pw, data };
             }
             currentUser = id;
+            
+            // [중요] 기존 유저에게 potionBuffer가 없을 경우 초기화
+            if(typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
+
             if(document.getElementById('auto-login').checked) localStorage.setItem('game_auto_user', id);
             localStorage.setItem('game_users', JSON.stringify(users));
             MainEngine.enterGame();
         },
+        // ... (enterGame, logout, saveGame, export/import는 기존과 동일) ...
         enterGame: () => {
             document.getElementById('login-container').style.display='none';
             document.getElementById('game-container').style.display='block';
@@ -263,11 +274,11 @@
         },
         exportSaveFile: () => {
             const saveStr = localStorage.getItem('game_users');
-            if(!saveStr || saveStr === "{}") return alert("저장된 데이터가 없습니다.");
+            if(!saveStr || saveStr === "{}") return alert("데이터 없음");
             const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `강화하기_세이브_${new Date().toLocaleDateString()}.txt`;
+            link.download = `강화하기_v1.5_세이브.txt`;
             link.click();
         },
         importSaveFile: (input) => {
@@ -278,12 +289,13 @@
                 try {
                     JSON.parse(e.target.result);
                     localStorage.setItem('game_users', e.target.result);
-                    alert("복구 완료! 새로고침합니다.");
+                    alert("복구 완료!");
                     location.reload();
-                } catch(err) { alert("잘못된 파일입니다."); }
+                } catch(err) { alert("파일 오류"); }
             };
             reader.readAsText(file);
-        },/* [UI 업데이트 핵심 수정] */
+        },
+        /* [UI 업데이트 핵심 수정] */
         updateUI: () => {
             if(!data) return;
             
@@ -433,4 +445,5 @@
 </script>
 </body>
 </html>
+
 
