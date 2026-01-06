@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 vx.x</title>
+    <title>강화하기 v1.2</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; --hp: #ff4d4d; --exp: #9b59b6; }
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; user-select: none; }
@@ -31,12 +31,11 @@
         .item-icon { width: 50px; height: 50px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; border: 1px solid #444; }
         .item-btn { width: 58px; padding: 8px 0; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
 
-        /* 상점 스크롤 설정 */
+        /* 상점 스크롤 */
         #shop-list { max-height: 400px; overflow-y: auto; padding-right: 5px; margin: 10px 0; border: 1px solid #333; border-radius: 10px; }
         #shop-list::-webkit-scrollbar { width: 6px; }
         #shop-list::-webkit-scrollbar-thumb { background: var(--point); border-radius: 10px; }
 
-        /* 그리드 */
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
         .cell { aspect-ratio: 1/1; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5em; border: 2px solid #1a1a2e; position: relative; }
@@ -52,6 +51,7 @@
     <script src="Enhancement_System.js"></script>
     <script src="Combat_System.js"></script>
     <script src="Shop_System.js"></script>
+    <script src="mine.js"></script>
 </head>
 <body>
 
@@ -80,7 +80,7 @@
     </div>
 
     <div id="page-main" class="page active">
-        <h1 style="color:var(--money);">강화하기 vx.x</h1>
+        <h1 style="color:var(--money);">강화하기 v1.2</h1>
         <div class="main-menu-btn" onclick="showPage('page-earn')">💰 골드수급 (사냥/광산)</div>
         <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 장비 강화</div>
         <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보</div>
@@ -149,9 +149,9 @@
     </div>
 
     <div id="page-shop-detail" class="page">
-        <h2 id="shop-title">장비 상점</h2>
+        <h2 id="shop-title">상점</h2>
         <div id="shop-list"></div>
-        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
+        <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="inv-modal" class="modal">
@@ -186,7 +186,7 @@
                 if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
                 data = users[id].data;
             } else {
-                data = { level:1, exp:0, gold:10000, hp:100, inventory:[], equipment:{}, potions:0 };
+                data = { level:1, exp:0, gold:10000, hp:100, inventory:[], equipment:{weapon:null, armor:null, belt:null}, potions:0, potionCount:0, mineGrid:[] };
                 users[id] = { pw, data };
             }
             currentUser = id;
@@ -209,10 +209,15 @@
             document.getElementById('hp-max').innerText = Math.floor(stats.hp);
             document.getElementById('hp-fill').style.width = (data.hp/stats.hp*100)+'%';
             document.getElementById('user-lv').innerText = data.level;
-            document.getElementById('info-atk').innerText = Math.floor(stats.atk);
-            document.getElementById('info-def').innerText = Math.floor(stats.def);
-            document.getElementById('info-hp').innerText = Math.floor(stats.hp);
+            
+            const infoAtk = document.getElementById('info-atk');
+            if(infoAtk) {
+                infoAtk.innerText = Math.floor(stats.atk);
+                document.getElementById('info-def').innerText = Math.floor(stats.def);
+                document.getElementById('info-hp').innerText = Math.floor(stats.hp);
+            }
             MainEngine.renderInventory();
+            MainEngine.saveGame();
         },
         getFinalStats: () => {
             let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
@@ -255,7 +260,10 @@
         confirmSell: (idx) => {
             if(confirm("정말로 판매하시겠습니까?")) {
                 data.gold += Math.floor(data.inventory[idx].p * 0.5);
-                data.inventory.splice(idx, 1); upIdx = -1; MainEngine.updateUI(); MainEngine.saveGame();
+                if(data.equipment[data.inventory[idx].type] && data.equipment[data.inventory[idx].type].id === data.inventory[idx].id) {
+                    data.equipment[data.inventory[idx].type] = null;
+                }
+                data.inventory.splice(idx, 1); upIdx = -1; MainEngine.updateUI();
             }
         },
         goToUpgrade: (idx) => { UpgradeSystem.selectUpgrade(idx); showPage('page-upgrade'); },
@@ -270,7 +278,16 @@
                 mList.appendChild(btn);
             });
         },
-        closeModal: () => document.getElementById('inv-modal').style.display='none'
+        closeModal: () => document.getElementById('inv-modal').style.display='none',
+        resetUpgradeUI: () => { document.getElementById('upgrade-target-display').innerText='선택하세요.'; document.getElementById('btn-up-exec').disabled=true; document.getElementById('btn-up-sell').style.display='none'; },
+        checkLevelUp: () => { 
+            const next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+            while(data.exp >= next) {
+                data.exp -= next;
+                data.level++;
+                alert(`축하합니다! Lv.${data.level}로 레벨업 하셨습니다!`);
+            }
+        }
     };
 
     function showPage(id) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); MainEngine.updateUI(); }
