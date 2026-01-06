@@ -287,26 +287,34 @@
         renderInventory();
     };
 
-    const renderInventory = () => {
-        const list = document.getElementById('inventory-list');
-        list.innerHTML = '';
-        data.inventory.forEach((it, idx) => {
-            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            card.innerHTML = `
-                <div style="flex:1;">
-                    <strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine)">[장착중]</span>' : ''}<br>
-                    <small>${it.type} (상수: ${it.k})</small>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:3px;">
-                    <button class="item-btn" style="background:var(--hunt); color:white;" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
-                    <button class="item-btn" style="background:#c0392b; color:white;" onclick="sellItem(${idx})">판매</button>
-                </div>
-            `;
-            list.appendChild(card);
-        });
-    };
+/* 1. 강화 페이지로 바로 이동시키는 함수 추가 */
+const goToUpgrade = (idx) => {
+    selectUpgrade(idx); // 해당 아이템을 강화 대상으로 선택
+    showPage('page-upgrade'); // 강화 페이지(UI)로 이동
+};
+
+/* 2. 기존 renderInventory 함수를 아래 내용으로 교체 */
+const renderInventory = () => {
+    const list = document.getElementById('inventory-list');
+    list.innerHTML = '';
+    data.inventory.forEach((it, idx) => {
+        const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+            <div style="flex:1; min-width: 100px;">
+                <strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine); font-size:0.85em;">[E]</span>' : ''}<br>
+                <small>${it.type} (${it.k})</small>
+            </div>
+            <div style="display:flex; flex-direction:row; gap:5px; align-items:center;">
+                <button class="item-btn" style="background:var(--money); color:black;" onclick="goToUpgrade(${idx})">강화</button>
+                <button class="item-btn" style="background:var(--hunt); color:white;" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                <button class="item-btn" style="background:#c0392b; color:white;" onclick="sellItem(${idx})">판매</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+};
 
     const equipItem = (idx) => {
         const it = data.inventory[idx];
@@ -611,4 +619,5 @@
 </script>
 </body>
 </html>
+
 
