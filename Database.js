@@ -19,30 +19,42 @@ const GameDatabase = {
         CALC_DEF: (lv) => Math.floor(2 + 0.1 * Math.pow(lv - 1, 1.1)),
         CALC_HP: (lv) => Math.floor(100 + 5 * Math.pow(lv - 1, 1.3))
     },
-
+/* [장비 가격 수정] 요청하신 티어별 가격 적용 */
     EQUIPMENT: [
-        /* ... 기존 장비 데이터 유지 ... */
+        // Tier 1 (1,000 G)
         { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
         { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
         { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
-        { lv: 5, name: '낡은 검', k: 1.2, p: 2000, type: 'weapon' },
-        { lv: 5, name: '천 옷', k: 1.1, p: 2000, type: 'armor' },
-        { lv: 5, name: '천 벨트', k: 1.2, p: 2000, type: 'belt' },
-        { lv: 10, name: '철 검', k: 1.4, p: 4000, type: 'weapon' },
-        { lv: 10, name: '질긴 옷', k: 1.3, p: 4000, type: 'armor' },
-        { lv: 10, name: '질긴 벨트', k: 1.5, p: 4000, type: 'belt' },
-        { lv: 15, name: '강철 검', k: 1.7, p: 8000, type: 'weapon' },
-        { lv: 15, name: '가죽 옷', k: 1.6, p: 8000, type: 'armor' },
-        { lv: 15, name: '가죽 벨트', k: 1.9, p: 8000, type: 'belt' },
-        { lv: 20, name: '연마된 강철 검', k: 2.1, p: 16000, type: 'weapon' },
-        { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 16000, type: 'armor' },
-        { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 16000, type: 'belt' },
-        { lv: 25, name: '은빛 강철 검', k: 2.7, p: 32000, type: 'weapon' },
-        { lv: 25, name: '비늘 갑옷', k: 2.5, p: 32000, type: 'armor' },
-        { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 32000, type: 'belt' },
-        { lv: 30, name: '은 검', k: 3.5, p: 64000, type: 'weapon' },
-        { lv: 30, name: '강철 갑옷', k: 3.2, p: 64000, type: 'armor' },
-        { lv: 30, name: '용병 벨트', k: 4.5, p: 64000, type: 'belt' }
+        
+        // Tier 2 (10,000 G)
+        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' },
+        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
+        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
+        
+        // Tier 3 (50,000 G)
+        { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon' },
+        { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor' },
+        { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt' },
+        
+        // Tier 4 (250,000 G)
+        { lv: 15, name: '강철 검', k: 1.7, p: 250000, type: 'weapon' },
+        { lv: 15, name: '가죽 옷', k: 1.6, p: 250000, type: 'armor' },
+        { lv: 15, name: '가죽 벨트', k: 1.9, p: 250000, type: 'belt' },
+        
+        // Tier 5 (1,250,000 G)
+        { lv: 20, name: '연마된 강철 검', k: 2.1, p: 1250000, type: 'weapon' },
+        { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 1250000, type: 'armor' },
+        { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 1250000, type: 'belt' },
+        
+        // Tier 6 (6,000,000 G)
+        { lv: 25, name: '은빛 강철 검', k: 2.7, p: 6000000, type: 'weapon' },
+        { lv: 25, name: '비늘 갑옷', k: 2.5, p: 6000000, type: 'armor' },
+        { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 6000000, type: 'belt' },
+        
+        // Tier 7 (30,000,000 G) - 몬스터 골드 상향에 맞춰 조정
+        { lv: 30, name: '은 검', k: 3.5, p: 30000000, type: 'weapon' },
+        { lv: 30, name: '강철 갑옷', k: 3.2, p: 30000000, type: 'armor' },
+        { lv: 30, name: '용병 벨트', k: 4.5, p: 30000000, type: 'belt' }
     ],
 
     ENHANCE_FORMULA: {
@@ -66,17 +78,22 @@ const GameDatabase = {
             { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', img: 'scroll_3.png' }
         ]
     },
-
-    MONSTER_STAGES: [ /* 기존 데이터 유지 (자동 생성 로직 사용) */ 
-        { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,   exp: 10 },
-        { lv: 30, hp: 7500, atk: 550, def: 180, gold: 30000, exp: 500 }
+// [몬스터 골드 수정] 100 ~ 1,000,000 G 까지 급격히 증가
+    MONSTER_STAGES: [
+        { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,      exp: 10 },
+        { lv: 5,  hp: 380,  atk: 35,  def: 8,   gold: 1000,     exp: 50 },
+        { lv: 10, hp: 650,  atk: 55,  def: 15,  gold: 5000,     exp: 100 },
+        { lv: 15, hp: 1200, atk: 95,  def: 30,  gold: 25000,    exp: 150 },
+        { lv: 20, hp: 2200, atk: 160, def: 55,  gold: 100000,   exp: 200 },
+        { lv: 25, hp: 4200, atk: 300, def: 100, gold: 400000,   exp: 300 },
+        { lv: 30, hp: 7500, atk: 550, def: 180, gold: 1000000,  exp: 500 }
     ],
 
     MINES: [ /* 기존 데이터 유지 */
-        { name: '고갈된 광산', cost: 500, rates: [0.4, 0.4, 0.2, 0, 0, 0] },
-        { name: '무너진 광산', cost: 2000, rates: [0.4, 0.2, 0.3, 0.1, 0, 0] },
-        { name: '빛나는 광산', cost: 10000, rates: [0.4, 0.1, 0.2, 0.25, 0.05, 0] },
-        { name: '찬란한 광산', cost: 50000, rates: [0.39, 0.1, 0.15, 0.2, 0.15, 0.01] }
+        { name: '고갈된 광산', cost: 2000, rates: [0.4, 0.4, 0.2, 0, 0, 0] },
+        { name: '무너진 광산', cost: 10000, rates: [0.4, 0.2, 0.3, 0.1, 0, 0] },
+        { name: '빛나는 광산', cost: 100000, rates: [0.4, 0.1, 0.2, 0.25, 0.05, 0] },
+        { name: '찬란한 광산', cost: 500000, rates: [0.39, 0.1, 0.15, 0.2, 0.15, 0.01] }
     ],
     ORES: [ /* 기존 데이터 유지 */
         { n: '빈공간', v: 0, s: '' },
@@ -123,6 +140,7 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
