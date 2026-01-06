@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v1.1</title>
+    <title>강화하기 v1.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,76 +26,53 @@
     </div>
 
     <div id="page-main" class="page active">
-        <h1 style="color:var(--money); margin-bottom:15px; font-size:1.5em;">강화하기 vx.x</h1>
+        <h1 class="game-title">강화하기 vx.x</h1>
         <div class="main-menu-btn" onclick="showPage('page-earn')">💰 골드수급</div>
         <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 강화하기</div>
-        <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보 (인벤토리)</div>
-        <div class="main-menu-btn" style="background:#c0392b;" onclick="fullHeal()">🏥 치료소 (전체 회복)</div>
+        <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보</div>
+        <div class="main-menu-btn" style="background:#c0392b;" onclick="fullHeal()">🏥 치료소</div>
         <div class="main-menu-btn" style="background:#222;" onclick="showPage('page-shop-select')">🛒 상점</div>
     </div>
 
-    <div id="page-earn" class="page">
-        <h2>💰 골드수급</h2>
-        <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt')">⚔️ 사냥터</button>
-        <button class="main-menu-btn" style="background:var(--mine); color:black;" onclick="showPage('page-mine-select')">⛏️ 광산</button>
-        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
-    </div>
-
     <div id="page-info" class="page">
-        <h2>👤 내 정보</h2>
+        <h2>👤 내 정보 & 인벤토리</h2>
         <div class="status-box">
-            <p>⚔️ 공격력 (ATK): <span id="info-atk">0</span></p>
-            <p>🛡️ 방어력 (DEF): <span id="info-def">0</span></p>
-            <p>❤️ 최대 체력: <span id="info-hp">0</span></p>
+            <p>⚔️ ATK: <span id="info-atk">0</span> | 🛡️ DEF: <span id="info-def">0</span></p>
         </div>
-        <h3>🎒 인벤토리</h3>
-        <div id="inventory-list"></div>
+        <div id="inventory-list" class="item-list-container"></div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="page-upgrade" class="page">
-        <h2>🔨 장비 강화 (최대 +10)</h2>
+        <h2>🔨 장비 강화 (+10 제한)</h2>
         <div id="upgrade-target-display" class="target-display">
-            <p id="target-text">강화할 장비를 선택하세요.</p>
+            <p>강화할 장비를 선택하세요.</p>
         </div>
-        
-        <button onclick="openInventoryModal()" style="background:var(--hunt); margin-bottom:10px; font-size:0.9em; padding:8px; border-radius:5px; border:none; color:white; cursor:pointer;">📦 강화 장비 선택</button>
+        <button class="select-btn" onclick="openInventoryModal()">📦 강화 대상 선택</button>
         
         <div class="scroll-select-box">
-            <h4 style="margin:0 0 5px 0; color:var(--money);">🛡️ 방지권 선택</h4>
-            <label><input type="radio" name="prot" value="0" checked> 미사용</label>
-            <label><input type="radio" name="prot" value="1"> 하급(<span id="inv-scroll-1">0</span>)</label>
-            <label><input type="radio" name="prot" value="2"> 중급(<span id="inv-scroll-2">0</span>)</label>
-            <label><input type="radio" name="prot" value="3"> 상급(<span id="inv-scroll-3">0</span>)</label>
+            <h4>🛡️ 방지권 선택</h4>
+            <div class="scroll-options">
+                <label><input type="radio" name="prot" value="0" checked> 미사용</label>
+                <label><input type="radio" name="prot" value="1"> 하급(<span id="inv-scroll-1">0</span>)</label>
+                <label><input type="radio" name="prot" value="2"> 중급(<span id="inv-scroll-2">0</span>)</label>
+                <label><input type="radio" name="prot" value="3"> 상급(<span id="inv-scroll-3">0</span>)</label>
+            </div>
         </div>
 
-        <div class="chance-display">
-            <span style="color:#4ecca3;">성공 <span id="up-chance">0</span>%</span>
-            <span style="color:var(--point);">파괴 <span id="up-break">0</span>%</span>
+        <div class="chance-info">
+            <span class="success-txt">성공 <span id="up-chance">0</span>%</span>
+            <span class="break-txt">파괴 <span id="up-break">0</span>%</span>
         </div>
 
         <button class="btn-upgrade" id="btn-up-exec" onclick="tryUpgrade()" disabled>강화하기</button>
-        <button class="btn-nav" style="background:#3498db;" id="auto-btn" onclick="startAutoUpgrade()">자동 강화</button>
-        
         <div id="log-container">시스템: 준비 완료.</div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
-    <div id="page-hunt" class="page">
-        <h2>⚔️ 사냥터</h2>
-        <div id="hunt-grid" class="grid-5"></div>
-        <div id="battle-log">전투 대기 중...</div>
-        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
-    </div>
-
-    <div id="page-mine-select" class="page">
-        <h2>⛏️ 광산 선택</h2>
-        <div id="mine-buttons"></div> <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
-    </div>
-
     <div id="inv-modal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-top:0; color:var(--money);">📦 강화할 장비 선택</h3>
+            <h3>📦 강화 장비 선택</h3>
             <div id="modal-item-list"></div>
             <button class="btn-nav" onclick="closeModal()">닫기</button>
         </div>
@@ -105,4 +82,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
