@@ -283,33 +283,33 @@
                 } catch(err) { alert("잘못된 파일입니다."); }
             };
             reader.readAsText(file);
-        },
+        },/* [UI 업데이트 핵심 수정] */
         updateUI: () => {
             if(!data) return;
             
-            // [수정] 경험치 꽉 찼으면 자동 레벨업 체크
+            // 레벨업 체크
             const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
-            if(data.exp >= nextExp) {
-                MainEngine.checkLevelUp();
-                return; // 레벨업 함수에서 다시 updateUI를 호출함
-            }
+            if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
             const stats = MainEngine.getFinalStats();
             
-            // [수정] 물약 정보 계산 (인벤토리 기반)
+            // [물약 계산 로직]
+            // 총 보유량 = (인벤토리 물약 합) - (이미 사용한 Buffer)
             const potions = data.inventory.filter(i => i.type === 'potion');
-            const totalPotionHeal = potions.reduce((sum, p) => sum + (p.val || 0), 0);
-            const potionCount = potions.length;
+            const rawTotal = potions.reduce((sum, p) => sum + (p.val || 0), 0);
+            const currentBuffer = data.potionBuffer || 0;
+            const realTotal = Math.max(0, rawTotal - currentBuffer);
 
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-            document.getElementById('potion-val').innerText = totalPotionHeal.toLocaleString();
-            document.getElementById('potion-cnt').innerText = potionCount;
+            
+            // 표기: "남은총량 (개수)"
+            document.getElementById('potion-val').innerText = realTotal.toLocaleString();
+            document.getElementById('potion-cnt').innerText = potions.length;
 
             document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp)).toLocaleString();
             document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
             document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
             
-            // 경험치 표시 수정
             const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
             document.getElementById('exp-fill').style.width = Math.min(100, expPer) + '%';
             document.getElementById('user-lv').innerText = data.level;
@@ -324,6 +324,7 @@
             MainEngine.renderInventory();
             MainEngine.saveGame();
         },
+        // ... (나머지 getFinalStats, renderInventory 등 기존 유지) ...
         getFinalStats: () => {
             if(typeof GameDatabase === 'undefined') return { atk:10, def:2, hp:100 };
             let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
@@ -343,7 +344,6 @@
             data.inventory.forEach((it, idx) => {
                 const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
                 const div = document.createElement('div'); div.className = 'item-card';
-                // [수정] 이미지 없을 때 깨짐 방지: 텍스트 아이콘 대체
                 const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
                 
                 div.innerHTML = `
@@ -394,7 +394,6 @@
             });
         },
         closeModal: () => document.getElementById('inv-modal').style.display='none',
-        
         resetUpgradeUI: () => {
             document.getElementById('upgrade-target-display').innerText='선택해주세요';
             document.getElementById('btn-up-exec').disabled=true;
@@ -403,8 +402,6 @@
             document.getElementById('up-break').innerText='0';
             upIdx = -1;
         },
-        
-        /* [수정] 레벨업 로직 복구 */
         checkLevelUp: () => {
             let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
             let lvUp = false;
@@ -417,7 +414,7 @@
             if(lvUp) {
                 alert(`🎉 레벨업! Lv.${data.level} (체력 완전 회복)`);
                 const stats = MainEngine.getFinalStats();
-                data.hp = stats.hp; // HP 완전 회복
+                data.hp = stats.hp; 
                 MainEngine.updateUI();
             }
         }
@@ -436,3 +433,4 @@
 </script>
 </body>
 </html>
+
