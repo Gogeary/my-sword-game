@@ -64,7 +64,7 @@ const GameDatabase = {
     },
 
     CONSUMABLES: {
-        // [수정] type: 'potion' 추가, 회복량 val 통일
+        // [중요] 상점 시스템은 name, val, p, type을 찾습니다. 이 변수명이 정확해야 합니다.
         potions: [
             { id: 1, name: '최하급 포션', val: 100, p: 500, type: 'potion', img: 'potion_s.png' },
             { id: 2, name: '하급 포션', val: 500, p: 2000, type: 'potion', img: 'potion_m.png' },
@@ -140,6 +140,7 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
