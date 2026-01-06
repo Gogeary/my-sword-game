@@ -1,6 +1,7 @@
 /* ==========================================
    [Combat_System.js] 
-   몬스터 탐색 및 자동 전투 (사망 시 귀환 로직 포함)
+   몬스터 탐색 및 자동 전투 시스템
+   (Database.js의 MONSTER_TABLE을 참조)
    ========================================== */
 
 const CombatSystem = {
@@ -11,47 +12,44 @@ const CombatSystem = {
         grid.innerHTML = '';
 
         for (let i = 0; i < 5; i++) {
-            const mLv = Math.max(1, data.level + Math.floor(Math.random() * 11) - 5);
-            const monster = CombatSystem.generateMonsterStats(mLv);
+            // 유저 레벨 기준 -5 ~ +5 범위 (단, 1~30레벨 제한)
+            let randomLv = data.level + Math.floor(Math.random() * 11) - 5;
+            const mLv = Math.min(30, Math.max(1, randomLv));
+            
+            const monster = CombatSystem.getMonsterData(mLv);
 
             const cell = document.createElement('div');
             cell.className = 'cell';
-            cell.innerHTML = `👾<span class="monster-lv">Lv.${mLv}</span>`;
+            
+            // 레벨별 색상 구분
+            let color = mLv > data.level ? '#e74c3c' : (mLv < data.level ? '#2ecc71' : '#f1c40f');
+            
+            cell.innerHTML = `👾<span class="monster-lv" style="color:${color}">Lv.${mLv}</span>`;
             cell.onclick = () => CombatSystem.startBattle(monster);
             grid.appendChild(cell);
         }
     },
 
-    // 2. 몬스터 스탯 생성
-    generateMonsterStats: (lv) => {
-        const stages = GameDatabase.MONSTER_STAGES;
-        let low = stages[0];
-        let high = stages[stages.length - 1];
+    // 2. 몬스터 데이터 가져오기 (Database.js 참조)
+    getMonsterData: (lv) => {
+        // 데이터베이스에 생성된 테이블이 있는지 확인
+        const table = GameDatabase.MONSTER_TABLE;
+        if (!table || table.length === 0) return null;
 
-        for (let i = 0; i < stages.length - 1; i++) {
-            if (lv >= stages[i].lv && lv <= stages[i + 1].lv) {
-                low = stages[i];
-                high = stages[i + 1];
-                break;
-            }
-        }
+        // 인덱스 범위 체크 (1레벨 = 인덱스 0)
+        let idx = lv - 1;
+        if (idx < 0) idx = 0;
+        if (idx >= table.length) idx = table.length - 1;
 
-        const ratio = (lv - low.lv) / (high.lv - low.lv || 1);
-        const lerp = (a, b) => a + (b - a) * ratio;
-
-        return {
-            lv: lv,
-            hp: lerp(low.hp, high.hp),
-            atk: lerp(low.atk, high.atk),
-            def: lerp(low.def, high.def),
-            gold: lerp(low.gold, high.gold),
-            exp: lerp(low.exp, high.exp)
-        };
+        // 객체 복사해서 반환 (원본 수정 방지)
+        return { ...table[idx] };
     },
 
     // 3. 자동 전투 실행
     startBattle: (m) => {
-        // 체력이 1 이하이면 전투 불가 (치료 필요)
+        if (!m) return alert("몬스터 데이터 오류");
+        
+        // 체력이 1 이하이면 전투 불가
         if (data.hp <= 1) return alert('체력이 너무 낮습니다! 치료소에서 회복하세요.');
         
         const log = document.getElementById('battle-log');
@@ -60,58 +58,64 @@ const CombatSystem = {
         const pStats = MainEngine.getFinalStats();
         let mHP = m.hp;
 
+        // 기존 타이머 제거
         if (autoTimer) clearInterval(autoTimer);
 
+        // 전투 루프 시작
         autoTimer = setInterval(() => {
             const calcDmg = (atk, dfs) => (atk >= dfs) ? (atk * 2 - dfs) : (Math.pow(atk, 2) / dfs);
             
-            // --- 유저 공격 ---
+            // [내 공격]
             const pDmg = Math.floor(calcDmg(pStats.atk, m.def));
             mHP -= pDmg;
             log.innerHTML = `유저 공격: ${pDmg} 데미지 (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
             
+            // [승리 판정]
             if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
+                
                 data.gold += m.gold;
                 data.exp += m.exp;
-                log.innerHTML = `<span style="color:var(--money)">★ 전투 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
-                MainEngine.checkLevelUp();
-                MainEngine.updateUI();
+                
+                log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
+                
+                // 레벨업 체크 및 UI 갱신은 MainEngine에서 처리
+                if (window.MainEngine) {
+                    MainEngine.checkLevelUp();
+                    MainEngine.updateUI();
+                }
                 return;
             }
 
-            // --- 몬스터 공격 ---
+            // [몬스터 공격]
             let mDmg = Math.floor(calcDmg(m.atk, pStats.def));
             data.hp -= mDmg;
 
-            // 물약 자동 회복
+            // [물약 자동 사용]
             if (data.potions > 0 && data.hp < pStats.hp) {
-                const healAmt = Math.min(mDmg, data.potions);
+                const healAmt = Math.min(mDmg, data.potions); // 피해량만큼 회복 시도
                 data.hp += healAmt;
                 data.potions -= healAmt;
             }
 
             log.innerHTML = `공격받음: ${mDmg} 데미지 (내 HP: ${Math.max(0, Math.floor(data.hp))})<br>` + log.innerHTML;
 
-            // --- 사망 처리 로직 (수정됨) ---
+            // [패배 판정]
             if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
                 
-                // 1. 체력을 1로 고정
-                data.hp = 1;
+                data.hp = 1; // 최소 체력 보정
+                alert("패배하여 마을로 귀환합니다.");
                 
-                alert("전투 패배... 마을로 강제 귀환합니다.");
+                if (window.MainEngine) {
+                    MainEngine.updateUI();
+                    MainEngine.saveGame();
+                }
                 
-                // 2. UI 갱신 및 세이브
-                MainEngine.updateUI();
-                MainEngine.saveGame();
-                
-                // 3. 메인 화면으로 자동 이동
+                // 화면 이동
                 showPage('page-main');
-                
-                // 4. 사냥터 로그 초기화 (다음 전투를 위해)
                 if (log) log.innerHTML = "전투 대기 중...";
             }
         }, GameDatabase.SYSTEM.COMBAT_SPEED);
