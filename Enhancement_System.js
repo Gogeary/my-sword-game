@@ -4,7 +4,7 @@
    ========================================== */
 
 const UpgradeSystem = {
-    // 1. 성공/파괴 확률 (v1.2 사양 유지)
+    // 1. 성공/파괴 확률
     getRates: (en) => {
         let success = 100;
         let destroy = 0;
@@ -15,10 +15,10 @@ const UpgradeSystem = {
         } else if (en === 10) {
             success = 40;
         } else {
-            success = 30;
+            success = 30; // 11강~19강 도전 성공률
         }
 
-        // 파괴 확률 (11강부터 로직이 있지만, 10강 제한으로 인해 실제로는 발동 안 함)
+        // 파괴 확률 (11강 도전부터 발생)
         if (en >= 11) {
             destroy = 5 + (en - 11) * 5;
         }
@@ -28,18 +28,16 @@ const UpgradeSystem = {
 
     // 2. 비용 계산
     getCost: (it) => {
-        const baseCost = Math.floor(it.p * 0.3); // 기본가: 아이템 가격의 30%
+        const baseCost = Math.floor(it.p * 0.3);
 
         if (it.en < 5) {
-            // [0~4강] 비용 고정
             return baseCost;
         } 
         else if (it.en < 11) {
-            // [5~10강] 6강 도전부터 1.2배씩 증가
             return Math.floor(baseCost * Math.pow(1.2, it.en - 4));
         } 
         else {
-            // [11강 이상] (10강 제한으로 인해 실제로는 계산될 일 없음)
+            // 11강 이상 비용 계산
             const costAt10 = baseCost * Math.pow(1.2, 6);
             return Math.floor(costAt10 * Math.pow(1.8, it.en - 10));
         }
@@ -47,7 +45,6 @@ const UpgradeSystem = {
 
     // 3. 강화 실행
     try: () => {
-        // 데이터 및 예외 처리
         if (typeof data === 'undefined' || !data || upIdx === -1) return;
         if (!data.inventory[upIdx]) {
             if (typeof MainEngine !== 'undefined') MainEngine.resetUpgradeUI();
@@ -56,22 +53,27 @@ const UpgradeSystem = {
 
         const it = data.inventory[upIdx];
 
-        // [수정] 최대 강화 수치(+10) 제한 로직 추가
-        if (it.en >= 10) {
-            UpgradeSystem.stopAuto(); // 자동 강화 중이라면 중지
-            return alert("최대 강화 수치(+10)에 도달했습니다!");
+        // [수정 1] 최대 강화 수치 (+20) 제한 (절대 제한)
+        if (it.en >= 20) {
+            UpgradeSystem.stopAuto();
+            return alert("최대 강화 수치(+20)에 도달했습니다!");
+        }
+
+        // [수정 2] 자동 강화 제한 (+10)
+        // 자동 강화(autoTimer가 켜져있음) 중이고, 현재 10강 이상이면 멈춤
+        if (autoTimer !== null && it.en >= 10) {
+            UpgradeSystem.stopAuto();
+            return alert("자동 강화는 10강까지만 가능합니다. (11강부터는 수동 진행)");
         }
 
         const rates = UpgradeSystem.getRates(it.en);
         const cost = UpgradeSystem.getCost(it);
 
-        // 비용 부족 체크
         if (data.gold < cost) {
             UpgradeSystem.stopAuto();
             return alert("강화 비용이 부족합니다.");
         }
 
-        // 비용 차감 및 확률 계산
         data.gold -= cost;
         const rand = Math.random() * 100;
 
@@ -80,10 +82,15 @@ const UpgradeSystem = {
             it.en++;
             addLog(`[성공] ${it.name} +${it.en} 강화 성공!`, 'var(--mine)');
             
-            // 성공 후 바로 10강이 되었다면 축하 메시지 및 자동 종료
-            if (it.en >= 10) {
+            // 10강 달성 시 자동 멈춤 (사용자 편의)
+            if (autoTimer !== null && it.en === 10) {
                 UpgradeSystem.stopAuto();
-                alert(`축하합니다! ${it.name} +10강 달성!`);
+                alert(`${it.name} +10강 달성! 자동 강화를 종료합니다.`);
+            }
+            // 20강 달성 시 축하
+            else if (it.en >= 20) {
+                UpgradeSystem.stopAuto();
+                alert(`축하합니다! 전설의 경지! ${it.name} +20강 달성!`);
             }
 
         } else {
@@ -92,7 +99,6 @@ const UpgradeSystem = {
                 // [파괴]
                 addLog(`[파괴] 강화 실패로 '${it.name}' 소멸...`, 'var(--point)');
                 
-                // 장착 해제
                 if (data.equipment[it.type] && data.equipment[it.type].id === it.id) {
                     data.equipment[it.type] = null;
                 }
@@ -110,7 +116,6 @@ const UpgradeSystem = {
             }
         }
 
-        // UI 갱신
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
         if (upIdx !== -1) UpgradeSystem.selectUpgrade(upIdx);
     },
@@ -129,17 +134,17 @@ const UpgradeSystem = {
         const s = document.getElementById('btn-up-sell');
 
         if (d) d.innerHTML = `<strong>${it.name} +${it.en}</strong>`;
+        
         if (b) {
-            // 이미 10강이면 버튼 비활성화 또는 텍스트 변경
-            if (it.en >= 10) {
-                b.innerText = `최대 강화 달성 (+10)`;
+            // [수정 3] 버튼 비활성화 기준을 10강에서 20강으로 변경
+            if (it.en >= 20) {
+                b.innerText = `최대 강화 달성 (+20)`;
                 b.disabled = true;
             } else {
                 b.innerText = `강화하기 (${cost.toLocaleString()}G)`;
                 b.disabled = false;
             }
             
-            // 버튼 스타일 고정
             b.style.width = "100%";
             b.style.height = "55px";
             b.style.display = "block";
@@ -154,6 +159,11 @@ const UpgradeSystem = {
     startAuto: () => {
         if (autoTimer) UpgradeSystem.stopAuto();
         else {
+            // 시작 전 체크: 이미 10강 이상이면 자동 시작 불가
+            if (upIdx !== -1 && data.inventory[upIdx] && data.inventory[upIdx].en >= 10) {
+                return alert("10강 이상인 아이템은 자동 강화를 사용할 수 없습니다.");
+            }
+
             autoTimer = setInterval(UpgradeSystem.try, 100);
             document.getElementById('auto-btn').innerText = '중단';
         }
@@ -164,6 +174,7 @@ const UpgradeSystem = {
             clearInterval(autoTimer);
             autoTimer = null;
         }
-        document.getElementById('auto-btn').innerText = '자동 강화 시작';
+        const btn = document.getElementById('auto-btn');
+        if(btn) btn.innerText = '자동 강화 시작';
     }
 };
