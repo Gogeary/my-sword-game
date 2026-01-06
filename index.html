@@ -25,13 +25,13 @@
         #exp-fill { background: var(--exp); height: 100%; width: 0%; transition: 0.3s; }
         .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 16px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; }
 
-        /* 버튼 및 카드 공통 */
+        /* 버튼 및 카드 */
         .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 10px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; font-weight: bold; width: 100%; box-sizing: border-box; }
         .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .item-icon { width: 50px; height: 50px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; border: 1px solid #444; }
         .item-btn { width: 58px; padding: 8px 0; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
         
-        /* 강화 버튼 전용 스타일 (크기 고정) */
+        /* 강화 버튼 전용 (크기 고정) */
         .btn-upgrade { background: var(--point); color: white; height: 55px; font-size: 1.2em; margin-bottom: 8px; font-weight: bold; width: 100%; border: none; border-radius: 10px; cursor: pointer; display: block; box-sizing: border-box; }
         .btn-upgrade:disabled { background: #444; cursor: not-allowed; }
 
@@ -40,7 +40,6 @@
         #shop-list::-webkit-scrollbar { width: 6px; }
         #shop-list::-webkit-scrollbar-thumb { background: var(--point); border-radius: 10px; }
 
-        /* 그리드 */
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
         .cell { aspect-ratio: 1/1; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5em; border: 2px solid #1a1a2e; position: relative; }
@@ -90,7 +89,7 @@
         <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 장비 강화</div>
         <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보</div>
         <div class="main-menu-btn" style="background:#c0392b;" onclick="MainEngine.fullHeal()">🏥 치료소 (전체 회복)</div>
-        <div class="main-menu-btn" style="background:#ffffff; color:#000000;" onclick="ShopSystem.open('equip')">🛒 상점</div>
+        <div class="main-menu-btn" style="background:#ffffff; color:#000000;" onclick="showPage('page-shop-select')">🛒 상점 입장</div>
         <button onclick="MainEngine.logout()" style="background:none; border:none; color:#555; cursor:pointer; margin-top:20px; text-decoration:underline;">로그아웃</button>
     </div>
 
@@ -153,10 +152,19 @@
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
     </div>
 
+    <div id="page-shop-select" class="page">
+        <h2>🏪 상점 선택</h2>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <button class="main-menu-btn" onclick="ShopSystem.open('equip')">⚔️ 장비 상점</button>
+            <button class="main-menu-btn" style="background:var(--hunt);" onclick="ShopSystem.open('consume')">🧪 소비 상점 (물약/주문서)</button>
+        </div>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
+    </div>
+
     <div id="page-shop-detail" class="page">
         <h2 id="shop-title">상점</h2>
         <div id="shop-list"></div>
-        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
+        <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="inv-modal" class="modal">
@@ -170,8 +178,7 @@
 
 <script>
     /* ==========================================
-       [전역 변수 설정]
-       다른 JS 파일에서 이 변수들을 참조합니다.
+       [전역 상태 변수]
        ========================================== */
     var currentUser = null;
     var data = null;
@@ -179,11 +186,10 @@
     var autoTimer = null;
 
     /* ==========================================
-       [메인 제어 엔진]
+       [메인 엔진]
        ========================================== */
     const MainEngine = {
         init: () => {
-            // 외부 시스템 파일 로드 체크
             if(typeof GameDatabase === 'undefined') return console.error("Database.js 로드 실패");
             
             const auto = localStorage.getItem('game_auto_user');
@@ -207,12 +213,11 @@
                 if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
                 data = users[id].data;
             } else {
-                // 신규 유저 데이터 초기화
                 data = { 
                     level: 1, exp: 0, gold: 10000, hp: 100, 
                     inventory: [], 
                     equipment: { weapon: null, armor: null, belt: null }, 
-                    potions: 0, potionCount: 0, mineGrid: [] 
+                    potions: 0, potionCount: 0, mineGrid: [], scrolls: {}
                 };
                 users[id] = { pw, data };
             }
@@ -229,7 +234,7 @@
         },
 
         logout: () => {
-            showPage('page-main'); // 타이머 정지
+            showPage('page-main');
             localStorage.removeItem('game_auto_user');
             location.reload();
         },
@@ -246,23 +251,19 @@
             if(!data) return;
             const stats = MainEngine.getFinalStats();
             
-            // 골드 & 물약
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-            document.getElementById('potion-total').innerText = (data.potions || 0).toLocaleString();
+            document.getElementById('potion-total').innerText = (data.potionCount || 0) + "/10";
             
-            // HP 바
             document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp)).toLocaleString();
             document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
             const hpPer = (data.hp / stats.hp * 100) || 0;
             document.getElementById('hp-fill').style.width = hpPer + '%';
             
-            // 경험치 바
             const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
             const expPer = (data.exp / nextExp * 100) || 0;
             document.getElementById('exp-fill').style.width = expPer + '%';
             document.getElementById('user-lv').innerText = data.level;
             
-            // 내 정보 스탯
             const infoAtk = document.getElementById('info-atk');
             if(infoAtk) {
                 infoAtk.innerText = Math.floor(stats.atk).toLocaleString();
@@ -301,7 +302,6 @@
                 const div = document.createElement('div'); 
                 div.className = 'item-card';
                 
-                // 이미지 로드 실패 시 대체 텍스트
                 const imgTag = it.img 
                     ? `<img src="image/${it.img}" class="item-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPj88L3RleHQ+PC9zdmc+'">` 
                     : '<div class="item-icon">📦</div>';
@@ -328,8 +328,6 @@
             } else {
                 data.equipment[it.type] = it;
             }
-            
-            // 체력 보정
             const stats = MainEngine.getFinalStats();
             if(data.hp > stats.hp) data.hp = stats.hp;
             MainEngine.updateUI();
@@ -354,7 +352,11 @@
         },
 
         sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
-        fullHeal: () => { data.hp = MainEngine.getFinalStats().hp; MainEngine.updateUI(); alert("치료 완료!"); },
+        fullHeal: () => { 
+            data.hp = MainEngine.getFinalStats().hp; 
+            MainEngine.updateUI(); 
+            alert("체력 회복 완료!"); 
+        },
 
         openInventoryModal: () => {
             document.getElementById('inv-modal').style.display='block';
@@ -397,10 +399,10 @@
     };
 
     /* ==========================================
-       [페이지 및 로그 유틸리티]
+       [유틸리티 함수]
        ========================================== */
     function showPage(id) {
-        // 페이지 이동 시 모든 타이머 정지 (안전 장치)
+        // 이동 시 자동 타이머 해제
         if(autoTimer) { clearInterval(autoTimer); autoTimer = null; }
         if(typeof UpgradeSystem !== 'undefined' && UpgradeSystem.stopAuto) UpgradeSystem.stopAuto();
 
@@ -410,13 +412,11 @@
         MainEngine.updateUI();
     }
 
-    // 전역 로그 함수 (다른 JS 파일에서 호출 가능)
     function addLog(m, c) {
         const l = document.getElementById('log-container');
         if(l) l.innerHTML = `<div style="color:${c}">> ${m}</div>` + l.innerHTML;
     }
     
-    // 시작
     window.onload = MainEngine.init;
 </script>
 </body>
