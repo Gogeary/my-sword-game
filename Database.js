@@ -5,7 +5,7 @@
 const GameDatabase = {
     SYSTEM: {
         TITLE: "강화하기 v1.2",
-        START_GOLD: 10000,
+        START_GOLD: 100000,
         EMERGENCY_GOLD: 1000,
         MAX_ENHANCE: 15, // 최대 강화 15강으로 확장
         AUTO_ENHANCE_SPEED: 100,
@@ -111,3 +111,4 @@ const GameDatabase = {
         { n: '다이아', v: 30000, s: '💎' }
     ]
 };
+
