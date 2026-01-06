@@ -1,17 +1,16 @@
 /* ==========================================
    [Combat_System.js] 
-   몬스터 탐색, 스탯 생성 및 자동 전투 로직
+   몬스터 탐색 및 자동 전투 (사망 시 귀환 로직 포함)
    ========================================== */
 
 const CombatSystem = {
-    // 1. 몬스터 탐색 (내 레벨 +- 5 레벨 생성)
+    // 1. 몬스터 탐색
     scanHunt: () => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
         grid.innerHTML = '';
 
         for (let i = 0; i < 5; i++) {
-            // 내 레벨 기준 +-5 범위에서 랜덤 레벨 생성 (최소 1레벨)
             const mLv = Math.max(1, data.level + Math.floor(Math.random() * 11) - 5);
             const monster = CombatSystem.generateMonsterStats(mLv);
 
@@ -23,13 +22,12 @@ const CombatSystem = {
         }
     },
 
-    // 2. 몬스터 스펙 생성 (Database의 기준표를 바탕으로 선형 보간 계산)
+    // 2. 몬스터 스탯 생성
     generateMonsterStats: (lv) => {
         const stages = GameDatabase.MONSTER_STAGES;
         let low = stages[0];
         let high = stages[stages.length - 1];
 
-        // 레벨에 맞는 구간 찾기
         for (let i = 0; i < stages.length - 1; i++) {
             if (lv >= stages[i].lv && lv <= stages[i + 1].lv) {
                 low = stages[i];
@@ -38,7 +36,6 @@ const CombatSystem = {
             }
         }
 
-        // 선형 보간(lerp) 비율 계산
         const ratio = (lv - low.lv) / (high.lv - low.lv || 1);
         const lerp = (a, b) => a + (b - a) * ratio;
 
@@ -52,9 +49,10 @@ const CombatSystem = {
         };
     },
 
-    // 3. 자동 전투 실행 (0.1초 턴제)
+    // 3. 자동 전투 실행
     startBattle: (m) => {
-        if (data.hp <= 0) return alert('치료소에서 회복이 필요합니다!');
+        // 체력이 1 이하이면 전투 불가 (치료 필요)
+        if (data.hp <= 1) return alert('체력이 너무 낮습니다! 치료소에서 회복하세요.');
         
         const log = document.getElementById('battle-log');
         if (log) log.innerHTML = `[시스템] Lv.${m.lv} 몬스터와 전투 시작!<br>`;
@@ -62,53 +60,59 @@ const CombatSystem = {
         const pStats = MainEngine.getFinalStats();
         let mHP = m.hp;
 
-        // 기존 타이머가 있다면 제거 (중복 실행 방지)
         if (autoTimer) clearInterval(autoTimer);
 
         autoTimer = setInterval(() => {
-            // 데미지 공식 적용 (요구사항 명세)
             const calcDmg = (atk, dfs) => (atk >= dfs) ? (atk * 2 - dfs) : (Math.pow(atk, 2) / dfs);
             
-            // --- 유저 턴 ---
+            // --- 유저 공격 ---
             const pDmg = Math.floor(calcDmg(pStats.atk, m.def));
             mHP -= pDmg;
-            log.innerHTML = `유저는 공격했다. ${pDmg}의 데미지 (남은 적 체력 : ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
+            log.innerHTML = `유저 공격: ${pDmg} 데미지 (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
             
             if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
-                
                 data.gold += m.gold;
                 data.exp += m.exp;
-                
-                log.innerHTML = `<span style="color:var(--money)">★ 승리! 획득 골드 +${Math.floor(m.gold)}G, 획득 경험치 +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
-                
-                MainEngine.checkLevelUp(); // 레벨업 체크 로직 호출
+                log.innerHTML = `<span style="color:var(--money)">★ 전투 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
+                MainEngine.checkLevelUp();
                 MainEngine.updateUI();
                 return;
             }
 
-            // --- 몬스터 턴 ---
+            // --- 몬스터 공격 ---
             let mDmg = Math.floor(calcDmg(m.atk, pStats.def));
             data.hp -= mDmg;
 
-            // 물약 자동 회복 (보유한 포션 수치만큼 데미지를 즉시 상쇄)
+            // 물약 자동 회복
             if (data.potions > 0 && data.hp < pStats.hp) {
                 const healAmt = Math.min(mDmg, data.potions);
                 data.hp += healAmt;
                 data.potions -= healAmt;
-                // 포션 소지 개수 갱신 (전체 수치가 0이 되면 소지 카운트도 0)
-                if (data.potions <= 0) data.potionCount = 0; 
             }
 
-            log.innerHTML = `공격받았다. ${mDmg}의 데미지 (남은 체력 : ${Math.max(0, Math.floor(data.hp))})<br>` + log.innerHTML;
+            log.innerHTML = `공격받음: ${mDmg} 데미지 (내 HP: ${Math.max(0, Math.floor(data.hp))})<br>` + log.innerHTML;
 
+            // --- 사망 처리 로직 (수정됨) ---
             if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
-                data.hp = 0;
-                log.innerHTML = `<span style="color:var(--point)">[패배] 체력이 다했습니다. 마을로 송환됩니다.</span><br>` + log.innerHTML;
+                
+                // 1. 체력을 1로 고정
+                data.hp = 1;
+                
+                alert("전투 패배... 마을로 강제 귀환합니다.");
+                
+                // 2. UI 갱신 및 세이브
                 MainEngine.updateUI();
+                MainEngine.saveGame();
+                
+                // 3. 메인 화면으로 자동 이동
+                showPage('page-main');
+                
+                // 4. 사냥터 로그 초기화 (다음 전투를 위해)
+                if (log) log.innerHTML = "전투 대기 중...";
             }
         }, GameDatabase.SYSTEM.COMBAT_SPEED);
     }
