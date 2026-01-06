@@ -3,253 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 vx.x - 강화 제한 업데이트</title>
-    <style>
-        :root {
-            --money: #f1c40f;
-            --hunt: #e67e22;
-            --mine: #95a5a6;
-            --point: #e74c3c;
-            --bg: #2c3e50;
-        }
-        body { background: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; text-align: center; margin: 0; }
-        #game-container { max-width: 500px; margin: 0 auto; padding: 10px; }
-        
-        /* 상단 바 */
-        .top-bar { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 15px; }
-        .bar-outer { width: 100%; height: 18px; background: #444; margin: 5px 0; position: relative; border-radius: 9px; overflow: hidden; border: 1px solid #555; }
-        #hp-fill { height: 100%; background: #e74c3c; width: 100%; transition: 0.3s; }
-        .bar-text { position: absolute; width: 100%; top: 0; left: 0; font-size: 11px; line-height: 18px; color: white; text-shadow: 1px 1px 1px #000; }
-
-        .page { display: none; padding: 10px; }
-        .active { display: block; }
-
-        /* 버튼 스타일 */
-        .main-menu-btn, .btn-nav, .btn-upgrade { 
-            display: block; width: 90%; margin: 10px auto; padding: 12px; 
-            border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 1rem;
-        }
-        .main-menu-btn { background: #34495e; box-shadow: 0 4px #222; }
-        .btn-nav { background: #7f8c8d; }
-        .btn-upgrade { background: #27ae60; width: 100%; height: 50px; transition: 0.2s; }
-        .btn-upgrade:disabled { background: #555; cursor: not-allowed; }
-
-        /* 아이템 리스트 */
-        .inv-item { 
-            display: flex; align-items: center; background: rgba(255,255,255,0.1); 
-            margin-bottom: 8px; padding: 8px; border-radius: 8px; border: 1px solid #444;
-        }
-        .item-img { width: 45px; height: 45px; background: #1a1a1a; border-radius: 5px; margin-right: 12px; object-fit: contain; }
-        .item-info { flex-grow: 1; text-align: left; }
-        .item-name { font-weight: bold; font-size: 0.9em; }
-        .sell-btn { background: #c0392b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; }
-        .modal-content { background: #34495e; width: 85%; max-width: 400px; margin: 15% auto; padding: 20px; border-radius: 12px; max-height: 70vh; overflow-y: auto; }
-
-        #upgrade-target-display { 
-            background: #1a1a1a; padding: 20px; border-radius: 10px; border: 2px dashed #555; margin-bottom: 15px;
-            display: flex; flex-direction: column; align-items: center; min-height: 120px;
-        }
-        .target-img-large { width: 80px; height: 80px; margin-bottom: 10px; object-fit: contain; }
-        #log-container { font-size: 0.85em; color: #4ecca3; margin-top: 10px; min-height: 1.2em; }
-    </style>
+    <title>강화하기 vx.x</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="game-container">
     <div class="top-bar">
-        <div style="display:flex; justify-content: space-between; margin-bottom:5px;">
-            <div>💰 <span id="gold">10,000</span>G</div>
-            <div>🧪 <span id="potion-total">0</span></div>
+        <div class="status-row">
+            <div>💰 <span id="gold">0</span>G</div>
+            <div>🧪 물약: <span id="potion-total">0</span> (<span id="potion-count">0</span>/10)</div>
         </div>
         <div class="bar-outer">
             <div id="hp-fill"></div>
-            <div class="bar-text">❤️ HP <span id="hp-val">100</span> / 100</div>
+            <div class="bar-text">❤️ HP <span id="hp-val">100</span> / <span id="hp-max">100</span></div>
         </div>
+        <div class="bar-outer">
+            <div id="exp-fill"></div>
+            <div class="bar-text">⭐ Lv.<span id="user-lv">1</span> (<span id="exp-val">0</span> / <span id="exp-next">140</span>)</div>
+        </div>
+        <div id="emergency-btn" class="emergency-btn" onclick="getEmergencyMoney()">🆘 긴급 구제 (1,000G)</div>
     </div>
 
     <div id="page-main" class="page active">
-        <h1 style="color:var(--money);">강화하기 vx.x</h1>
+        <h1 style="color:var(--money); margin-bottom:15px; font-size:1.5em;">강화하기 vx.x</h1>
+        <div class="main-menu-btn" onclick="showPage('page-earn')">💰 골드수급</div>
         <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 강화하기</div>
         <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보 (인벤토리)</div>
+        <div class="main-menu-btn" style="background:#c0392b;" onclick="fullHeal()">🏥 치료소 (전체 회복)</div>
+        <div class="main-menu-btn" style="background:#222;" onclick="showPage('page-shop-select')">🛒 상점</div>
+    </div>
+
+    <div id="page-earn" class="page">
+        <h2>💰 골드수급</h2>
+        <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt')">⚔️ 사냥터</button>
+        <button class="main-menu-btn" style="background:var(--mine); color:black;" onclick="showPage('page-mine-select')">⛏️ 광산</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="page-info" class="page">
-        <h2>👤 내 정보 & 인벤토리</h2>
+        <h2>👤 내 정보</h2>
+        <div class="status-box">
+            <p>⚔️ 공격력 (ATK): <span id="info-atk">0</span></p>
+            <p>🛡️ 방어력 (DEF): <span id="info-def">0</span></p>
+            <p>❤️ 최대 체력: <span id="info-hp">0</span></p>
+        </div>
+        <h3>🎒 인벤토리</h3>
         <div id="inventory-list"></div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="page-upgrade" class="page">
         <h2>🔨 장비 강화 (최대 +10)</h2>
-        <div id="upgrade-target-display">
+        <div id="upgrade-target-display" class="target-display">
             <p id="target-text">강화할 장비를 선택하세요.</p>
         </div>
-        <button class="main-menu-btn" style="background:var(--hunt);" onclick="openInventoryModal()">📦 강화할 장비 선택</button>
         
-        <div style="font-size:0.85em; margin: 15px 0; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
-            <span style="color:#4ecca3;">성공률: <span id="success-rate">-</span>%</span> | 
-            <span style="color:var(--point);">파괴확률: <span id="break-rate">-</span>%</span>
+        <button onclick="openInventoryModal()" style="background:var(--hunt); margin-bottom:10px; font-size:0.9em; padding:8px; border-radius:5px; border:none; color:white; cursor:pointer;">📦 강화 장비 선택</button>
+        
+        <div class="scroll-select-box">
+            <h4 style="margin:0 0 5px 0; color:var(--money);">🛡️ 방지권 선택</h4>
+            <label><input type="radio" name="prot" value="0" checked> 미사용</label>
+            <label><input type="radio" name="prot" value="1"> 하급(<span id="inv-scroll-1">0</span>)</label>
+            <label><input type="radio" name="prot" value="2"> 중급(<span id="inv-scroll-2">0</span>)</label>
+            <label><input type="radio" name="prot" value="3"> 상급(<span id="inv-scroll-3">0</span>)</label>
+        </div>
+
+        <div class="chance-display">
+            <span style="color:#4ecca3;">성공 <span id="up-chance">0</span>%</span>
+            <span style="color:var(--point);">파괴 <span id="up-break">0</span>%</span>
         </div>
 
         <button class="btn-upgrade" id="btn-up-exec" onclick="tryUpgrade()" disabled>강화하기</button>
-        <div id="log-container"></div>
+        <button class="btn-nav" style="background:#3498db;" id="auto-btn" onclick="startAutoUpgrade()">자동 강화</button>
+        
+        <div id="log-container">시스템: 준비 완료.</div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
+    </div>
+
+    <div id="page-hunt" class="page">
+        <h2>⚔️ 사냥터</h2>
+        <div id="hunt-grid" class="grid-5"></div>
+        <div id="battle-log">전투 대기 중...</div>
+        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
+    </div>
+
+    <div id="page-mine-select" class="page">
+        <h2>⛏️ 광산 선택</h2>
+        <div id="mine-buttons"></div> <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="inv-modal" class="modal">
         <div class="modal-content">
-            <h3 style="color:var(--money); margin-top:0;">📦 강화할 장비 선택</h3>
+            <h3 style="margin-top:0; color:var(--money);">📦 강화할 장비 선택</h3>
             <div id="modal-item-list"></div>
             <button class="btn-nav" onclick="closeModal()">닫기</button>
         </div>
     </div>
 </div>
 
-<script>
-    // --- 리소스 및 데이터 ---
-    const IMAGES = {
-        wood_sword: "image/wood_sword.png",
-        loose_clothes: "image/loose_clothes.png",
-        old_belt: "image/old_belt.png"
-    };
-
-    let player = {
-        gold: 10000,
-        inventory: [
-            { id: 1, name: "목검", level: 0, price: 1000, img: IMAGES.wood_sword },
-            { id: 2, name: "헐렁한 옷", level: 9, price: 800, img: IMAGES.loose_clothes }
-        ]
-    };
-
-    let selectedIdx = -1;
-    const MAX_LEVEL = 10; // 강화 최대 레벨 제한
-
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        if(pageId === 'page-info') renderInventory('inventory-list', true);
-    }
-
-    // --- 인벤토리 렌더링 ---
-    function renderInventory(containerId, showSell) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = player.inventory.length === 0 ? "<p>아이템이 없습니다.</p>" : "";
-
-        player.inventory.forEach((item, idx) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'inv-item';
-            const isMax = item.level >= MAX_LEVEL;
-
-            itemDiv.innerHTML = `
-                <img src="${item.img}" class="item-img" onerror="this.src='https://via.placeholder.com/45?text=No+Img'">
-                <div class="item-info">
-                    <div class="item-name">${item.name} <span style="color:${isMax?'#f1c40f':'#fff'}">(+${item.level})</span></div>
-                    <div style="font-size:0.75em; color:#aaa;">판매가: ${Math.floor(item.price * 0.5)}G</div>
-                </div>
-                <div style="display:flex; gap:5px;">
-                    ${containerId === 'modal-item-list' ? `<button onclick="selectItem(${idx})" style="background:#27ae60; color:white; border:none; padding:5px 10px; border-radius:4px;">선택</button>` : ''}
-                    ${showSell ? `<button class="sell-btn" onclick="sellItem(${idx})">판매</button>` : ''}
-                </div>
-            `;
-            container.appendChild(itemDiv);
-        });
-    }
-
-    function sellItem(idx) {
-        const item = player.inventory[idx];
-        const price = Math.floor(item.price * 0.5);
-        if(confirm(`판매하시겠습니까?`)) {
-            player.gold += price;
-            player.inventory.splice(idx, 1);
-            if(selectedIdx === idx) resetUpgradeUI();
-            updateUI();
-            renderInventory('inventory-list', true);
-        }
-    }
-
-    // --- 강화 로직 ---
-    function openInventoryModal() {
-        document.getElementById('inv-modal').style.display = 'block';
-        renderInventory('modal-item-list', false);
-    }
-
-    function closeModal() {
-        document.getElementById('inv-modal').style.display = 'none';
-    }
-
-    function selectItem(idx) {
-        selectedIdx = idx;
-        const item = player.inventory[idx];
-        const display = document.getElementById('upgrade-target-display');
-        const btn = document.getElementById('btn-up-exec');
-
-        display.innerHTML = `
-            <img src="${item.img}" class="target-img-large">
-            <div class="item-name" style="font-size:1.2em;">${item.name} (+${item.level})</div>
-        `;
-
-        if (item.level >= MAX_LEVEL) {
-            btn.innerText = "최대 강화 레벨 도달";
-            btn.disabled = true;
-            document.getElementById('success-rate').innerText = "0";
-        } else {
-            const cost = (item.level + 1) * 500;
-            btn.innerText = `강화하기 (${cost}G)`;
-            btn.disabled = false;
-            document.getElementById('success-rate').innerText = 100 - (item.level * 10); // 예시 확률
-        }
-        document.getElementById('break-rate').innerText = item.level > 5 ? (item.level - 5) * 5 : 0;
-        closeModal();
-    }
-
-    function tryUpgrade() {
-        if (selectedIdx === -1) return;
-        let item = player.inventory[selectedIdx];
-        
-        // 1. 레벨 체크 (보안용 상시 체크)
-        if (item.level >= MAX_LEVEL) {
-            alert("이미 최대 강화 단계(+10)입니다.");
-            return;
-        }
-
-        const cost = (item.level + 1) * 500;
-        if (player.gold < cost) {
-            alert("골드가 부족합니다.");
-            return;
-        }
-
-        // 강화 시뮬레이션
-        player.gold -= cost;
-        const successRate = 100 - (item.level * 10);
-        const rand = Math.random() * 100;
-
-        if (rand < successRate) {
-            item.level++;
-            document.getElementById('log-container').innerText = "✨ 강화 성공! (+" + item.level + ")";
-            document.getElementById('log-container').style.color = "#4ecca3";
-        } else {
-            document.getElementById('log-container').innerText = "💀 강화 실패...";
-            document.getElementById('log-container').style.color = "#e74c3c";
-        }
-
-        updateUI();
-        selectItem(selectedIdx); // UI 갱신 (여기서 10강 도달 시 버튼 비활성화 처리됨)
-    }
-
-    function resetUpgradeUI() {
-        selectedIdx = -1;
-        document.getElementById('upgrade-target-display').innerHTML = '<p>강화할 장비를 선택하세요.</p>';
-        document.getElementById('btn-up-exec').disabled = true;
-        document.getElementById('btn-up-exec').innerText = "강화하기";
-    }
-
-    function updateUI() {
-        document.getElementById('gold').innerText = player.gold.toLocaleString();
-    }
-
-    updateUI();
-</script>
+<script src="script.js"></script>
 </body>
 </html>
