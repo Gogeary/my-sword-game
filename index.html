@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>검 강화 & 사냥터 온라인 v3.4.1</title>
+    <title>검 강화 & 사냥터 온라인 v3.6</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; }
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; }
@@ -13,6 +13,7 @@
         .stat-value { font-weight: bold; color: var(--money); display: block; font-size: 1.1em; }
         .main-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-bottom: 10px; }
         .panel-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; font-size: 0.8em; text-align: left; }
+        .grid-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; }
         .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
         .cell { width: 65px; height: 65px; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.4em; position: relative; border: 1px solid #1a1a2e; }
         .monster-lv { position: absolute; bottom: 1px; right: 1px; font-size: 0.75em; font-weight: bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; }
@@ -20,8 +21,11 @@
         .btn-upgrade { background: var(--point); color: white; height: 55px; font-size: 1.1em; box-shadow: 0 4px #a02d41; }
         .btn-nav { background: #533483; color: white; }
         #log, #hunt-log { height: 90px; overflow-y: auto; background: #1a1a2e; border-radius: 8px; padding: 8px; margin: 10px 0; font-size: 0.8em; text-align: left; color: #95a5a6; }
-        .zone-btn { background: #0f3460; border: 2px solid var(--hunt); color: white; padding: 20px; font-size: 1.1em; margin-bottom: 10px; cursor: pointer; border-radius: 12px; }
+        .zone-btn { background: #0f3460; border: 2px solid var(--hunt); color: white; padding: 15px; font-size: 1em; margin-bottom: 10px; cursor: pointer; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; }
+        .zone-btn:hover { background: var(--hunt); }
         .shop-row { display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; margin-bottom: 8px; text-align: left; font-size: 0.9em; }
+        .item-icon { width: 30px; height: 30px; margin-right: 10px; border-radius: 5px; }
+        .radio-label { display: block; margin-bottom: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -37,11 +41,11 @@
     <div id="page-main" class="page active">
         <div class="main-layout">
             <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--money);">🛡️ 방지권 (티어 확인)</h4>
-                <label><input type="radio" name="prot" value="0" id="prot-none" checked> 사용 안 함</label><br>
-                <label><input type="radio" name="prot" value="1"> 하급 (~12강) [<span id="inv-1">0</span>]</label><br>
-                <label><input type="radio" name="prot" value="2"> 중급 (~15강) [<span id="inv-2">0</span>]</label><br>
-                <label><input type="radio" name="prot" value="3"> 상급 (제한없음) [<span id="inv-3">0</span>]</label>
+                <h4 style="margin:0 0 8px 0; color:var(--money);">🛡️ 방지권 선택</h4>
+                <label class="radio-label"><input type="radio" name="prot" value="0" id="prot-none" checked> 사용 안 함</label>
+                <label class="radio-label"><input type="radio" name="prot" value="1"> 하급 (~12강) [<span id="inv-1">0</span>]</label>
+                <label class="radio-label"><input type="radio" name="prot" value="2"> 중급 (~15강) [<span id="inv-2">0</span>]</label>
+                <label class="radio-label"><input type="radio" name="prot" value="3"> 상급 (무제한) [<span id="inv-3">0</span>]</label>
             </div>
             <div class="panel-box" style="display:flex; flex-direction:column; justify-content:center;">
                 <div style="font-size:0.9em;">성공 <span id="chance" style="color:#4ecca3;">0</span>% / 파괴 <span id="break" style="color:var(--point);">0</span>%</div>
@@ -51,7 +55,7 @@
         </div>
         <button class="btn-upgrade" onclick="tryUpgrade()">강 화 시 작 (<span id="cost">0</span>G)</button>
         <button class="btn-nav" style="background:#3498db;" id="auto-btn" onclick="startAutoUpgrade()">+10강 자동 도전</button>
-        <div id="log">데이터는 실시간 자동 저장됩니다.</div>
+        <div id="log">시스템: 15강 이상은 경고 팝업이 뜨며, 자동 강화가 중단됩니다.</div>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
             <button class="btn-nav" onclick="showPage('page-shop')">💰 상점</button>
             <button class="btn-nav" style="background:var(--mine); color:black;" onclick="showPage('page-mine')">⛏️ 광산</button>
@@ -61,23 +65,45 @@
 
     <div id="page-shop" class="page">
         <h2 style="color: var(--money);">💰 아이템 상점</h2>
-        <div class="shop-row"><div style="flex:1;">하급 방지권 (10만G)</div><button style="width:70px; background:var(--money);" onclick="buyItem(1, 100000)">구매</button></div>
-        <div class="shop-row"><div style="flex:1;">중급 방지권 (50만G)</div><button style="width:70px; background:var(--money);" onclick="buyItem(2, 500000)">구매</button></div>
-        <div class="shop-row"><div style="flex:1;">상급 방지권 (200만G)</div><button style="width:70px; background:var(--money);" onclick="buyItem(3, 2000000)">구매</button></div>
-        <div class="shop-row"><div style="flex:1;">조각 환전</div><button style="width:70px; background:#533483; color:white;" onclick="exchangeShards()">환전</button></div>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/3498db/ffffff?text=📜" class="item-icon">
+            <div style="flex:1;">하급 방지권 (10만G)<br><small>최대 12강까지 보호</small></div>
+            <button style="width:70px; background:var(--money); color:black;" onclick="buyItem(1, 100000)">구매</button>
+        </div>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/9b59b6/ffffff?text=📜" class="item-icon">
+            <div style="flex:1;">중급 방지권 (50만G)<br><small>최대 15강까지 보호</small></div>
+            <button style="width:70px; background:var(--money); color:black;" onclick="buyItem(2, 500000)">구매</button>
+        </div>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/f1c40f/000000?text=📜" class="item-icon">
+            <div style="flex:1;">상급 방지권 (200만G)<br><small>모든 구간 보호 가능</small></div>
+            <button style="width:70px; background:var(--money); color:black;" onclick="buyItem(3, 2000000)">구매</button>
+        </div>
+        <div class="shop-row">
+            <img src="https://placehold.co/50x50/e74c3c/ffffff?text=🧩" class="item-icon">
+            <div style="flex:1;">조각 환전<br><small>+50,000G 지급</small></div>
+            <button style="width:70px; background:#533483; color:white;" onclick="exchangeShards()">환전</button>
+        </div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 돌아가기</button>
     </div>
 
     <div id="page-hunt" class="page">
-        <h2 style="color: var(--hunt);">⚔️ 사냥터 구역</h2>
+        <h2 style="color: var(--hunt);">⚔️ 사냥터 구역 선택</h2>
         <div id="hunt-zone-select">
-            <div class="zone-btn" onclick="enterZone(1)"><strong>[초보 사냥터] Lv.1 ~ 10</strong></div>
-            <div class="zone-btn" onclick="enterZone(2)"><strong>[숙련 사냥터] Lv.11 ~ 20</strong></div>
+            <div class="zone-btn" onclick="enterZone(1)">
+                <strong>[초보 사냥터] Lv.1 ~ 10</strong>
+                <small style="margin-top:5px; display:block;">입장료: 5,000G<br>수익: 몬스터 레벨 기준</small>
+            </div>
+            <div class="zone-btn" onclick="enterZone(2)">
+                <strong>[숙련 사냥터] Lv.11 ~ 20</strong>
+                <small style="margin-top:5px; display:block;">입장료: 내 검 판매가의 40%<br>수익: 내 검 판매가 기준</small>
+            </div>
         </div>
         <div id="hunt-ground" style="display:none;">
-            <div class="game-grid" id="hunt-grid" style="margin:0 auto;"></div>
-            <div id="hunt-log">준비 완료!</div>
-            <button onclick="exitZone()" style="background:#555; color:white;">구역 나가기</button>
+            <div class="grid-wrapper"><div class="game-grid" id="hunt-grid"></div></div>
+            <div id="hunt-log">몬스터를 선택하여 사냥하세요.</div>
+            <button onclick="exitZone()" style="background:#555; color:white; margin-top:10px;">구역 나가기</button>
         </div>
         <button class="btn-nav" onclick="showPage('page-main')" id="hunt-back-btn">⬅️ 메인으로</button>
     </div>
@@ -85,15 +111,16 @@
     <div id="page-mine" class="page">
         <h2 style="color: var(--mine);">⛏️ 광산</h2>
         <div id="mine-grid" class="game-grid" style="margin: 0 auto;"></div>
-        <button id="mine-scan-btn" onclick="scanMine()" style="background:var(--mine); color:black; margin-top:10px;">광석 탐색 (1,000G)</button>
+        <button id="mine-scan-btn" onclick="scanMine()" style="background:var(--mine); color:black; margin-top:10px;" disabled>광석 탐색 (1,000G)</button>
         <button class="btn-nav" onclick="showPage('page-main')">돌아가기</button>
     </div>
 </div>
 
 <script>
-    // 모든 게임 로직 v3.4 동일 적용
     let data = { level: 0, equippedLv: -1, gold: 100000, shards: 0, inv: { item1: 0, item2: 0, item3: 0 } };
     let huntData = [], mineData = [], isAuto = false, currentZone = 0;
+    
+    // 방지권: 하급(12강), 중급(15강), 상급(무제한)
     const shopItems = [{name:"하급", limit:12}, {name:"중급", limit:15}, {name:"상급", limit:99}];
 
     function getUpgradeData(lv) {
@@ -101,7 +128,8 @@
         let sp = lv === 0 ? 0 : lv <= 10 ? Math.floor(cost * 0.6) : Math.floor(cost * (2.5 + (lv - 10) * 0.5));
         const sc = lv < 3 ? 100 : lv < 6 ? 85 : lv < 9 ? 60 : lv === 9 ? 50 : 40;
         const bc = lv >= 10 ? Math.min(50, 5 + (lv - 10) * 5) : 0;
-        let name = lv >= 20 ? "[신검] 레바테인" : lv >= 18 ? "[성검] 엑스칼리버" : lv >= 15 ? "[명검] 아론다이트" : lv >= 10 ? "[정교한] 검" : "검";
+        // 지시사항: 검 이름은 심플하게 유지 (추후 업데이트 대비)
+        let name = "검"; 
         return { sc, bc, cost, sp, name };
     }
 
@@ -121,21 +149,32 @@
         document.getElementById('sell-p').innerText = d.sp.toLocaleString();
         document.getElementById('emergency-btn').style.display = (data.gold < 1000 && data.equippedLv === -1) ? "block" : "none";
         document.getElementById('mine-scan-btn').disabled = mineData.filter(m => m && m.p > 0).length > 0;
+        document.getElementById('auto-btn').innerText = isAuto ? "자동 중단" : "+10강 자동 도전";
     }
 
     function tryUpgrade() {
         const d = getUpgradeData(data.level);
-        if(data.gold < d.cost) { isAuto = false; return; }
+        if(data.gold < d.cost) { isAuto = false; addLog("골드 부족!"); return; }
+
         const sel = document.querySelector('input[name="prot"]:checked').value;
+        
+        // [안전장치] 15강 이상 방지권 미사용 시 경고
         if (data.level >= 15 && sel === "0") {
-            if (!confirm("⚠️ 방지권 없이 고강화에 도전하시겠습니까? 파괴 시 소멸됩니다!")) { isAuto = false; return; }
+            if (!confirm("⚠️ 경고: 방지권 없이 고강화(15강+)를 시도합니다. 파괴 시 검이 소멸됩니다. 계속하시겠습니까?")) { 
+                isAuto = false; return; 
+            }
         }
+
         if (sel !== "0") {
             const tier = shopItems[parseInt(sel)-1];
-            if (data.level >= tier.limit) { alert(`${tier.name}는 ${tier.limit}강까지만!`); isAuto = false; return; }
+            if (data.level >= tier.limit) { 
+                alert(`${tier.name} 방지권은 ${tier.limit}강까지만 사용 가능합니다!`); 
+                isAuto = false; return; 
+            }
             if (data.inv[`item${sel}`] > 0) data.inv[`item${sel}`]--;
-            else { alert("방지권 부족!"); isAuto = false; return; }
+            else { alert("방지권 수량이 부족합니다!"); isAuto = false; return; }
         }
+
         data.gold -= d.cost;
         if(Math.random()*100 < d.sc) {
             data.level++; addLog(`+${data.level} 성공!`, "#4ecca3");
@@ -150,31 +189,55 @@
         document.getElementById('prot-none').checked = true; save();
     }
 
+    // 사냥터 로직
     function enterZone(z) {
-        if(data.equippedLv === -1) return;
+        if(data.equippedLv === -1) { alert("무기를 장착하세요!"); return; }
+        
+        // 1구역 5000G, 2구역 판매가 40%
         let fee = z === 1 ? 5000 : Math.floor(getUpgradeData(data.equippedLv).sp * 0.4);
-        if(data.gold < fee) return;
+        
+        if(data.gold < fee) { alert(`입장료 부족! (${fee.toLocaleString()}G 필요)`); return; }
         data.gold -= fee; currentZone = z;
+        
         document.getElementById('hunt-zone-select').style.display = 'none';
         document.getElementById('hunt-ground').style.display = 'block';
         document.getElementById('hunt-back-btn').style.display = 'none';
+        
         const icons = ["🐭", "🐍", "🐺", "🐗", "👹", "💀", "🐉", "👾"];
-        const min = z === 1 ? 1 : 11; const max = z === 1 ? 10 : 20;
-        huntData = Array.from({length:16}, () => ({ icon: icons[Math.floor(Math.random()*8)], lv: Math.floor(Math.random()*(max-min+1))+min }));
+        const min = z === 1 ? 1 : 11; 
+        const max = z === 1 ? 10 : 20;
+        
+        huntData = Array.from({length:16}, () => ({ 
+            icon: icons[Math.floor(Math.random()*8)], 
+            lv: Math.floor(Math.random()*(max-min+1))+min 
+        }));
         renderHunt(); save();
     }
 
     function fight(idx) {
         const m = huntData[idx]; const diff = data.equippedLv - m.lv;
         const chance = diff >= 2 ? 100 : diff === 1 ? 75 : diff === 0 ? 50 : 50 * Math.pow(0.5, Math.abs(diff));
+        
+        // 수익: 1구역(몬스터 기준), 2구역(내 무기 기준)
         let reward = currentZone === 1 ? getUpgradeData(m.lv).sp : getUpgradeData(data.equippedLv).sp;
-        let penalty = diff >= 10 ? 0 : diff >= 6 ? 0.1 : diff >= 3 ? 0.5 : 1;
+        
+        // 수익 페널티
+        let penalty = 1;
+        if (diff >= 10) penalty = 0;
+        else if (diff >= 6) penalty = 0.1;
+        else if (diff >= 3) penalty = 0.5;
+        
         reward = Math.floor(reward * penalty);
-        if(Math.random()*100 < chance) { data.gold += reward; addHuntLog(`승리! +${reward.toLocaleString()}G`, "#4ecca3"); }
-        else { 
+
+        if(Math.random()*100 < chance) { 
+            data.gold += reward; 
+            let logMsg = `승리! +${reward.toLocaleString()}G`;
+            if(penalty < 1) logMsg += ` (레벨차감 ${Math.floor((1-penalty)*100)}%)`;
+            addHuntLog(logMsg, "#4ecca3"); 
+        } else { 
             const loss = Math.floor(reward/2); const pg = data.gold; data.gold = Math.max(0, data.gold-loss); 
             addHuntLog(`패배! -${loss.toLocaleString()}G`, "#e94560");
-            if(pg === 0) { data.equippedLv = -1; data.level = 0; data.shards++; exitZone(); }
+            if(pg === 0) { data.equippedLv = -1; data.level = 0; data.shards++; exitZone(); addHuntLog("파산하여 무기 파괴!", "red"); }
         }
         huntData[idx] = null; renderHunt(); save();
     }
@@ -185,7 +248,8 @@
             const c = document.createElement('div'); c.className = "cell";
             if (m) {
                 let diff = data.equippedLv - m.lv;
-                c.innerHTML = `${m.icon} <span class="monster-lv" style="color:${diff>=2?'#2ecc71':diff>=0?'#f1c40f':'#e94560'}">+${m.lv}</span>`;
+                let color = diff >= 2 ? "#2ecc71" : diff >= 0 ? "#f1c40f" : "#e94560";
+                c.innerHTML = `${m.icon} <span class="monster-lv" style="color:${color}">+${m.lv}</span>`;
                 c.onclick = () => fight(i);
             } g.appendChild(c);
         });
@@ -193,8 +257,8 @@
 
     function exitZone() { document.getElementById('hunt-zone-select').style.display='block'; document.getElementById('hunt-ground').style.display='none'; document.getElementById('hunt-back-btn').style.display='block'; }
     function showPage(p) { document.querySelectorAll('.page').forEach(el => el.classList.remove('active')); document.getElementById(p).classList.add('active'); if(p==='page-mine') renderMine(); }
-    function save() { localStorage.setItem('swordRPG_v341', JSON.stringify(data)); updateUI(); }
-    function load() { const s = localStorage.getItem('swordRPG_v341'); if(s) data = JSON.parse(s); updateUI(); }
+    function save() { localStorage.setItem('swordRPG_v36', JSON.stringify(data)); updateUI(); }
+    function load() { const s = localStorage.getItem('swordRPG_v36'); if(s) data = JSON.parse(s); updateUI(); }
     function addLog(m, c) { const l = document.getElementById('log'); l.innerHTML = `<div style="color:${c || '#95a5a6'}">> ${m}</div>` + l.innerHTML; }
     function addHuntLog(m, c) { document.getElementById('hunt-log').innerHTML = `<span style="color:${c}">> ${m}</span>`; }
     function startAutoUpgrade() { if(isAuto) { isAuto=false; return; } isAuto=true; const itv = setInterval(() => { if(!isAuto || data.level >= 10) { clearInterval(itv); isAuto=false; save(); return; } tryUpgrade(); }, 350); }
