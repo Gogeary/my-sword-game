@@ -66,11 +66,11 @@ const GameDatabase = {
     CONSUMABLES: {
         // [중요] 상점 시스템은 name, val, p, type을 찾습니다. 이 변수명이 정확해야 합니다.
         potions: [
-            { id: 1, name: '최하급 포션', val: 100, p: 500, type: 'potion', img: 'potion_s.png' },
-            { id: 2, name: '하급 포션', val: 500, p: 2000, type: 'potion', img: 'potion_m.png' },
-            { id: 3, name: '중급 포션', val: 2000, p: 5000, type: 'potion', img: 'potion_l.png' },
-            { id: 4, name: '상급 포션', val: 5000, p: 10000, type: 'potion', img: 'potion_xl.png' },
-            { id: 5, name: '최상급 포션', val: 10000, p: 20000, type: 'potion', img: 'potion_max.png' }
+            { id: 1, name: '최하급 포션', val: 100, p: 500, type: 'potion', img: 'potion_1.png' },
+            { id: 2, name: '하급 포션', val: 500, p: 2000, type: 'potion', img: 'potion_2.png' },
+            { id: 3, name: '중급 포션', val: 2000, p: 5000, type: 'potion', img: 'potion_3.png' },
+            { id: 4, name: '상급 포션', val: 5000, p: 10000, type: 'potion', img: 'potion_4.png' },
+            { id: 5, name: '최상급 포션', val: 10000, p: 20000, type: 'potion', img: 'potion_5.png' }
         ],
         scrolls: [
             { id: 1, name: '하급 방지권', p: 50000, type: 'scroll', img: 'scroll_1.png' },
@@ -140,6 +140,7 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
