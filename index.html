@@ -8,7 +8,8 @@
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; --hp: #ff4d4d; --exp: #9b59b6; }
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; user-select: none; }
         #game-container { background: var(--panel); max-width: 600px; margin: 0 auto; padding: 15px; border-radius: 15px; border: 2px solid var(--point); min-height: 98vh; box-sizing: border-box; position: relative; display: none; }
-        /* ... (기존 스타일 유지) ... */
+        
+        /* ... 기존 스타일 유지 ... */
         .btn-upgrade { background: var(--point); color: white; height: 55px; font-size: 1.2em; margin-bottom: 8px; font-weight: bold; width: 100%; border: none; border-radius: 10px; cursor: pointer; display: block; box-sizing: border-box; }
         .btn-upgrade:disabled { background: #444; cursor: not-allowed; }
         #shop-list { max-height: 400px; overflow-y: auto; padding-right: 5px; margin: 10px 0; border: 1px solid #333; border-radius: 10px; }
@@ -21,20 +22,23 @@
         .modal-content { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); background: var(--panel); border: 2px solid var(--point); padding: 15px; border-radius: 12px; width: 90%; max-width: 420px; }
         .btn-nav { background: #444; color: white; margin-top: 5px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
         
-        /* [NEW] 상단 바 스타일 개선 */
         .status-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; font-weight: bold; }
         .bar-outer { background: #333; height: 18px; border-radius: 9px; overflow: hidden; position: relative; border: 1px solid #000; margin-bottom: 4px; }
         #hp-fill { background: var(--hp); height: 100%; width: 100%; transition: 0.3s; }
         #exp-fill { background: var(--exp); height: 100%; width: 0%; transition: 0.3s; }
         .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 18px; color: white; text-align: center; text-shadow: 1px 1px 2px black; z-index: 2; }
         
-        /* 로그인 스타일 */
         #login-container { max-width: 400px; margin: 100px auto; padding: 30px; background: var(--panel); border: 2px solid var(--point); border-radius: 15px; }
         .login-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #444; background: #0f3460; color: white; box-sizing: border-box; }
         .login-btn { width: 100%; padding: 15px; background: var(--point); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .item-icon { width: 50px; height: 50px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; border: 1px solid #444; }
         .item-btn { width: 58px; padding: 8px 0; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
+        
+        /* [NEW] 세이브 관리 버튼 스타일 */
+        .save-manage-box { margin-top: 20px; border-top: 1px solid #444; padding-top: 15px; }
+        .btn-small { padding: 8px 12px; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85em; margin: 2px; }
+        .btn-small:hover { background: #777; }
     </style>
 
     <script src="Database.js"></script>
@@ -53,6 +57,13 @@
         <input type="checkbox" id="auto-login"> <label for="auto-login">자동 로그인</label>
     </div>
     <button class="login-btn" onclick="MainEngine.handleLogin()">접속하기</button>
+
+    <div class="save-manage-box">
+        <p style="font-size:0.9em; color:#aaa; margin-bottom:8px;">데이터 백업 및 불러오기</p>
+        <button class="btn-small" onclick="MainEngine.exportSaveFile()">💾 파일로 저장</button>
+        <button class="btn-small" onclick="document.getElementById('file-input').click()">📂 파일 불러오기</button>
+        <input type="file" id="file-input" style="display:none;" onchange="MainEngine.importSaveFile(this)">
+    </div>
 </div>
 
 <div id="game-container">
@@ -187,7 +198,7 @@
                 if(users[id].pw !== pw) return alert("비밀번호 불일치");
                 data = users[id].data;
             } else {
-                data = { level:1, exp:0, gold:10000, hp:100, inventory:[], equipment:{weapon:null, armor:null, belt:null}, potions:0, potionCount:0, mineGrid:[] };
+                data = { level:1, exp:0, gold:10000, hp:100, inventory:[], equipment:{weapon:null, armor:null, belt:null}, potions:0, potionCount:0, mineGrid:[], scrolls: {} };
                 users[id] = { pw, data };
             }
             currentUser = id;
@@ -201,6 +212,7 @@
             MainEngine.updateUI();
         },
         logout: () => { showPage('page-main'); localStorage.removeItem('game_auto_user'); location.reload(); },
+        
         saveGame: () => {
             if(currentUser && data) {
                 const users = JSON.parse(localStorage.getItem('game_users') || "{}");
@@ -208,21 +220,51 @@
                 localStorage.setItem('game_users', JSON.stringify(users));
             }
         },
+
+        /* =========================================
+           [NEW] 세이브 파일 관리 기능
+           ========================================= */
+        exportSaveFile: () => {
+            const saveStr = localStorage.getItem('game_users');
+            if(!saveStr || saveStr === "{}") return alert("저장된 데이터가 없습니다.");
+            
+            const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `강화하기_세이브_${new Date().toLocaleDateString()}.txt`;
+            link.click();
+        },
+
+        importSaveFile: (input) => {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    JSON.parse(content); // 유효성 검사
+                    localStorage.setItem('game_users', content);
+                    alert("데이터 복구 완료! 페이지를 새로고침합니다.");
+                    location.reload();
+                } catch(err) {
+                    alert("잘못된 세이브 파일입니다.");
+                }
+            };
+            reader.readAsText(file);
+        },
+
         updateUI: () => {
             if(!data) return;
             const stats = MainEngine.getFinalStats();
             
-            // [수정] 물약 표시: 총 회복량(potions)과 보유 개수(potionCount) 동시 표기
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
             document.getElementById('potion-val').innerText = (data.potions || 0).toLocaleString();
             document.getElementById('potion-cnt').innerText = (data.potionCount || 0);
 
-            // HP바
             document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp)).toLocaleString();
             document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
             document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
             
-            // [수정] 경험치 텍스트 표시
             const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
             const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
             document.getElementById('exp-fill').style.width = expPer + '%';
