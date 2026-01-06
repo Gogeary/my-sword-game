@@ -1,18 +1,11 @@
-<script>
-    /* ==========================================
-       [전역 변수 및 상태 관리]
-       ========================================== */
-    let currentUser = null;
-    let data = null;
-    let upIdx = -1;
-    let autoTimer = null; // 모든 자동 로직(전투, 강화)에서 공유
+/* ==========================================
+   [MainEngine 통합 제어]
+   ========================================== */
+let currentUser = null, data = null, upIdx = -1, autoTimer = null;
 
-    /* ==========================================
-       [메인 제어 엔진]
-       ========================================== */
-    const MainEngine = {
-        // 초기 로드: 자동 로그인 확인
-        init: () => {
+const MainEngine = {
+    init: () => {
+        try {
             const auto = localStorage.getItem('game_auto_user');
             if(auto) {
                 const users = JSON.parse(localStorage.getItem('game_users') || "{}");
@@ -22,226 +15,153 @@
                     MainEngine.enterGame(); 
                 }
             }
-        },
-
-        // 로그인 및 신규 생성
-        handleLogin: () => {
-            const id = document.getElementById('login-id').value;
-            const pw = document.getElementById('login-pw').value;
-            if(!id || !pw) return alert("정보를 입력하세요.");
-
-            const users = JSON.parse(localStorage.getItem('game_users') || "{}");
-            if(users[id]) {
-                if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
-                data = users[id].data;
-            } else {
-                // 신규 유저 초기 데이터 (Database.js 참조 전 확인)
-                data = { 
-                    level: 1, exp: 0, gold: 10000, hp: 100, 
-                    inventory: [], 
-                    equipment: { weapon: null, armor: null, belt: null }, 
-                    potions: 0, potionCount: 0, mineGrid: [] 
-                };
-                users[id] = { pw, data };
-            }
-            currentUser = id;
-            if(document.getElementById('auto-login').checked) localStorage.setItem('game_auto_user', id);
-            localStorage.setItem('game_users', JSON.stringify(users));
-            MainEngine.enterGame();
-        },
-
-        enterGame: () => {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
-            MainEngine.updateUI();
-        },
-
-        logout: () => {
-            MainEngine.stopAllIntervals();
-            localStorage.removeItem('game_auto_user');
-            location.reload();
-        },
-
-        saveGame: () => {
-            if(currentUser && data) {
-                const users = JSON.parse(localStorage.getItem('game_users') || "{}");
-                users[currentUser].data = data;
-                localStorage.setItem('game_users', JSON.stringify(users));
-            }
-        },
-
-        // UI 통합 업데이트 (스탯 계산 포함)
-        updateUI: () => {
-            if(!data) return;
-            const stats = MainEngine.getFinalStats();
-            
-            // 상단 바 업데이트
-            document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-            document.getElementById('hp-val').innerText = Math.floor(data.hp);
-            document.getElementById('hp-max').innerText = Math.floor(stats.hp);
-            document.getElementById('hp-fill').style.width = (data.hp / stats.hp * 100) + '%';
-            document.getElementById('user-lv').innerText = data.level;
-            
-            // 정보창 업데이트
-            const infoAtk = document.getElementById('info-atk');
-            if(infoAtk) {
-                infoAtk.innerText = Math.floor(stats.atk).toLocaleString();
-                document.getElementById('info-def').innerText = Math.floor(stats.def).toLocaleString();
-                document.getElementById('info-hp').innerText = Math.floor(stats.hp).toLocaleString();
-            }
-            
-            MainEngine.renderInventory();
-            MainEngine.saveGame();
-        },
-
-        // 스탯 계산 공식 적용 (Database.js 참조)
-        getFinalStats: () => {
-            let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
-            let bDef = GameDatabase.USER_STATS.CALC_DEF(data.level);
-            let bHP = GameDatabase.USER_STATS.CALC_HP(data.level);
-            
-            let fAtk = bAtk, fDef = bDef, fHP = bHP;
-            const eq = data.equipment;
-            
-            if(eq.weapon) fAtk = GameDatabase.ENHANCE_FORMULA.weapon(bAtk, eq.weapon.k, eq.weapon.en);
-            if(eq.armor)  fDef = GameDatabase.ENHANCE_FORMULA.armor(bDef, eq.armor.k, eq.armor.en);
-            if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
-            
-            return { atk: fAtk, def: fDef, hp: fHP };
-        },
-
-        // 인벤토리 렌더링 (장착/강화/판매 연동)
-        renderInventory: () => {
-            const list = document.getElementById('inventory-list');
-            if(!list) return;
-            list.innerHTML = '';
-            
-            data.inventory.forEach((it, idx) => {
-                const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-                const div = document.createElement('div');
-                div.className = 'item-card';
-                const img = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMzMzIi8+PC9zdmc+'">` : '<div class="item-icon">📦</div>';
-                
-                div.innerHTML = `
-                    ${img}
-                    <div style="flex:1;"><strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine)">[장착중]</span>' : ''}</div>
-                    <div style="display:flex; flex-direction:row; gap:4px; align-items:center;">
-                        <button class="item-btn" style="background:var(--money); color:black;" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
-                        <button class="item-btn" style="background:var(--hunt); color:white;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
-                        <button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>
-                    </div>`;
-                list.appendChild(div);
-            });
-        },
-
-        toggleEquip: (idx) => {
-            const it = data.inventory[idx];
-            // 같은 아이템 클릭 시 해제, 다른 아이템 클릭 시 교체장착
-            if(data.equipment[it.type] && data.equipment[it.type].id === it.id) {
-                data.equipment[it.type] = null;
-            } else {
-                data.equipment[it.type] = it;
-            }
-            
-            // 벨트 해제 등으로 최대체력 감소 시 보정
-            const stats = MainEngine.getFinalStats();
-            if(data.hp > stats.hp) data.hp = stats.hp;
-            MainEngine.updateUI();
-        },
-
-        confirmSell: (idx) => {
-            if(confirm("정말로 판매하시겠습니까?")) {
-                const it = data.inventory[idx];
-                data.gold += Math.floor(it.p * 0.5);
-                
-                // 장착 중인 템이면 장착 해제
-                if(data.equipment[it.type] && data.equipment[it.type].id === it.id) {
-                    data.equipment[it.type] = null;
-                }
-                
-                data.inventory.splice(idx, 1);
-                if(upIdx === idx) { upIdx = -1; MainEngine.resetUpgradeUI(); }
-                MainEngine.updateUI();
-            }
-        },
-
-        // 강화 페이지로 바로 이동
-        goToUpgrade: (idx) => {
-            showPage('page-upgrade');
-            UpgradeSystem.selectUpgrade(idx);
-        },
-
-        sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
-        fullHeal: () => { data.hp = MainEngine.getFinalStats().hp; MainEngine.updateUI(); alert("체력 회복 완료!"); },
-        
-        // 인벤토리 팝업 모달
-        openInventoryModal: () => {
-            document.getElementById('inv-modal').style.display = 'block';
-            const mList = document.getElementById('modal-item-list');
-            mList.innerHTML = '';
-            data.inventory.forEach((it, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'main-menu-btn';
-                btn.innerText = `${it.name} +${it.en}`;
-                btn.onclick = () => { UpgradeSystem.selectUpgrade(idx); MainEngine.closeModal(); };
-                mList.appendChild(btn);
-            });
-        },
-        closeModal: () => { document.getElementById('inv-modal').style.display = 'none'; },
-
-        // 강화 UI 초기화
-        resetUpgradeUI: () => {
-            document.getElementById('upgrade-target-display').innerText = '선택하세요.';
-            document.getElementById('btn-up-exec').disabled = true;
-            document.getElementById('btn-up-sell').style.display = 'none';
-            document.getElementById('up-chance').innerText = '0';
-            document.getElementById('up-break').innerText = '0';
-        },
-
-        // 레벨업 체크
-        checkLevelUp: () => { 
-            let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
-            while(data.exp >= next) {
-                data.exp -= next;
-                data.level++;
-                next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
-                alert(`축하합니다! Lv.${data.level}로 레벨업 하셨습니다!`);
-            }
-            MainEngine.updateUI();
-        },
-
-        // 페이지 이동 시 모든 인터벌 중지 (안전 장치)
-        stopAllIntervals: () => {
-            if(autoTimer) {
-                clearInterval(autoTimer);
-                autoTimer = null;
-            }
-            // 강화 버튼 상태 복구
-            const autoBtn = document.getElementById('auto-btn');
-            if(autoBtn) autoBtn.innerText = '자동 강화 시작';
+        } catch (e) {
+            console.error("초기화 에러:", e);
+            localStorage.clear(); // 에러 발생 시 데이터 초기화 후 새로고침
         }
-    };
+    },
 
-    /* ==========================================
-       [공통 전역 함수]
-       ========================================== */
-    function showPage(id) {
-        // 페이지 이동 시 실행 중인 모든 작업(자동강화, 전투) 중지
-        MainEngine.stopAllIntervals();
+    handleLogin: () => {
+        const id = document.getElementById('login-id').value;
+        const pw = document.getElementById('login-pw').value;
+        if(!id || !pw) return alert("정보를 입력하세요.");
+
+        const users = JSON.parse(localStorage.getItem('game_users') || "{}");
+        if(users[id]) {
+            if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
+            data = users[id].data;
+        } else {
+            // 초기 데이터 세팅
+            data = { 
+                level: 1, exp: 0, gold: 10000, hp: 100, 
+                inventory: [], 
+                equipment: { weapon: null, armor: null, belt: null }, 
+                potions: 0, potionCount: 0, mineGrid: [] 
+            };
+            users[id] = { pw, data };
+        }
+        currentUser = id;
+        if(document.getElementById('auto-login').checked) localStorage.setItem('game_auto_user', id);
+        localStorage.setItem('game_users', JSON.stringify(users));
+        MainEngine.enterGame();
+    },
+
+    enterGame: () => {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        MainEngine.updateUI();
+    },
+
+    saveGame: () => {
+        if(currentUser && data) {
+            const users = JSON.parse(localStorage.getItem('game_users') || "{}");
+            users[currentUser].data = data;
+            localStorage.setItem('game_users', JSON.stringify(users));
+        }
+    },
+
+    updateUI: () => {
+        if(!data) return;
+        const stats = MainEngine.getFinalStats();
         
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        const target = document.getElementById(id);
-        if(target) target.classList.add('active');
+        // 상단 바 정보 업데이트
+        document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
+        document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp));
+        document.getElementById('hp-max').innerText = Math.floor(stats.hp);
         
+        // HP 바 & 경험치 바 (NaN 방지)
+        const hpPer = (data.hp / stats.hp * 100) || 0;
+        document.getElementById('hp-fill').style.width = hpPer + '%';
+        
+        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+        const expPer = (data.exp / nextExp * 100) || 0;
+        document.getElementById('exp-fill').style.width = expPer + '%';
+        document.getElementById('user-lv').innerText = data.level;
+        
+        // 내 정보 창
+        const infoAtk = document.getElementById('info-atk');
+        if(infoAtk) {
+            infoAtk.innerText = Math.floor(stats.atk).toLocaleString();
+            document.getElementById('info-def').innerText = Math.floor(stats.def).toLocaleString();
+            document.getElementById('info-hp').innerText = Math.floor(stats.hp).toLocaleString();
+        }
+        
+        MainEngine.renderInventory();
+        MainEngine.saveGame();
+    },
+
+    getFinalStats: () => {
+        // Database.js 가 정상 로드되었는지 확인
+        if (typeof GameDatabase === 'undefined') return { atk: 10, def: 5, hp: 100 };
+
+        let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
+        let bDef = GameDatabase.USER_STATS.CALC_DEF(data.level);
+        let bHP = GameDatabase.USER_STATS.CALC_HP(data.level);
+        
+        let fAtk = bAtk, fDef = bDef, fHP = bHP;
+        const eq = data.equipment;
+        
+        if(eq.weapon) fAtk = GameDatabase.ENHANCE_FORMULA.weapon(bAtk, eq.weapon.k, eq.weapon.en);
+        if(eq.armor)  fDef = GameDatabase.ENHANCE_FORMULA.armor(bDef, eq.armor.k, eq.armor.en);
+        if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
+        
+        return { atk: fAtk, def: fDef, hp: fHP };
+    },
+
+    checkLevelUp: () => {
+        let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+        let lvUp = false;
+        while(data.exp >= next) {
+            data.exp -= next;
+            data.level++;
+            next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+            lvUp = true;
+        }
+        if(lvUp) {
+            alert(`Level Up! 현재 레벨: ${data.level}`);
+            MainEngine.updateUI();
+        }
+    },
+
+    renderInventory: () => {
+        const list = document.getElementById('inventory-list');
+        if(!list) return;
+        list.innerHTML = '';
+        data.inventory.forEach((it, idx) => {
+            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <div class="item-icon">📦</div>
+                <div style="flex:1;"><strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine)">[E]</span>' : ''}</div>
+                <div style="display:flex; gap:4px;">
+                    <button class="item-btn" style="background:var(--money);" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+                    <button class="item-btn" style="background:var(--hunt); color:white;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                </div>`;
+            list.appendChild(div);
+        });
+    },
+
+    goToUpgrade: (idx) => {
+        showPage('page-upgrade');
+        if (typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx);
+    },
+
+    toggleEquip: (idx) => {
+        const it = data.inventory[idx];
+        if(data.equipment[it.type] && data.equipment[it.type].id === it.id) data.equipment[it.type] = null;
+        else data.equipment[it.type] = it;
         MainEngine.updateUI();
     }
+};
 
-    function addLog(m, c) {
-        const l = document.getElementById('log-container');
-        if(!l) return;
-        l.innerHTML = `<div style="color:${c}">> ${m}</div>` + l.innerHTML;
-    }
-    
-    // 게임 시작
-    window.onload = MainEngine.init;
-</script>
+// 페이지 전환 시 인터벌 청소
+function showPage(id) {
+    if(autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(id);
+    if(target) target.classList.add('active');
+    MainEngine.updateUI();
+}
+
+window.onload = MainEngine.init;
