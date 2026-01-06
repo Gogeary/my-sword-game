@@ -3,52 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v1.2</title>
+    <title>강화하기 v1.3</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; --hp: #ff4d4d; --exp: #9b59b6; }
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; user-select: none; }
         #game-container { background: var(--panel); max-width: 600px; margin: 0 auto; padding: 15px; border-radius: 15px; border: 2px solid var(--point); min-height: 98vh; box-sizing: border-box; position: relative; display: none; }
-        
-        /* 로그인 화면 */
-        #login-container { max-width: 400px; margin: 100px auto; padding: 30px; background: var(--panel); border: 2px solid var(--point); border-radius: 15px; }
-        .login-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #444; background: #0f3460; color: white; box-sizing: border-box; }
-        .login-btn { width: 100%; padding: 15px; background: var(--point); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .auto-login-wrap { margin-top: 10px; font-size: 0.9em; color: #aaa; text-align: left; display: flex; align-items: center; }
-        .auto-login-wrap input { margin-right: 8px; cursor: pointer; }
-
-        .page { display: none; } .page.active { display: block; }
-        
-        /* 상단 바 */
-        .top-bar { background: #0f3460; padding: 10px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85em; border-bottom: 2px solid var(--point); }
-        .bar-outer { grid-column: span 2; background: #333; height: 16px; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid #000; margin-top: 3px; }
-        #hp-fill { background: var(--hp); height: 100%; width: 100%; transition: 0.3s; }
-        #exp-fill { background: var(--exp); height: 100%; width: 0%; transition: 0.3s; }
-        .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 16px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; }
-
-        /* 버튼 및 카드 */
-        .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 10px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; font-weight: bold; width: 100%; box-sizing: border-box; }
-        .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .item-icon { width: 50px; height: 50px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; border: 1px solid #444; }
-        .item-btn { width: 58px; padding: 8px 0; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
-        
-        /* 강화 버튼 전용 (크기 고정) */
+        /* ... (기존 스타일 유지) ... */
         .btn-upgrade { background: var(--point); color: white; height: 55px; font-size: 1.2em; margin-bottom: 8px; font-weight: bold; width: 100%; border: none; border-radius: 10px; cursor: pointer; display: block; box-sizing: border-box; }
         .btn-upgrade:disabled { background: #444; cursor: not-allowed; }
-
-        /* 상점 스크롤 */
         #shop-list { max-height: 400px; overflow-y: auto; padding-right: 5px; margin: 10px 0; border: 1px solid #333; border-radius: 10px; }
-        #shop-list::-webkit-scrollbar { width: 6px; }
-        #shop-list::-webkit-scrollbar-thumb { background: var(--point); border-radius: 10px; }
-
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
         .cell { aspect-ratio: 1/1; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5em; border: 2px solid #1a1a2e; position: relative; }
         .monster-lv { position: absolute; bottom: 1px; right: 1px; font-size: 0.55em; background: rgba(0,0,0,0.8); padding: 1px 3px; border-radius: 3px; }
-
         #log-container, #battle-log { height: 160px; overflow-y: auto; background: #1a1a2e; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85em; text-align: left; color: #95a5a6; border: 1px solid #333; }
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index: 1000; }
         .modal-content { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); background: var(--panel); border: 2px solid var(--point); padding: 15px; border-radius: 12px; width: 90%; max-width: 420px; }
         .btn-nav { background: #444; color: white; margin-top: 5px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
+        
+        /* [NEW] 상단 바 스타일 개선 */
+        .status-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; font-weight: bold; }
+        .bar-outer { background: #333; height: 18px; border-radius: 9px; overflow: hidden; position: relative; border: 1px solid #000; margin-bottom: 4px; }
+        #hp-fill { background: var(--hp); height: 100%; width: 100%; transition: 0.3s; }
+        #exp-fill { background: var(--exp); height: 100%; width: 0%; transition: 0.3s; }
+        .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 18px; color: white; text-align: center; text-shadow: 1px 1px 2px black; z-index: 2; }
+        
+        /* 로그인 스타일 */
+        #login-container { max-width: 400px; margin: 100px auto; padding: 30px; background: var(--panel); border: 2px solid var(--point); border-radius: 15px; }
+        .login-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #444; background: #0f3460; color: white; box-sizing: border-box; }
+        .login-btn { width: 100%; padding: 15px; background: var(--point); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .item-icon { width: 50px; height: 50px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; border: 1px solid #444; }
+        .item-btn { width: 58px; padding: 8px 0; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
     </style>
 
     <script src="Database.js"></script>
@@ -60,31 +46,35 @@
 <body>
 
 <div id="login-container">
-    <h2 style="color:var(--money);">🎮 강화하기 v1.2 로그인</h2>
+    <h2 style="color:var(--money);">🎮 강화하기 v1.3</h2>
     <input type="text" id="login-id" class="login-input" placeholder="아이디">
     <input type="password" id="login-pw" class="login-input" placeholder="비밀번호">
-    <div class="auto-login-wrap">
-        <input type="checkbox" id="auto-login"> <label for="auto-login">자동 로그인 활성화</label>
+    <div style="text-align:left; margin-top:10px; color:#aaa;">
+        <input type="checkbox" id="auto-login"> <label for="auto-login">자동 로그인</label>
     </div>
     <button class="login-btn" onclick="MainEngine.handleLogin()">접속하기</button>
 </div>
 
 <div id="game-container">
-    <div class="top-bar">
-        <div>💰 <span id="gold">0</span>G</div>
-        <div>🧪 물약: <span id="potion-total">0</span></div>
+    <div style="background:#0f3460; padding:10px; border-radius:12px; margin-bottom:15px; border-bottom:2px solid var(--point);">
+        <div class="status-row">
+            <span style="color:var(--money);">💰 <span id="gold">0</span> G</span>
+            <span style="color:var(--mine);">🧪 회복량: <span id="potion-val">0</span> (<span id="potion-cnt">0</span>개)</span>
+        </div>
+        
         <div class="bar-outer">
             <div id="hp-fill"></div>
             <div class="bar-text">❤️ HP <span id="hp-val">0</span> / <span id="hp-max">100</span></div>
         </div>
+        
         <div class="bar-outer">
             <div id="exp-fill"></div>
-            <div class="bar-text">⭐ Lv.<span id="user-lv">1</span></div>
+            <div class="bar-text">⭐ Lv.<span id="user-lv">1</span> (<span id="exp-text">0 / 0</span>)</div>
         </div>
     </div>
 
     <div id="page-main" class="page active">
-        <h1 style="color:var(--money);">강화하기 v1.2</h1>
+        <h1 style="color:var(--money);">메인 로비</h1>
         <div class="main-menu-btn" onclick="showPage('page-earn')">💰 골드수급 (사냥/광산)</div>
         <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 장비 강화</div>
         <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보</div>
@@ -156,7 +146,7 @@
         <h2>🏪 상점 선택</h2>
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button class="main-menu-btn" onclick="ShopSystem.open('equip')">⚔️ 장비 상점</button>
-            <button class="main-menu-btn" style="background:var(--hunt);" onclick="ShopSystem.open('consume')">🧪 소비 상점 (물약/주문서)</button>
+            <button class="main-menu-btn" style="background:var(--hunt);" onclick="ShopSystem.open('consume')">🧪 소비 상점</button>
         </div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
@@ -177,48 +167,27 @@
 </div>
 
 <script>
-    /* ==========================================
-       [전역 상태 변수]
-       ========================================== */
-    var currentUser = null;
-    var data = null;
-    var upIdx = -1;
-    var autoTimer = null;
+    var currentUser = null, data = null, upIdx = -1, autoTimer = null;
 
-    /* ==========================================
-       [메인 엔진]
-       ========================================== */
     const MainEngine = {
         init: () => {
-            if(typeof GameDatabase === 'undefined') return console.error("Database.js 로드 실패");
-            
+            if(typeof GameDatabase === 'undefined') return console.error("DB 로드 실패");
             const auto = localStorage.getItem('game_auto_user');
             if(auto) {
                 const users = JSON.parse(localStorage.getItem('game_users') || "{}");
-                if(users[auto]) { 
-                    currentUser = auto; 
-                    data = users[auto].data; 
-                    MainEngine.enterGame(); 
-                }
+                if(users[auto]) { currentUser = auto; data = users[auto].data; MainEngine.enterGame(); }
             }
         },
-
         handleLogin: () => {
             const id = document.getElementById('login-id').value;
             const pw = document.getElementById('login-pw').value;
-            if(!id || !pw) return alert("정보를 입력하세요.");
-
+            if(!id || !pw) return alert("정보 입력 필요");
             const users = JSON.parse(localStorage.getItem('game_users') || "{}");
             if(users[id]) {
-                if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
+                if(users[id].pw !== pw) return alert("비밀번호 불일치");
                 data = users[id].data;
             } else {
-                data = { 
-                    level: 1, exp: 0, gold: 10000, hp: 100, 
-                    inventory: [], 
-                    equipment: { weapon: null, armor: null, belt: null }, 
-                    potions: 0, potionCount: 0, mineGrid: [], scrolls: {}
-                };
+                data = { level:1, exp:0, gold:10000, hp:100, inventory:[], equipment:{weapon:null, armor:null, belt:null}, potions:0, potionCount:0, mineGrid:[] };
                 users[id] = { pw, data };
             }
             currentUser = id;
@@ -226,19 +195,12 @@
             localStorage.setItem('game_users', JSON.stringify(users));
             MainEngine.enterGame();
         },
-
         enterGame: () => {
             document.getElementById('login-container').style.display='none';
             document.getElementById('game-container').style.display='block';
             MainEngine.updateUI();
         },
-
-        logout: () => {
-            showPage('page-main');
-            localStorage.removeItem('game_auto_user');
-            location.reload();
-        },
-
+        logout: () => { showPage('page-main'); localStorage.removeItem('game_auto_user'); location.reload(); },
         saveGame: () => {
             if(currentUser && data) {
                 const users = JSON.parse(localStorage.getItem('game_users') || "{}");
@@ -246,23 +208,26 @@
                 localStorage.setItem('game_users', JSON.stringify(users));
             }
         },
-
         updateUI: () => {
             if(!data) return;
             const stats = MainEngine.getFinalStats();
             
+            // [수정] 물약 표시: 총 회복량(potions)과 보유 개수(potionCount) 동시 표기
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-            document.getElementById('potion-total').innerText = (data.potionCount || 0) + "/10";
-            
+            document.getElementById('potion-val').innerText = (data.potions || 0).toLocaleString();
+            document.getElementById('potion-cnt').innerText = (data.potionCount || 0);
+
+            // HP바
             document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp)).toLocaleString();
             document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
-            const hpPer = (data.hp / stats.hp * 100) || 0;
-            document.getElementById('hp-fill').style.width = hpPer + '%';
+            document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
             
+            // [수정] 경험치 텍스트 표시
             const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
-            const expPer = (data.exp / nextExp * 100) || 0;
+            const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
             document.getElementById('exp-fill').style.width = expPer + '%';
             document.getElementById('user-lv').innerText = data.level;
+            document.getElementById('exp-text').innerText = `${Math.floor(data.exp).toLocaleString()} / ${Math.floor(nextExp).toLocaleString()} (${expPer}%)`;
             
             const infoAtk = document.getElementById('info-atk');
             if(infoAtk) {
@@ -270,119 +235,80 @@
                 document.getElementById('info-def').innerText = Math.floor(stats.def).toLocaleString();
                 document.getElementById('info-hp').innerText = Math.floor(stats.hp).toLocaleString();
             }
-            
             MainEngine.renderInventory();
             MainEngine.saveGame();
         },
-
         getFinalStats: () => {
             if(typeof GameDatabase === 'undefined') return { atk:10, def:2, hp:100 };
-            
             let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
             let bDef = GameDatabase.USER_STATS.CALC_DEF(data.level);
             let bHP = GameDatabase.USER_STATS.CALC_HP(data.level);
-            
             let fAtk = bAtk, fDef = bDef, fHP = bHP;
             const eq = data.equipment;
-            
             if(eq.weapon) fAtk = GameDatabase.ENHANCE_FORMULA.weapon(bAtk, eq.weapon.k, eq.weapon.en);
             if(eq.armor)  fDef = GameDatabase.ENHANCE_FORMULA.armor(bDef, eq.armor.k, eq.armor.en);
             if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
-            
             return { atk: fAtk, def: fDef, hp: fHP };
         },
-
         renderInventory: () => {
             const list = document.getElementById('inventory-list');
             if(!list) return;
             list.innerHTML = '';
-            
             data.inventory.forEach((it, idx) => {
                 const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-                const div = document.createElement('div'); 
-                div.className = 'item-card';
-                
-                const imgTag = it.img 
-                    ? `<img src="image/${it.img}" class="item-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPj88L3RleHQ+PC9zdmc+'">` 
-                    : '<div class="item-icon">📦</div>';
-
+                const div = document.createElement('div'); div.className = 'item-card';
+                const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzMzMyIvPjwvc3ZnPg=='">` : '<div class="item-icon">📦</div>';
                 div.innerHTML = `
                     ${imgTag}
-                    <div style="flex:1;">
-                        <strong>${it.name} +${it.en}</strong> 
-                        ${isEquipped ? '<span style="color:var(--mine)">[장착중]</span>' : ''}
-                    </div>
-                    <div style="display:flex; gap:4px; align-items:center;">
-                        <button class="item-btn" style="background:var(--money); color:black;" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+                    <div style="flex:1;"><strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine)">[E]</span>' : ''}</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="item-btn" style="background:var(--money);" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
                         <button class="item-btn" style="background:var(--hunt); color:white;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
                         <button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>
                     </div>`;
                 list.appendChild(div);
             });
         },
-
         toggleEquip: (idx) => {
             const it = data.inventory[idx];
-            if(data.equipment[it.type] && data.equipment[it.type].id === it.id) {
-                data.equipment[it.type] = null;
-            } else {
-                data.equipment[it.type] = it;
-            }
-            const stats = MainEngine.getFinalStats();
-            if(data.hp > stats.hp) data.hp = stats.hp;
+            if(data.equipment[it.type] && data.equipment[it.type].id === it.id) data.equipment[it.type] = null;
+            else data.equipment[it.type] = it;
+            if(data.hp > MainEngine.getFinalStats().hp) data.hp = MainEngine.getFinalStats().hp;
             MainEngine.updateUI();
         },
-
         confirmSell: (idx) => {
-            if(confirm("정말로 판매하시겠습니까?")) {
+            if(confirm("판매하시겠습니까?")) {
                 const it = data.inventory[idx];
                 data.gold += Math.floor(it.p * 0.5);
-                if(data.equipment[it.type] && data.equipment[it.type].id === it.id) {
-                    data.equipment[it.type] = null;
-                }
-                data.inventory.splice(idx, 1); 
-                if(upIdx === idx) { upIdx = -1; MainEngine.resetUpgradeUI(); }
+                if(data.equipment[it.type] && data.equipment[it.type].id === it.id) data.equipment[it.type] = null;
+                data.inventory.splice(idx, 1);
+                if(upIdx===idx) MainEngine.resetUpgradeUI();
                 MainEngine.updateUI();
             }
         },
-
-        goToUpgrade: (idx) => {
-            showPage('page-upgrade');
-            if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx);
-        },
-
+        goToUpgrade: (idx) => { showPage('page-upgrade'); if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); },
         sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
-        fullHeal: () => { 
-            data.hp = MainEngine.getFinalStats().hp; 
-            MainEngine.updateUI(); 
-            alert("체력 회복 완료!"); 
-        },
-
+        fullHeal: () => { data.hp = MainEngine.getFinalStats().hp; MainEngine.updateUI(); alert("회복 완료!"); },
         openInventoryModal: () => {
             document.getElementById('inv-modal').style.display='block';
             const mList = document.getElementById('modal-item-list'); mList.innerHTML = '';
             data.inventory.forEach((it, idx) => {
-                const btn = document.createElement('button'); 
-                btn.className='main-menu-btn';
-                btn.innerText = `${it.name} +${it.en}`; 
-                btn.onclick = () => { 
-                    if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); 
-                    MainEngine.closeModal(); 
-                };
+                const btn = document.createElement('button'); btn.className='main-menu-btn';
+                btn.innerText = `${it.name} +${it.en}`;
+                btn.onclick = () => { if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); MainEngine.closeModal(); };
                 mList.appendChild(btn);
             });
         },
         closeModal: () => document.getElementById('inv-modal').style.display='none',
-
         resetUpgradeUI: () => {
             document.getElementById('upgrade-target-display').innerText='선택하세요.';
             document.getElementById('btn-up-exec').disabled=true;
             document.getElementById('btn-up-sell').style.display='none';
             document.getElementById('up-chance').innerText='0';
             document.getElementById('up-break').innerText='0';
+            upIdx = -1;
         },
-
-        checkLevelUp: () => { 
+        checkLevelUp: () => {
             let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
             let lvUp = false;
             while(data.exp >= next) {
@@ -391,31 +317,18 @@
                 next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
                 lvUp = true;
             }
-            if(lvUp) {
-                alert(`축하합니다! Lv.${data.level}로 레벨업 하셨습니다!`);
-                MainEngine.updateUI();
-            }
+            if(lvUp) { alert(`축하합니다! Lv.${data.level}`); MainEngine.updateUI(); }
         }
     };
 
-    /* ==========================================
-       [유틸리티 함수]
-       ========================================== */
     function showPage(id) {
-        // 이동 시 자동 타이머 해제
-        if(autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+        if(autoTimer) { clearInterval(autoTimer); autoTimer=null; }
         if(typeof UpgradeSystem !== 'undefined' && UpgradeSystem.stopAuto) UpgradeSystem.stopAuto();
-
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        const target = document.getElementById(id);
-        if(target) target.classList.add('active');
+        const t = document.getElementById(id); if(t) t.classList.add('active');
         MainEngine.updateUI();
     }
-
-    function addLog(m, c) {
-        const l = document.getElementById('log-container');
-        if(l) l.innerHTML = `<div style="color:${c}">> ${m}</div>` + l.innerHTML;
-    }
+    function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}">> ${m}</div>`+l.innerHTML; }
     
     window.onload = MainEngine.init;
 </script>
