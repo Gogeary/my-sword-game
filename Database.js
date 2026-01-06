@@ -1,71 +1,62 @@
 /* ==========================================
-   [강화하기 vx.x] 시스템 통합 데이터베이스
+   [강화하기 vx.x] 시스템 통합 데이터베이스 (최종 보완본)
    ========================================== */
 
 const GameDatabase = {
     // 1. 초기 시스템 설정 및 경제 밸런스
     SYSTEM: {
         TITLE: "강화하기 vx.x",
-        START_GOLD: 10000,           // 초기 자금
-        EMERGENCY_GOLD: 1000,        // 긴급 구제 금액 (1000G 미만 시)
-        MAX_ENHANCE: 10,             // 최대 강화 단계
-        AUTO_ENHANCE_SPEED: 100,     // 자동 강화 간격 (0.1초)
-        COMBAT_SPEED: 100,           // 전투 턴 간격 (0.1초)
-        MAX_POTION_CAPACITY: 10,     // 포션 최대 소지 개수
-        IMAGE_PATH: "image/"         // 리소스 폴더 구조
+        START_GOLD: 10000,
+        EMERGENCY_GOLD: 1000,
+        MAX_ENHANCE: 10,
+        AUTO_ENHANCE_SPEED: 100, // 0.1초
+        COMBAT_SPEED: 100,       // 0.1초
+        MAX_POTION_CAPACITY: 10, // 최대 소지 개수
+        IMAGE_PATH: "image/"
     },
 
-    // 2. 유저 성장 공식 (Level-up System)
+    // 2. 유저 성장 공식
     USER_STATS: {
         BASE: { ATK: 10, DEF: 2, HP: 100 },
-        // 경험치 공식: Level * 100 * 1.4
         GET_NEXT_EXP: (lv) => lv * 100 * 1.4,
-        // 레벨업 시 기본 능력치 상승 공식
         CALC_ATK: (lv) => 10 + 0.5 * Math.pow(lv - 1, 1.2),
         CALC_DEF: (lv) => 2 + 0.1 * Math.pow(lv - 1, 1.1),
         CALC_HP: (lv) => 100 + 5 * Math.pow(lv - 1, 1.3)
     },
 
-    // 3. 장비 데이터 테이블 (Equipment)
-    // 부위별 강화 효율 공식 포함
+    // 3. 장비 데이터 테이블
     EQUIPMENT: [
         { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
         { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
         { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
-        
         { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' },
         { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
         { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
-        
         { lv: 10, name: '철 검', k: 1.4, p: 100000, type: 'weapon' },
         { lv: 10, name: '질긴 옷', k: 1.3, p: 100000, type: 'armor' },
         { lv: 10, name: '질긴 벨트', k: 1.5, p: 100000, type: 'belt' },
-        
         { lv: 15, name: '강철 검', k: 1.7, p: 500000, type: 'weapon' },
         { lv: 15, name: '가죽 옷', k: 1.6, p: 500000, type: 'armor' },
         { lv: 15, name: '가죽 벨트', k: 1.9, p: 500000, type: 'belt' },
-        
         { lv: 20, name: '연마된 강철 검', k: 2.1, p: 1500000, type: 'weapon' },
         { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 1500000, type: 'armor' },
         { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 1500000, type: 'belt' },
-        
         { lv: 25, name: '은빛 강철 검', k: 2.7, p: 3500000, type: 'weapon' },
         { lv: 25, name: '비늘 갑옷', k: 2.5, p: 3500000, type: 'armor' },
         { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 3500000, type: 'belt' },
-        
         { lv: 30, name: '은 검', k: 3.5, p: 8000000, type: 'weapon' },
         { lv: 30, name: '강철 갑옷', k: 3.2, p: 8000000, type: 'armor' },
         { lv: 30, name: '용병 벨트', k: 4.5, p: 8000000, type: 'belt' }
     ],
 
-    // 강화 수치 적용 공식 (base: 유저 기본 스탯, k: 장비상수, en: 강화단계)
+    // 강화 수치 적용 공식
     ENHANCE_FORMULA: {
         weapon: (base, k, en) => base * k * (1 + 0.2 * Math.pow(en, 1.1)),
         armor:  (base, k, en) => base * k * (1 + 0.5 * en),
         belt:   (base, k, en) => base * k * (1 + 0.1 * Math.pow(en, 1.25))
     },
 
-    // 4. 소비 아이템 데이터 (Consumables)
+    // 4. 소비 아이템
     CONSUMABLES: {
         potions: [
             { id: 1, n: '최하급 포션', r: 100, p: 2000, img: 'health_potion_1.png' },
@@ -81,7 +72,7 @@ const GameDatabase = {
         ]
     },
 
-    // 5. 몬스터 스펙 기준표 (Monster Stages)
+    // 5. 몬스터 스펙 기준표
     MONSTER_STAGES: [
         { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,   exp: 10 },
         { lv: 5,  hp: 380,  atk: 35,  def: 8,   gold: 1000,  exp: 50 },
@@ -92,7 +83,7 @@ const GameDatabase = {
         { lv: 30, hp: 7500, atk: 550, def: 180, gold: 50000, exp: 500 }
     ],
 
-    // 6. 광산 시스템 설정 (Mining)
+    // 6. 광산 시스템 설정
     MINES: [
         { name: '고갈된 광산', cost: 1000, rates: [0.4, 0.4, 0.2, 0, 0, 0] },
         { name: '무너진 광산', cost: 10000, rates: [0.4, 0.2, 0.3, 0.1, 0, 0] },
