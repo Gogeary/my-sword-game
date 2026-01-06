@@ -1,49 +1,59 @@
 /* ==========================================
    [Enhancement_System.js] 
-   강화 로직, 비용 계산, 확률 제어, UI 연동 (최종 수정본)
+   강화 로직, 비용 계산, 확률 제어, UI 연동
    ========================================== */
 
 const UpgradeSystem = {
-    // 1. 단계별 성공/파괴 확률 반환 (v1.2 사양)
-    getRates: (currentEn) => {
+    // 1. 성공/파괴 확률 (v1.2 사양 유지)
+    getRates: (en) => {
         let success = 100;
         let destroy = 0;
 
-        // [성공 확률] 
-        // 0~9강: 단계당 6%씩 감소 (최소 40%)
-        // 10강: 40% 고정
-        // 11강 이상: 30% 고정
-        if (currentEn < 10) {
-            success = Math.max(40, 100 - (currentEn * 6));
-        } else if (currentEn === 10) {
+        // 성공 확률
+        if (en < 10) {
+            success = Math.max(40, 100 - (en * 6));
+        } else if (en === 10) {
             success = 40;
         } else {
             success = 30;
         }
 
-        // [파괴 확률]
-        // 10강까지 0%
-        // 11강부터 5%로 시작하여 단계당 5%씩 증가
-        if (currentEn >= 11) {
-            destroy = 5 + (currentEn - 11) * 5;
+        // 파괴 확률 (11강부터 발생)
+        if (en >= 11) {
+            destroy = 5 + (en - 11) * 5;
         }
 
         return { success, destroy };
     },
 
-    // 2. 강화 비용 계산 공식 (복리 증가)
+    // 2. [비용 계산 수정] 
+    // - 5강까지(0~4) 고정 비용
+    // - 6강 도전(5)부터 1.2배씩 증가
+    // - 11강(11)부터 1.8배씩 증가
     getCost: (it) => {
-        // 공식: 아이템가격 * (1.6 ^ 현재강화수치)
-        // 예: 1000원 아이템 -> 0강: 1000원, 1강: 1600원, 2강: 2560원 ...
-        return Math.floor(it.p * Math.pow(1.6, it.en));
+        const baseCost = Math.floor(it.p * 0.3); // 기본가: 아이템 가격의 30%
+
+        if (it.en < 5) {
+            // [0~4강] 비용 고정
+            return baseCost;
+        } 
+        else if (it.en < 11) {
+            // [5~10강] 6강 도전부터 1.2배씩 증가
+            // en=5일 때 1.2^1, en=6일 때 1.2^2 ...
+            return Math.floor(baseCost * Math.pow(1.2, it.en - 4));
+        } 
+        else {
+            // [11강 이상] 1.8배씩 증가 (비용 급증 구간)
+            // 10강까지의 1.2배 증가분(1.2^6)을 기본으로 깔고, 1.8배씩 추가
+            const costAt10 = baseCost * Math.pow(1.2, 6);
+            return Math.floor(costAt10 * Math.pow(1.8, it.en - 10));
+        }
     },
 
-    // 3. 강화 실행 로직 (핵심)
+    // 3. 강화 실행
     try: () => {
-        // [안전 장치] 데이터가 없거나 선택된 아이템이 없으면 실행 중단
+        // 데이터 및 예외 처리
         if (typeof data === 'undefined' || !data || upIdx === -1) return;
-        
-        // 아이템이 인벤토리에서 사라졌는지 체크 (판매 등)
         if (!data.inventory[upIdx]) {
             if (typeof MainEngine !== 'undefined') MainEngine.resetUpgradeUI();
             return;
@@ -53,112 +63,91 @@ const UpgradeSystem = {
         const rates = UpgradeSystem.getRates(it.en);
         const cost = UpgradeSystem.getCost(it);
 
-        // [비용 체크]
+        // 비용 부족 체크
         if (data.gold < cost) {
-            UpgradeSystem.stopAuto(); // 자동 강화 중이라면 중지
+            UpgradeSystem.stopAuto();
             return alert("강화 비용이 부족합니다.");
         }
 
-        // 비용 차감
+        // 비용 차감 및 확률 계산
         data.gold -= cost;
         const rand = Math.random() * 100;
 
-        // --- 결과 판정 ---
         if (rand < rates.success) {
             // [성공]
             it.en++;
             addLog(`[성공] ${it.name} +${it.en} 강화 성공!`, 'var(--mine)');
         } else {
-            // [실패] -> 파괴 확률 체크
             const failRand = Math.random() * 100;
-            
             if (failRand < rates.destroy) {
                 // [파괴]
                 addLog(`[파괴] 강화 실패로 '${it.name}' 소멸...`, 'var(--point)');
                 
-                // 중요: 장착 중인 아이템이었다면 장착 해제 처리
+                // 장착 해제
                 if (data.equipment[it.type] && data.equipment[it.type].id === it.id) {
                     data.equipment[it.type] = null;
                 }
 
-                // 인벤토리에서 삭제
                 data.inventory.splice(upIdx, 1);
-                upIdx = -1; // 선택 인덱스 초기화
+                upIdx = -1;
                 
-                // UI 리셋
                 if (typeof MainEngine !== 'undefined') MainEngine.resetUpgradeUI();
-                UpgradeSystem.stopAuto(); // 자동 강화 중지
+                UpgradeSystem.stopAuto();
             } else {
-                // [단계 하락] (최소 0강까지만)
-                const prevEn = it.en;
+                // [실패] 단계 하락
+                const prev = it.en;
                 it.en = Math.max(0, it.en - 1);
-                addLog(`[실패] 강화 실패 (단계 하락: +${prevEn} ➔ +${it.en})`, '#aaa');
+                addLog(`[실패] 강화 실패 (단계 하락: +${prev} ➔ +${it.en})`, '#aaa');
             }
         }
 
-        // [UI 업데이트]
+        // UI 갱신
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
-        
-        // 아이템이 파괴되지 않고 남아있다면, 강화창 정보(비용, 확률) 갱신
         if (upIdx !== -1) UpgradeSystem.selectUpgrade(upIdx);
     },
 
-    // 4. 아이템 선택 및 UI 표시 (버튼 크기 수정 포함)
+    // 4. UI 표시 및 갱신
     selectUpgrade: (idx) => {
-        // 데이터 유효성 체크
-        if (typeof data === 'undefined' || !data.inventory[idx]) return;
+        if (!data || !data.inventory[idx]) return;
 
-        upIdx = idx; // 전역 변수 upIdx 갱신
+        upIdx = idx;
         const it = data.inventory[idx];
         const rates = UpgradeSystem.getRates(it.en);
         const cost = UpgradeSystem.getCost(it);
 
-        // DOM 요소 가져오기
-        const display = document.getElementById('upgrade-target-display');
-        const btn = document.getElementById('btn-up-exec');
-        const sellBtn = document.getElementById('btn-up-sell');
-        const chanceEl = document.getElementById('up-chance');
-        const breakEl = document.getElementById('up-break');
+        const d = document.getElementById('upgrade-target-display');
+        const b = document.getElementById('btn-up-exec');
+        const s = document.getElementById('btn-up-sell');
 
-        // [UI 갱신]
-        if (display) display.innerHTML = `<strong>${it.name} +${it.en}</strong>`;
-        
-        if (btn) {
-            btn.innerText = `강화하기 (${cost.toLocaleString()}G)`;
-            btn.disabled = false;
-            
-            // [CSS 강제 적용] 버튼 크기가 줄어들지 않도록 고정
-            btn.style.width = "100%";
-            btn.style.height = "55px";
-            btn.style.display = "block"; 
+        if (d) d.innerHTML = `<strong>${it.name} +${it.en}</strong>`;
+        if (b) {
+            b.innerText = `강화하기 (${cost.toLocaleString()}G)`;
+            b.disabled = false;
+            // 버튼 스타일 고정
+            b.style.width = "100%";
+            b.style.height = "55px";
+            b.style.display = "block";
         }
+        if (s) s.style.display = 'block';
 
-        // 판매 버튼 보이기
-        if (sellBtn) sellBtn.style.display = 'block';
-
-        // 확률 텍스트 갱신
-        if (chanceEl) chanceEl.innerText = Math.floor(rates.success);
-        if (breakEl) breakEl.innerText = rates.destroy;
+        document.getElementById('up-chance').innerText = Math.floor(rates.success);
+        document.getElementById('up-break').innerText = rates.destroy;
     },
 
-    // 5. 자동 강화 제어
+    // 5. 자동 강화
     startAuto: () => {
-        if (typeof autoTimer !== 'undefined' && autoTimer) {
-            UpgradeSystem.stopAuto();
-        } else {
-            // 전역 변수 autoTimer에 인터벌 할당 (속도: 0.1초)
+        if (autoTimer) UpgradeSystem.stopAuto();
+        else {
             autoTimer = setInterval(UpgradeSystem.try, 100);
-            const btn = document.getElementById('auto-btn');
-            if (btn) btn.innerText = '중단';
+            document.getElementById('auto-btn').innerText = '중단';
         }
     },
 
     stopAuto: () => {
-        if (typeof autoTimer !== 'undefined' && autoTimer) {
+        if (autoTimer) {
             clearInterval(autoTimer);
             autoTimer = null;
         }
-        const btn = document.getElementById('auto-btn');
-        if (btn) btn.innerText = '자동 강화 시작';
+        document.getElementById('auto-btn').innerText = '자동 강화 시작';
     }
 };
