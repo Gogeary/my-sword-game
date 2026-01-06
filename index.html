@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v1.5 (Fixed)</title>
+    <title>강화하기 v1.5</title>
     <style>
         /* [필수] 레이아웃 깨짐 방지 초기화 */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -296,9 +296,14 @@
 
             const stats = MainEngine.getFinalStats();
             
+            // [수정] 물약 정보 계산 (인벤토리 기반)
+            const potions = data.inventory.filter(i => i.type === 'potion');
+            const totalPotionHeal = potions.reduce((sum, p) => sum + (p.val || 0), 0);
+            const potionCount = potions.length;
+
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-            document.getElementById('potion-val').innerText = (data.potions || 0).toLocaleString();
-            document.getElementById('potion-cnt').innerText = (data.potionCount || 0);
+            document.getElementById('potion-val').innerText = totalPotionHeal.toLocaleString();
+            document.getElementById('potion-cnt').innerText = potionCount;
 
             document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp)).toLocaleString();
             document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
@@ -431,7 +436,3 @@
 </script>
 </body>
 </html>
-
-
-
-
