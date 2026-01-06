@@ -18,7 +18,7 @@ const UpgradeSystem = {
             success = 30;
         }
 
-        // 파괴 확률 (11강부터 발생)
+        // 파괴 확률 (11강부터 로직이 있지만, 10강 제한으로 인해 실제로는 발동 안 함)
         if (en >= 11) {
             destroy = 5 + (en - 11) * 5;
         }
@@ -26,10 +26,7 @@ const UpgradeSystem = {
         return { success, destroy };
     },
 
-    // 2. [비용 계산 수정] 
-    // - 5강까지(0~4) 고정 비용
-    // - 6강 도전(5)부터 1.2배씩 증가
-    // - 11강(11)부터 1.8배씩 증가
+    // 2. 비용 계산
     getCost: (it) => {
         const baseCost = Math.floor(it.p * 0.3); // 기본가: 아이템 가격의 30%
 
@@ -39,12 +36,10 @@ const UpgradeSystem = {
         } 
         else if (it.en < 11) {
             // [5~10강] 6강 도전부터 1.2배씩 증가
-            // en=5일 때 1.2^1, en=6일 때 1.2^2 ...
             return Math.floor(baseCost * Math.pow(1.2, it.en - 4));
         } 
         else {
-            // [11강 이상] 1.8배씩 증가 (비용 급증 구간)
-            // 10강까지의 1.2배 증가분(1.2^6)을 기본으로 깔고, 1.8배씩 추가
+            // [11강 이상] (10강 제한으로 인해 실제로는 계산될 일 없음)
             const costAt10 = baseCost * Math.pow(1.2, 6);
             return Math.floor(costAt10 * Math.pow(1.8, it.en - 10));
         }
@@ -60,6 +55,13 @@ const UpgradeSystem = {
         }
 
         const it = data.inventory[upIdx];
+
+        // [수정] 최대 강화 수치(+10) 제한 로직 추가
+        if (it.en >= 10) {
+            UpgradeSystem.stopAuto(); // 자동 강화 중이라면 중지
+            return alert("최대 강화 수치(+10)에 도달했습니다!");
+        }
+
         const rates = UpgradeSystem.getRates(it.en);
         const cost = UpgradeSystem.getCost(it);
 
@@ -77,6 +79,13 @@ const UpgradeSystem = {
             // [성공]
             it.en++;
             addLog(`[성공] ${it.name} +${it.en} 강화 성공!`, 'var(--mine)');
+            
+            // 성공 후 바로 10강이 되었다면 축하 메시지 및 자동 종료
+            if (it.en >= 10) {
+                UpgradeSystem.stopAuto();
+                alert(`축하합니다! ${it.name} +10강 달성!`);
+            }
+
         } else {
             const failRand = Math.random() * 100;
             if (failRand < rates.destroy) {
@@ -121,8 +130,15 @@ const UpgradeSystem = {
 
         if (d) d.innerHTML = `<strong>${it.name} +${it.en}</strong>`;
         if (b) {
-            b.innerText = `강화하기 (${cost.toLocaleString()}G)`;
-            b.disabled = false;
+            // 이미 10강이면 버튼 비활성화 또는 텍스트 변경
+            if (it.en >= 10) {
+                b.innerText = `최대 강화 달성 (+10)`;
+                b.disabled = true;
+            } else {
+                b.innerText = `강화하기 (${cost.toLocaleString()}G)`;
+                b.disabled = false;
+            }
+            
             // 버튼 스타일 고정
             b.style.width = "100%";
             b.style.height = "55px";
