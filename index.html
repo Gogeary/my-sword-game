@@ -412,7 +412,223 @@
     };
     const stopAuto = () => { clearInterval(autoTimer); autoTimer = null; document.getElementById('auto-btn').innerText = '자동 강화 (+10강)'; };
 
-    /* (상점, 광산, 사냥 로직 생략 - v1.0과 동일) */
+/* ==========================================
+       4. 사냥 및 전투 시스템 (턴제 자동 전투)
+       ========================================== */
+    const getMonsterStats = (lv) => {
+        const MON_BASE = [
+            { lv: 1, hp: 280, atk: 25, def: 5, gold: 100, exp: 10 },
+            { lv: 5, hp: 380, atk: 35, def: 8, gold: 1000, exp: 50 },
+            { lv: 10, hp: 650, atk: 55, def: 15, gold: 7000, exp: 100 },
+            { lv: 15, hp: 1200, atk: 95, def: 30, gold: 10000, exp: 150 },
+            { lv: 20, hp: 2200, atk: 160, def: 55, gold: 15000, exp: 200 },
+            { lv: 25, hp: 4200, atk: 300, def: 100, gold: 30000, exp: 300 },
+            { lv: 30, hp: 7500, atk: 550, def: 180, gold: 50000, exp: 500 }
+        ];
+
+        let low = MON_BASE[0], high = MON_BASE[MON_BASE.length - 1];
+        for (let i = 0; i < MON_BASE.length - 1; i++) {
+            if (lv >= MON_BASE[i].lv && lv <= MON_BASE[i + 1].lv) {
+                low = MON_BASE[i]; high = MON_BASE[i + 1]; break;
+            }
+        }
+        const ratio = (lv - low.lv) / (high.lv - low.lv || 1);
+        const lerp = (a, b) => a + (b - a) * ratio;
+        return {
+            lv,
+            hp: lerp(low.hp, high.hp),
+            atk: lerp(low.atk, high.atk),
+            def: lerp(low.def, high.def),
+            gold: lerp(low.gold, high.gold),
+            exp: lerp(low.exp, high.exp)
+        };
+    };
+
+    const scanHunt = () => {
+        const grid = document.getElementById('hunt-grid');
+        grid.innerHTML = '';
+        for (let i = 0; i < 5; i++) {
+            const lv = Math.max(1, data.level + Math.floor(Math.random() * 11) - 5);
+            const m = getMonsterStats(lv);
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.innerHTML = `👾<span class="monster-lv">Lv.${lv}</span>`;
+            cell.onclick = () => startBattle(m);
+            grid.appendChild(cell);
+        }
+    };
+
+    const startBattle = (m) => {
+        if (data.hp <= 0) return alert('치료소에서 회복이 필요합니다!');
+        const logBox = document.getElementById('battle-log');
+        logBox.innerHTML = `[시스템] Lv.${m.lv} 몬스터와 조우했습니다.<br>`;
+        const pStats = getFinalStats();
+        let mHP = m.hp;
+
+        const battleItv = setInterval(() => {
+            const calcDmg = (a, d) => (a >= d) ? (a * 2 - d) : (Math.pow(a, 2) / d);
+            
+            // 유저 턴
+            const pDmg = Math.floor(calcDmg(pStats.atk, m.def));
+            mHP -= pDmg;
+            logBox.innerHTML = `유저는 공격했다. ${pDmg}의 데미지 (남은 적 체력 : ${Math.max(0, Math.floor(mHP))})<br>` + logBox.innerHTML;
+            
+            if (mHP <= 0) {
+                clearInterval(battleItv);
+                data.gold += m.gold;
+                data.exp += m.exp;
+                logBox.innerHTML = `<span style="color:var(--money)">승리! 획득 골드 +${Math.floor(m.gold)}G, 획득 경험치 +${Math.floor(m.exp)}EXP</span><br>` + logBox.innerHTML;
+                checkLevelUp();
+                updateUI();
+                saveGame();
+                return;
+            }
+
+            // 몬스터 턴
+            const mDmg = Math.floor(calcDmg(m.atk, pStats.def));
+            data.hp -= mDmg;
+            
+            // 물약 자동 사용 로직
+            if (data.potions > 0 && data.hp < pStats.hp) {
+                const healAmt = Math.min(mDmg, data.potions);
+                data.hp += healAmt;
+                data.potions -= healAmt;
+                if (data.potions <= 0) data.potionCount = 0;
+            }
+            
+            logBox.innerHTML = `공격받았다. ${mDmg}의 데미지 (남은 체력 : ${Math.max(0, Math.floor(data.hp))})<br>` + logBox.innerHTML;
+            
+            if (data.hp <= 0) {
+                clearInterval(battleItv);
+                data.hp = 0;
+                logBox.innerHTML = `<span style="color:red">패배... 마을로 후퇴합니다.</span><br>` + logBox.innerHTML;
+                updateUI();
+                saveGame();
+            }
+        }, 100);
+    };
+
+    const checkLevelUp = () => {
+        const getNextExp = lv => lv * 100 * 1.4;
+        while (data.exp >= getNextExp(data.level)) {
+            data.exp -= getNextExp(data.level);
+            data.level++;
+            alert(`레벨업! 현재 Lv.${data.level}입니다.`);
+        }
+    };
+
+    /* ==========================================
+       5. 광산 시스템 (4x4 그리드 채굴)
+       ========================================== */
+    const enterMine = (tier) => {
+        const cost = MINE_DATA[tier].p;
+        if (data.gold < cost) return alert('골드가 부족합니다!');
+        data.gold -= cost;
+        data.currentMineTier = tier;
+        generateMine();
+        showPage('page-mine-play');
+        updateUI();
+        saveGame();
+    };
+
+    const generateMine = () => {
+        const rates = MINE_DATA[data.currentMineTier].rates;
+        data.mineGrid = [];
+        for (let i = 0; i < 16; i++) {
+            const r = Math.random();
+            let acc = 0, type = 0;
+            for (let j = 0; j < rates.length; j++) {
+                acc += rates[j];
+                if (r < acc) { type = j; break; }
+            }
+            data.mineGrid.push(type);
+        }
+        renderMine();
+    };
+
+    const renderMine = () => {
+        const grid = document.getElementById('mine-grid');
+        grid.innerHTML = '';
+        let oresLeft = false;
+        data.mineGrid.forEach((idx, i) => {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            const ore = ORE_INFO[idx];
+            cell.innerText = ore.s;
+            if (idx > 0) {
+                oresLeft = true;
+                cell.onclick = () => {
+                    data.gold += ore.v;
+                    data.mineGrid[i] = 0;
+                    renderMine(); updateUI(); saveGame();
+                };
+            }
+            grid.appendChild(cell);
+        });
+        document.getElementById('mine-refresh').style.display = oresLeft ? 'none' : 'block';
+    };
+
+    const refreshMine = () => enterMine(data.currentMineTier);
+
+    /* ==========================================
+       6. 상점 시스템 (장비 및 소비 아이템)
+       ========================================== */
+    const openShop = (cat) => {
+        showPage('page-shop-detail');
+        const list = document.getElementById('shop-list');
+        list.innerHTML = '';
+        if (cat === 'equip') {
+            document.getElementById('shop-title').innerText = '장비 상점';
+            EQUIP_DB.forEach(proto => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                const imgHtml = proto.img ? `<img src="image/${proto.img}" class="item-icon">` : '<div class="item-icon">?</div>';
+                card.innerHTML = `${imgHtml}<div style="flex:1;"><strong>${proto.name}</strong> (Lv.${proto.lv})<br>${proto.p.toLocaleString()}G</div>
+                    <button class="item-btn" style="background:var(--money); color:black;" onclick="buyItem('equip', ${JSON.stringify(proto).replace(/"/g, '&quot;')})">구매</button>`;
+                list.appendChild(card);
+            });
+        } else {
+            document.getElementById('shop-title').innerText = '소비 상점';
+            // 물약 리스트
+            const potTiers = [{n:'최하급',r:100,p:2000},{n:'하급',r:1000,p:20000},{n:'중급',r:5000,p:100000},{n:'상급',r:10000,p:200000},{n:'최상급',r:50000,p:1000000}];
+            potTiers.forEach((p, i) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `<img src="image/health_potion_${i+1}.png" class="item-icon"><div style="flex:1;"><strong>${p.n} 물약</strong> (회복:${p.r.toLocaleString()})<br>${p.p.toLocaleString()}G</div>
+                    <button class="item-btn" style="background:var(--mine); color:black;" onclick="buyItem('potion', ${p.r}, ${p.p})">구매</button>`;
+                list.appendChild(card);
+            });
+            // 방지권 리스트
+            const scrolls = [{n:'하급 방지권',t:1,p:100000},{n:'중급 방지권',t:2,p:500000},{n:'상급 방지권',t:3,p:2000000}];
+            scrolls.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `<img src="image/scroll_${s.t}.png" class="item-icon"><div style="flex:1;"><strong>${s.n}</strong><br>${s.p.toLocaleString()}G</div>
+                    <button class="item-btn" style="background:var(--hunt); color:white;" onclick="buyItem('scroll', ${s.t}, ${s.p})">구매</button>`;
+                list.appendChild(card);
+            });
+        }
+    };
+
+    const buyItem = (type, v1, v2) => {
+        if (type === 'equip') {
+            if (data.gold < v1.p) return alert('골드가 부족합니다!');
+            data.gold -= v1.p;
+            data.inventory.push({ ...v1, en: 0, id: Date.now() + Math.random() });
+        } else if (type === 'potion') {
+            if (data.gold < v2) return alert('골드가 부족합니다!');
+            if (data.potionCount >= 10) return alert('최대 10개 소지 가능!');
+            data.gold -= v2;
+            data.potions += v1;
+            data.potionCount += 1;
+        } else {
+            if (data.gold < v2) return alert('골드가 부족합니다!');
+            data.gold -= v2;
+            data.scrolls['item' + v1]++;
+        }
+        updateUI();
+        saveGame();
+    };
     const showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); updateUI(); saveGame(); };
     const closeModal = () => document.getElementById('inv-modal').style.display = 'none';
     const openInventoryModal = () => { 
@@ -450,3 +666,4 @@
 </script>
 </body>
 </html>
+
