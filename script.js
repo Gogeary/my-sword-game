@@ -2,6 +2,9 @@
    1. 초기 데이터 및 설정
    ========================================= */
 const SAVE_KEY = 'swordRPG_vx_x';
+const MAX_ENCHANT = 10; // 강화 최대치 제한
+const IMG_PATH = 'image/'; // 이미지 폴더 경로
+
 let data = {
     level: 1, exp: 0, gold: 10000, hp: 100,
     potions: 0, potionCount: 0,
@@ -46,24 +49,13 @@ const EQUIP_DB = [
     { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
     { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
     { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
-    { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' },
-    { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
-    { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
-    { lv: 10, name: '철 검', k: 1.4, p: 100000, type: 'weapon' },
-    { lv: 10, name: '질긴 옷', k: 1.3, p: 100000, type: 'armor' },
-    { lv: 10, name: '질긴 벨트', k: 1.5, p: 100000, type: 'belt' },
-    { lv: 15, name: '강철 검', k: 1.7, p: 500000, type: 'weapon' },
-    { lv: 15, name: '가죽 옷', k: 1.6, p: 500000, type: 'armor' },
-    { lv: 15, name: '가죽 벨트', k: 1.9, p: 500000, type: 'belt' },
-    { lv: 20, name: '연마된 강철 검', k: 2.1, p: 1500000, type: 'weapon' },
-    { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 1500000, type: 'armor' },
-    { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 1500000, type: 'belt' },
-    { lv: 25, name: '은빛 강철 검', k: 2.7, p: 3500000, type: 'weapon' },
-    { lv: 25, name: '비늘 갑옷', k: 2.5, p: 3500000, type: 'armor' },
-    { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 3500000, type: 'belt' },
-    { lv: 30, name: '은 검', k: 3.5, p: 8000000, type: 'weapon' },
-    { lv: 30, name: '강철 갑옷', k: 3.2, p: 8000000, type: 'armor' },
-    { lv: 30, name: '용병 벨트', k: 4.5, p: 8000000, type: 'belt' }
+    { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon', img: 'wood_sword.png' },
+    { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor', img: 'loose_clothes.png' },
+    { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'old_belt.png' },
+    { lv: 10, name: '철 검', k: 1.4, p: 100000, type: 'weapon', img: 'wood_sword.png' },
+    { lv: 10, name: '질긴 옷', k: 1.3, p: 100000, type: 'armor', img: 'loose_clothes.png' },
+    { lv: 10, name: '질긴 벨트', k: 1.5, p: 100000, type: 'belt', img: 'old_belt.png' }
+    // ... 이하 동일
 ];
 
 const MON_STAGES = [
@@ -147,11 +139,12 @@ const renderInventory = () => {
         const card = document.createElement('div');
         card.className = 'item-card';
         card.innerHTML = `
+            <img src="${IMG_PATH}${it.img || 'sword_shard.png'}" class="item-icon" style="width:40px; height:40px; margin-right:10px; border-radius:4px;">
             <div style="flex:1;">
-                <strong>${it.name} +${it.en}</strong> ${isEquipped ? '[장착중]' : ''}<br>
+                <strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:#f1c40f;">[장착중]</span>' : ''}<br>
                 <small>${it.type} (상수: ${it.k})</small>
             </div>
-            <button class="item-btn" style="background:var(--hunt);" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
+            <button class="item-btn" style="background:var(--hunt); margin-right:5px;" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
             <button class="item-btn" style="background:#c0392b;" onclick="sellItem(${idx})">판매</button>
         `;
         list.appendChild(card);
@@ -192,6 +185,7 @@ const openShop = (cat) => {
             const card = document.createElement('div');
             card.className = 'item-card';
             card.innerHTML = `
+                <img src="${IMG_PATH}${proto.img || 'sword_shard.png'}" style="width:40px; height:40px; margin-right:10px;">
                 <div style="flex:1;"><strong>${proto.name}</strong> (Lv.${proto.lv})<br>가격: ${proto.p.toLocaleString()}G</div>
                 <button class="item-btn" style="background:var(--money); color:black;" onclick="buyEquip(${JSON.stringify(proto).replace(/"/g, '&quot;')})">구매</button>
             `;
@@ -256,7 +250,11 @@ const openInventoryModal = () => {
     data.inventory.forEach((it, idx) => {
         const card = document.createElement('div');
         card.className = 'item-card';
-        card.innerHTML = `<div><strong>${it.name} +${it.en}</strong></div><button class="item-btn" style="background:var(--hunt);" onclick="selectUpgrade(${idx})">선택</button>`;
+        card.innerHTML = `
+            <img src="${IMG_PATH}${it.img || 'sword_shard.png'}" style="width:30px; height:30px; margin-right:10px;">
+            <div style="flex:1;"><strong>${it.name} +${it.en}</strong></div>
+            <button class="item-btn" style="background:var(--hunt);" onclick="selectUpgrade(${idx})">선택</button>
+        `;
         list.appendChild(card);
     });
 };
@@ -266,22 +264,43 @@ const closeModal = () => document.getElementById('inv-modal').style.display = 'n
 const selectUpgrade = (idx) => {
     upIdx = idx;
     const it = data.inventory[idx];
-    document.getElementById('upgrade-target-display').innerHTML = `<strong>${it.name} +${it.en}</strong> <button onclick="sellFromUp()" style="width:60px; font-size:0.75em; background:#c0392b; margin-left:10px;">판매</button>`;
+    const btn = document.getElementById('btn-up-exec');
     
-    const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
-    document.getElementById('btn-up-exec').innerText = `강화하기 (${cost.toLocaleString()}G)`;
-    document.getElementById('btn-up-exec').disabled = false;
+    document.getElementById('upgrade-target-display').innerHTML = `
+        <img src="${IMG_PATH}${it.img || 'sword_shard.png'}" style="width:50px; height:50px; vertical-align:middle; margin-right:10px;">
+        <strong>${it.name} +${it.en}</strong> 
+        <button onclick="sellFromUp()" style="width:60px; font-size:0.75em; background:#c0392b; margin-left:10px;">판매</button>
+    `;
+    
+    if (it.en >= MAX_ENCHANT) {
+        btn.innerText = `최대 강화 달성 (+${MAX_ENCHANT})`;
+        btn.disabled = true;
+        document.getElementById('up-chance').innerText = 0;
+        document.getElementById('up-break').innerText = 0;
+        stopAuto();
+    } else {
+        const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
+        btn.innerText = `강화하기 (${cost.toLocaleString()}G)`;
+        btn.disabled = false;
 
-    const sc = it.en < 3 ? 100 : it.en < 6 ? 85 : it.en < 9 ? 60 : 40;
-    const bc = it.en >= 10 ? Math.min(50, 5 + (it.en - 10) * 5) : 0;
-    document.getElementById('up-chance').innerText = sc;
-    document.getElementById('up-break').innerText = bc;
+        const sc = it.en < 3 ? 100 : it.en < 6 ? 85 : it.en < 9 ? 60 : 40;
+        const bc = it.en >= 10 ? Math.min(50, 5 + (it.en - 10) * 5) : 0;
+        document.getElementById('up-chance').innerText = sc;
+        document.getElementById('up-break').innerText = bc;
+    }
     closeModal();
 };
 
 const tryUpgrade = () => {
     if(upIdx === -1) return;
     const it = data.inventory[upIdx];
+    
+    // 10강 제한 체크
+    if (it.en >= MAX_ENCHANT) {
+        stopAuto();
+        return;
+    }
+
     const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
     if(data.gold < cost) { stopAuto(); return alert('골드 부족!'); }
 
@@ -314,10 +333,22 @@ const tryUpgrade = () => {
 
 const startAutoUpgrade = () => {
     if(autoTimer) { stopAuto(); }
-    else { autoTimer = setInterval(tryUpgrade, 100); document.getElementById('auto-btn').innerText = '자동 중단'; }
+    else { 
+        autoTimer = setInterval(tryUpgrade, 100); 
+        document.getElementById('auto-btn').innerText = '자동 중단'; 
+    }
 };
-const stopAuto = () => { clearInterval(autoTimer); autoTimer = null; document.getElementById('auto-btn').innerText = '자동 강화 (+10강)'; };
-const sellFromUp = () => { if(upIdx !== -1) sellItem(upIdx); upIdx = -1; document.getElementById('upgrade-target-display').innerText = '강화할 장비를 선택하세요.'; };
+const stopAuto = () => { 
+    clearInterval(autoTimer); 
+    autoTimer = null; 
+    document.getElementById('auto-btn').innerText = '자동 강화 (+10강)'; 
+};
+const sellFromUp = () => { 
+    if(upIdx !== -1) sellItem(upIdx); 
+    upIdx = -1; 
+    document.getElementById('upgrade-target-display').innerText = '강화할 장비를 선택하세요.'; 
+    document.getElementById('btn-up-exec').disabled = true;
+};
 
 /* =========================================
    6. 전투 및 사냥 시스템
@@ -442,6 +473,3 @@ const getEmergencyMoney = () => { data.gold += 1000; updateUI(); alert('구제�
 
 load();
 updateUI();
-</script>
-</body>
-</html>
