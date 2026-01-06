@@ -3,44 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v2.0</title>
+    <title>강화하기 vx.x</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; --hp: #ff4d4d; --exp: #9b59b6; }
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; user-select: none; }
         #game-container { background: var(--panel); max-width: 600px; margin: 0 auto; padding: 15px; border-radius: 15px; border: 2px solid var(--point); min-height: 98vh; box-sizing: border-box; position: relative; }
         .page { display: none; } .page.active { display: block; }
         
-        /* 상단 고정 스탯바 */
+        /* 상단 바 */
         .top-bar { background: #0f3460; padding: 10px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85em; border-bottom: 2px solid var(--point); }
         .bar-outer { grid-column: span 2; background: #333; height: 16px; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid #000; margin-top: 3px; }
         #hp-fill { background: var(--hp); height: 100%; width: 100%; transition: 0.3s; }
         #exp-fill { background: var(--exp); height: 100%; width: 0%; transition: 0.3s; }
         .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 16px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; }
 
-        /* 메뉴 버튼 */
+        /* 메뉴 */
         .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 10px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; }
         .main-menu-btn:hover { background: var(--point); transform: scale(1.02); }
 
-        /* 아이템 & 인벤토리 */
-        .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; border: 1px solid transparent; }
-        .equipped { border-color: var(--money); background: rgba(241, 196, 15, 0.1); }
-        .item-icon { width: 40px; height: 40px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; }
-        .item-btn { width: 65px; padding: 8px; font-size: 0.8em; margin-left: 4px; border-radius: 5px; font-weight: bold; }
+        /* 아이템 리스트 */
+        #shop-list, #inventory-list, #modal-item-list { max-height: 400px; overflow-y: auto; padding: 5px; }
+        .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .item-icon { width: 45px; height: 45px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; }
+        .item-btn { width: 70px; padding: 8px; font-size: 0.8em; margin-left: 4px; border-radius: 5px; font-weight: bold; }
 
         /* 강화 UI */
         #upgrade-target-display { min-height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px; border: 1px dashed #555; }
         .btn-upgrade { background: var(--point); color: white; height: 50px; font-size: 1.1em; margin-bottom: 5px; }
-        .btn-upgrade:disabled { background: #555; cursor: not-allowed; }
-        #log-container { height: 100px; overflow-y: auto; background: #1a1a2e; border-radius: 8px; padding: 8px; margin: 8px 0; font-size: 0.8em; text-align: left; color: #95a5a6; border: 1px solid #333; }
+        #log-container { height: 150px; overflow-y: auto; background: #1a1a2e; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85em; text-align: left; color: #95a5a6; border: 1px solid #333; }
         
         /* 전투 및 그리드 */
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; }
-        .cell { aspect-ratio: 1/1; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2em; border: 2px solid #1a1a2e; position: relative; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
+        .cell { aspect-ratio: 1/1; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5em; border: 2px solid #1a1a2e; position: relative; }
         .monster-lv { position: absolute; bottom: 1px; right: 1px; font-size: 0.55em; background: rgba(0,0,0,0.8); padding: 1px 3px; border-radius: 3px; }
 
         /* 모달 */
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index: 1000; }
-        .modal-content { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); background: var(--panel); border: 2px solid var(--point); padding: 15px; border-radius: 12px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; }
+        .modal-content { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); background: var(--panel); border: 2px solid var(--point); padding: 15px; border-radius: 12px; width: 90%; max-width: 420px; }
 
         button { padding: 10px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; width: 100%; transition: 0.2s; }
         .btn-nav { background: #444; color: white; margin-top: 5px; }
@@ -52,39 +52,40 @@
 <div id="game-container">
     <div class="top-bar">
         <div>💰 <span id="gold">0</span>G</div>
-        <div><img src="image/sword_shard.png" style="width:12px; vertical-align:middle;"> <span id="shards">0</span></div>
+        <div>🧪 물약: <span id="potion-total">0</span> (<span id="potion-count">0</span>/10)</div>
         <div class="bar-outer">
             <div id="hp-fill"></div>
             <div class="bar-text">❤️ HP <span id="hp-val">100</span> / <span id="hp-max">100</span></div>
         </div>
         <div class="bar-outer">
             <div id="exp-fill"></div>
-            <div class="bar-text">⭐ Lv.<span id="user-lv">1</span> (<span id="exp-val">0</span> / <span id="exp-max">140</span>)</div>
+            <div class="bar-text">⭐ Lv.<span id="user-lv">1</span> (<span id="exp-val">0</span> / <span id="exp-next">140</span>)</div>
         </div>
-        <div id="emergency-btn" class="emergency-btn" onclick="getEmergencyMoney()">🆘 골드 부족! 긴급 구제 (1,000G)</div>
+        <div id="emergency-btn" class="emergency-btn" onclick="getEmergencyMoney()">🆘 긴급 구제 (1,000G)</div>
     </div>
 
     <div id="page-main" class="page active">
-        <h1 style="color:var(--money); margin-bottom:15px; font-size:1.5em;">강화하기 v2.0</h1>
-        <div class="main-menu-btn" onclick="showPage('page-earn')">💰 골드 수급<br><small>사냥터 & 광산</small></div>
-        <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 강화 하기<br><small>장비 선택 및 강화</small></div>
-        <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보<br><small>인벤토리 & 상세 스펙</small></div>
+        <h1 style="color:var(--money); margin-bottom:15px; font-size:1.5em;">강화하기 vx.x</h1>
+        <div class="main-menu-btn" onclick="showPage('page-earn')">💰 골드수급</div>
+        <div class="main-menu-btn" onclick="showPage('page-upgrade')">🔨 강화하기</div>
+        <div class="main-menu-btn" onclick="showPage('page-info')">👤 내 정보</div>
+        <div class="main-menu-btn" style="background:#c0392b;" onclick="fullHeal()">🏥 치료소 (전체 회복)</div>
         <div class="main-menu-btn" style="background:#222;" onclick="showPage('page-shop-select')">🛒 상점</div>
     </div>
 
     <div id="page-earn" class="page">
-        <h2>💰 골드 수급</h2>
-        <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt')">⚔️ 사냥터 입장</button>
-        <button class="main-menu-btn" style="background:var(--mine); color:black;" onclick="showPage('page-mine-select')">⛏️ 광산 입장</button>
+        <h2>💰 골드수급</h2>
+        <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt')">⚔️ 사냥터</button>
+        <button class="main-menu-btn" style="background:var(--mine); color:black;" onclick="showPage('page-mine-select')">⛏️ 광산</button>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="page-info" class="page">
         <h2>👤 내 정보</h2>
         <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:12px; text-align:left; font-size:0.9em;">
-            <p>⚔️ 최종 공격력: <span id="info-atk" style="color:var(--point);">0</span></p>
-            <p>🛡️ 최종 방어력: <span id="info-def" style="color:var(--hunt);">0</span></p>
-            <p>❤️ 최종 체력: <span id="info-hp" style="color:var(--hp);">0</span></p>
+            <p>⚔️ 공격력 (ATK): <span id="info-atk">0</span></p>
+            <p>🛡️ 방어력 (DEF): <span id="info-def">0</span></p>
+            <p>❤️ 최대 체력: <span id="info-hp">0</span></p>
         </div>
         <h3>🎒 인벤토리</h3>
         <div id="inventory-list"></div>
@@ -93,64 +94,60 @@
 
     <div id="page-upgrade" class="page">
         <h2>🔨 장비 강화</h2>
-        <div id="upgrade-target-display">
-            <span style="opacity:0.6;">강화할 장비를 선택하세요.</span>
-        </div>
-        <button onclick="openInventoryModal()" style="background:var(--hunt); margin-bottom:10px; font-size:0.9em;">📦 인벤토리 열기</button>
-
+        <div id="upgrade-target-display">강화할 장비를 선택하세요.</div>
+        <button onclick="openInventoryModal()" style="background:var(--hunt); margin-bottom:10px; font-size:0.9em;">📦 인벤토리 팝업</button>
         <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; margin-bottom:8px; text-align:left; font-size:0.8em;">
             <h4 style="margin:0 0 5px 0; color:var(--money);">🛡️ 방지권 선택</h4>
             <label><input type="radio" name="prot" value="0" checked> 미사용</label>
-            <label><input type="radio" name="prot" value="1"> 하급(<span id="inv-1">0</span>)</label>
-            <label><input type="radio" name="prot" value="2"> 중급(<span id="inv-2">0</span>)</label>
-            <label><input type="radio" name="prot" value="3"> 상급(<span id="inv-3">0</span>)</label>
+            <label><input type="radio" name="prot" value="1"> 하급(<span id="inv-scroll-1">0</span>)</label>
+            <label><input type="radio" name="prot" value="2"> 중급(<span id="inv-scroll-2">0</span>)</label>
+            <label><input type="radio" name="prot" value="3"> 상급(<span id="inv-scroll-3">0</span>)</label>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9em; font-weight:bold;">
             <span style="color:#4ecca3;">성공 <span id="up-chance">0</span>%</span>
             <span style="color:var(--point);">파괴 <span id="up-break">0</span>%</span>
         </div>
         <button class="btn-upgrade" id="btn-up-exec" onclick="tryUpgrade()" disabled>강화하기 (0G)</button>
-        <button class="btn-nav" style="background:#3498db; margin-bottom: 5px;" id="auto-btn" onclick="startAutoUpgrade()">자동 강화 (+10강)</button>
+        <button class="btn-nav" style="background:#3498db;" id="auto-btn" onclick="startAutoUpgrade()">자동 강화 (+10강)</button>
         <div id="log-container">시스템: 준비 완료.</div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
-    <div id="page-shop-select" class="page">
-        <h2>🛒 상점</h2>
-        <button class="main-menu-btn" style="background:#d35400;" onclick="openShop('equip')">⚔️ 장비 상점</button>
-        <button class="main-menu-btn" style="background:#27ae60;" onclick="openShop('item')">📜 소비 상점</button>
-        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
-    </div>
-    <div id="page-shop-detail" class="page">
-        <h2 id="shop-title">상점</h2>
-        <div id="shop-list"></div>
-        <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 뒤로가기</button>
-    </div>
-
     <div id="page-hunt" class="page">
-        <h2 style="color:var(--hunt);">⚔️ 사냥터</h2>
-        <div id="hunt-main">
-            <button onclick="scanHunt()" style="background:var(--hunt); color:white; margin-bottom:10px;">📡 몬스터 탐색 (5,000G)</button>
-            <div id="hunt-grid" class="grid-5"></div>
-            <div id="hunt-log" style="height: 120px; overflow-y: auto; background: #111; border-radius: 8px; padding: 10px; font-size: 0.8em; text-align: left; margin-top: 10px; color: #ccc;">전투 대기 중...</div>
-            <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
-        </div>
-        </div>
+        <h2>⚔️ 사냥터</h2>
+        <button onclick="scanHunt()" style="background:var(--hunt); color:white; margin-bottom:10px;">📡 몬스터 탐색</button>
+        <div id="hunt-grid" class="grid-5"></div>
+        <div id="battle-log" style="height: 200px; overflow-y: auto; background: #111; border-radius: 8px; padding: 10px; font-size: 0.85em; text-align: left; margin-top: 10px; color: #ccc;">전투 대기 중...</div>
+        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
+    </div>
 
     <div id="page-mine-select" class="page">
         <h2>⛏️ 광산 선택</h2>
-        <div class="main-menu-btn" style="background:#7f8c8d;" onclick="enterMine(1)">1. 고갈된 광산 (1,000G)<br><small>🪨 40%, 🥉 20%</small></div>
-        <div class="main-menu-btn" style="background:#95a5a6;" onclick="enterMine(2)">2. 무너진 광산 (10,000G)<br><small>🪨 20%, 🥉 30%, 🥈 10%</small></div>
-        <div class="main-menu-btn" style="background:var(--mine); color:black;" onclick="enterMine(3)">3. 빛나는 광산 (100,000G)<br><small>🪨 10%, 🥉 20%, 🥈 25%, 🥇 5%</small></div>
-        <div class="main-menu-btn" style="background:#f1c40f; color:black;" onclick="enterMine(4)">4. 찬란한 광산 (500,000G)<br><small>🥈 20%, 🥇 15%, 💎 1%</small></div>
+        <button class="main-menu-btn" style="background:#7f8c8d;" onclick="enterMine(0)">1. 고갈된 광산 (1,000G)</button>
+        <button class="main-menu-btn" style="background:#95a5a6;" onclick="enterMine(1)">2. 무너진 광산 (10,000G)</button>
+        <button class="main-menu-btn" style="background:var(--mine); color:black;" onclick="enterMine(2)">3. 빛나는 광산 (100,000G)</button>
+        <button class="main-menu-btn" style="background:#f1c40f; color:black;" onclick="enterMine(3)">4. 찬란한 광산 (500,000G)</button>
         <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="page-mine-play" class="page">
-        <h2 id="mine-title">⛏️ 광맥 채굴</h2>
-        <div id="mine-grid" class="grid-5" style="grid-template-columns: repeat(4, 1fr);"></div>
-        <button id="mine-refresh-btn" onclick="refreshMine()" style="background:var(--mine); color:black; display:none;">새로운 광맥 탐색</button>
-        <button class="btn-nav" onclick="showPage('page-mine-select')">⬅️ 광산 나가기</button>
+        <h2 id="mine-title">채굴 중</h2>
+        <div id="mine-grid" class="grid-4"></div>
+        <button id="mine-refresh" class="btn-nav" style="background:var(--mine); color:black; display:none;" onclick="refreshMine()">새로운 광맥 탐색</button>
+        <button class="btn-nav" onclick="showPage('page-mine-select')">⬅️ 나가기</button>
+    </div>
+
+    <div id="page-shop-select" class="page">
+        <h2>🛒 상점</h2>
+        <button class="main-menu-btn" onclick="openShop('equip')">⚔️ 장비 상점</button>
+        <button class="main-menu-btn" onclick="openShop('consume')">🧪 소비 상점</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 뒤로가기</button>
+    </div>
+
+    <div id="page-shop-detail" class="page">
+        <h2 id="shop-title">상점</h2>
+        <div id="shop-list"></div>
+        <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="inv-modal" class="modal">
@@ -163,419 +160,499 @@
 </div>
 
 <script>
-    /* [v2.0 데이터 구조 - 초기 자금 10,000G] */
-    const SAVE_KEY = 'swordRPG_v2_0'; 
+    /* 데이터 구조 */
     let data = {
-        level: 1, exp: 0, gold: 10000, shards: 0, hp: 100,
+        level: 1, exp: 0, gold: 10000, hp: 100,
+        potions: 0, potionCount: 0,
         equipment: { weapon: null, armor: null, belt: null },
         inventory: [],
-        invScrolls: { item1: 0, item2: 0, item3: 0 },
-        currentMine: null, mineGrid: []
+        scrolls: { item1: 0, item2: 0, item3: 0 },
+        mineGrid: [], currentMineTier: -1
     };
 
-    let isAuto = false;
-    let upTargetIdx = -1;
-
-    /* [기본 능력치 공식] */
+    /* 기본 수치 공식 */
     const getBaseAtk = lv => 10 + 0.5 * Math.pow(lv - 1, 1.2);
     const getBaseDef = lv => 2 + 0.1 * Math.pow(lv - 1, 1.1);
-    const getBaseHP = lv => 100 + 5 * Math.pow(lv - 1, 1.3);
+    const getBaseMaxHP = lv => 100 + 5 * Math.pow(lv - 1, 1.3);
     const getNextExp = lv => lv * 100 * 1.4;
 
-    /* [장비 아이템 데이터] */
-    const ITEM_DB = [
-        { lv:1, type:'weapon', name:'나무 검', k:1.1, p:1000, img:'image/wood_sword.png' },
-        { lv:1, type:'armor', name:'헐거운 옷', k:1.0, p:1000, img:'image/loose_clothes.png' },
-        { lv:1, type:'belt', name:'낡은 벨트', k:1.0, p:1000, img:'image/old_belt.png' },
-        { lv:5, type:'weapon', name:'낡은 검', k:1.2, p:10000 },
-        { lv:5, type:'armor', name:'천 옷', k:1.1, p:10000 },
-        { lv:5, type:'belt', name:'천 벨트', k:1.2, p:10000 },
-        { lv:10, type:'weapon', name:'철 검', k:1.4, p:100000 },
-        { lv:10, type:'armor', name:'질긴 옷', k:1.3, p:100000 },
-        { lv:10, type:'belt', name:'질긴 벨트', k:1.5, p:100000 },
-        { lv:15, type:'weapon', name:'강철 검', k:1.7, p:500000 },
-        { lv:15, type:'armor', name:'가죽 옷', k:1.6, p:500000 },
-        { lv:15, type:'belt', name:'가죽 벨트', k:1.9, p:500000 },
-        { lv:20, type:'weapon', name:'연마된 강철 검', k:2.1, p:1500000 },
-        { lv:20, type:'armor', name:'강화 가죽 옷', k:2.0, p:1500000 },
-        { lv:20, type:'belt', name:'강화 가죽 벨트', k:2.5, p:1500000 },
-        { lv:25, type:'weapon', name:'은빛 강철 검', k:2.7, p:3500000 },
-        { lv:25, type:'armor', name:'비늘 갑옷', k:2.5, p:3500000 },
-        { lv:25, type:'belt', name:'금속 장식 벨트', k:3.3, p:3500000 },
-        { lv:30, type:'weapon', name:'은 검', k:3.5, p:8000000 },
-        { lv:30, type:'armor', name:'강철 갑옷', k:3.2, p:8000000 },
-        { lv:30, type:'belt', name:'용병 벨트', k:4.5, p:8000000 }
+    /* 강화 스탯 공식 */
+    const getFinalStats = () => {
+        let bAtk = getBaseAtk(data.level);
+        let bDef = getBaseDef(data.level);
+        let bHP = getBaseMaxHP(data.level);
+
+        let finalAtk = bAtk;
+        let finalDef = bDef;
+        let finalHP = bHP;
+
+        if(data.equipment.weapon) {
+            const it = data.equipment.weapon;
+            finalAtk = bAtk * it.k * (1 + 0.2 * Math.pow(it.en, 1.1));
+        }
+        if(data.equipment.armor) {
+            const it = data.equipment.armor;
+            finalDef = bDef * it.k * (1 + 0.5 * it.en);
+        }
+        if(data.equipment.belt) {
+            const it = data.equipment.belt;
+            finalHP = bHP * it.k * (1 + 0.1 * Math.pow(it.en, 1.25));
+        }
+        return { atk: finalAtk, def: finalDef, hp: finalHP };
+    };
+
+    /* 장비 DB */
+    const EQUIP_DB = [
+        { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
+        { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
+        { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
+        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' },
+        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
+        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
+        { lv: 10, name: '철 검', k: 1.4, p: 100000, type: 'weapon' },
+        { lv: 10, name: '질긴 옷', k: 1.3, p: 100000, type: 'armor' },
+        { lv: 10, name: '질긴 벨트', k: 1.5, p: 100000, type: 'belt' },
+        { lv: 15, name: '강철 검', k: 1.7, p: 500000, type: 'weapon' },
+        { lv: 15, name: '가죽 옷', k: 1.6, p: 500000, type: 'armor' },
+        { lv: 15, name: '가죽 벨트', k: 1.9, p: 500000, type: 'belt' },
+        { lv: 20, name: '연마된 강철 검', k: 2.1, p: 1500000, type: 'weapon' },
+        { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 1500000, type: 'armor' },
+        { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 1500000, type: 'belt' },
+        { lv: 25, name: '은빛 강철 검', k: 2.7, p: 3500000, type: 'weapon' },
+        { lv: 25, name: '비늘 갑옷', k: 2.5, p: 3500000, type: 'armor' },
+        { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 3500000, type: 'belt' },
+        { lv: 30, name: '은 검', k: 3.5, p: 8000000, type: 'weapon' },
+        { lv: 30, name: '강철 갑옷', k: 3.2, p: 8000000, type: 'armor' },
+        { lv: 30, name: '용병 벨트', k: 4.5, p: 8000000, type: 'belt' }
     ];
 
-    /* [최종 스탯 계산] */
-    function getFinalStats() {
-        let atk = getBaseAtk(data.level);
-        let def = getBaseDef(data.level);
-        let hp = getBaseHP(data.level);
+    /* 몬스터 스펙 */
+    const MON_STAGES = [
+        { lv: 1, hp: 280, atk: 25, def: 5, gold: 100, exp: 10 },
+        { lv: 5, hp: 380, atk: 35, def: 8, gold: 1000, exp: 50 },
+        { lv: 10, hp: 650, atk: 55, def: 15, gold: 7000, exp: 100 },
+        { lv: 15, hp: 1200, atk: 95, def: 30, gold: 10000, exp: 150 },
+        { lv: 20, hp: 2200, atk: 160, def: 55, gold: 15000, exp: 200 },
+        { lv: 25, hp: 4200, atk: 300, def: 100, gold: 30000, exp: 300 },
+        { lv: 30, hp: 7500, atk: 550, def: 180, gold: 50000, exp: 500 }
+    ];
 
-        const w = data.equipment.weapon;
-        const a = data.equipment.armor;
-        const b = data.equipment.belt;
+    /* 광산 설정 */
+    const MINE_DATA = [
+        { name: '고갈된 광산', p: 1000, rates: [0.4, 0.4, 0.2, 0, 0, 0] },
+        { name: '무너진 광산', p: 10000, rates: [0.4, 0.2, 0.3, 0.1, 0, 0] },
+        { name: '빛나는 광산', p: 100000, rates: [0.4, 0.1, 0.2, 0.25, 0.05, 0] },
+        { name: '찬란한 광산', p: 500000, rates: [0.39, 0.1, 0.15, 0.2, 0.15, 0.01] }
+    ];
+    const ORE_INFO = [
+        { n: '빈공간', v: 0, s: '' },
+        { n: '돌', v: 1000, s: '🪨' },
+        { n: '구리', v: 2000, s: '🥉' },
+        { n: '은', v: 20000, s: '🥈' },
+        { n: '금', v: 100000, s: '🥇' },
+        { n: '다이아몬드', v: 2000000, s: '💎' }
+    ];
 
-        if(w) atk = getBaseAtk(data.level) * w.k * (1 + 0.2 * Math.pow(w.en, 1.1));
-        if(a) def = getBaseDef(data.level) * a.k * (1 + 0.5 * a.en);
-        if(b) hp = getBaseHP(data.level) * b.k * (1 + 0.1 * Math.pow(b.en, 1.25));
-
-        return { atk, def, hp };
-    }
-
-    function updateUI() {
+    /* UI 업데이트 */
+    const updateUI = () => {
         const stats = getFinalStats();
         document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-        document.getElementById('shards').innerText = data.shards;
-        document.getElementById('hp-val').innerText = Math.floor(data.hp);
-        document.getElementById('hp-max').innerText = Math.floor(stats.hp);
+        document.getElementById('potion-total').innerText = Math.floor(data.potions).toLocaleString();
+        document.getElementById('potion-count').innerText = data.potionCount;
+        
+        document.getElementById('hp-val').innerText = Math.floor(data.hp).toLocaleString();
+        document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
         document.getElementById('hp-fill').style.width = (data.hp / stats.hp * 100) + '%';
         
         document.getElementById('user-lv').innerText = data.level;
-        document.getElementById('exp-val').innerText = Math.floor(data.exp);
+        document.getElementById('exp-val').innerText = Math.floor(data.exp).toLocaleString();
         const nextExp = getNextExp(data.level);
-        document.getElementById('exp-max').innerText = Math.floor(nextExp);
+        document.getElementById('exp-next').innerText = Math.floor(nextExp).toLocaleString();
         document.getElementById('exp-fill').style.width = (data.exp / nextExp * 100) + '%';
-
+        
         document.getElementById('info-atk').innerText = Math.floor(stats.atk).toLocaleString();
         document.getElementById('info-def').innerText = Math.floor(stats.def).toLocaleString();
         document.getElementById('info-hp').innerText = Math.floor(stats.hp).toLocaleString();
 
-        document.getElementById('inv-1').innerText = data.invScrolls.item1;
-        document.getElementById('inv-2').innerText = data.invScrolls.item2;
-        document.getElementById('inv-3').innerText = data.invScrolls.item3;
+        document.getElementById('inv-scroll-1').innerText = data.scrolls.item1;
+        document.getElementById('inv-scroll-2').innerText = data.scrolls.item2;
+        document.getElementById('inv-scroll-3').innerText = data.scrolls.item3;
 
-        document.getElementById('emergency-btn').style.display = (data.gold < 1000 && !data.equipment.weapon && !data.equipment.armor && !data.equipment.belt) ? 'block' : 'none';
+        document.getElementById('emergency-btn').style.display = (data.gold < 1000 && data.inventory.length === 0 && !data.equipment.weapon) ? 'block' : 'none';
+        
         renderInventory();
-    }
+    };
 
-    /* [인벤토리 및 아이템 관리] */
-    function renderInventory() {
+    /* 내 정보 및 인벤토리 */
+    const renderInventory = () => {
         const list = document.getElementById('inventory-list');
-        list.innerHTML = "";
-        data.inventory.forEach((item, idx) => {
-            const isEquipped = (data.equipment[item.type] && data.equipment[item.type].id === item.id);
+        list.innerHTML = '';
+        data.inventory.forEach((it, idx) => {
+            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
             const card = document.createElement('div');
-            card.className = `item-card ${isEquipped ? 'equipped' : ''}`;
+            card.className = 'item-card';
             card.innerHTML = `
-                <div class="item-info">
-                    <img src="${item.img || 'https://placehold.co/40x40/000/fff?text=?'}" class="item-icon">
-                    <div><strong>${item.name} +${item.en}</strong><br><small>Lv.${item.lv} ${item.type}</small></div>
+                <div style="flex:1;">
+                    <strong>${it.name} +${it.en}</strong> ${isEquipped ? '[장착중]' : ''}<br>
+                    <small>${it.type} (장비상수: ${it.k})</small>
                 </div>
-                <div>
-                    <button class="item-btn" style="background:#2ecc71;" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
-                    <button class="item-btn" style="background:#3498db;" onclick="selectUpgrade(${idx})">강화</button>
-                </div>`;
+                <button class="item-btn" style="background:var(--hunt);" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                <button class="item-btn" style="background:#c0392b;" onclick="sellItem(${idx})">판매</button>
+            `;
             list.appendChild(card);
         });
-    }
+    };
 
-    function equipItem(idx) {
-        const item = data.inventory[idx];
-        if(data.equipment[item.type] && data.equipment[item.type].id === item.id) {
-            data.equipment[item.type] = null;
-        } else {
-            data.equipment[item.type] = item;
-        }
-        save();
-    }
-
-    function selectUpgrade(idx) {
-        upTargetIdx = idx;
-        const item = data.inventory[idx];
-        document.getElementById('upgrade-target-display').innerHTML = `
-            <div class="item-card" style="width:100%; border:none; background:none;">
-                <img src="${item.img || 'https://placehold.co/40x40/000/fff?text=?'}" class="item-icon">
-                <div><strong>${item.name} +${item.en}</strong></div>
-                <button class="item-btn" style="background:var(--mine); color:black;" onclick="sellFromUpgrade()">판매</button>
-            </div>`;
+    const equipItem = (idx) => {
+        const it = data.inventory[idx];
+        const currentEquip = data.equipment[it.type];
         
-        const cost = Math.floor(item.p * 0.5 * Math.pow(1.5, item.en));
+        if(currentEquip && currentEquip.id === it.id) {
+            data.equipment[it.type] = null;
+        } else {
+            data.equipment[it.type] = it;
+        }
+        
+        // 벨트 해제 시 체력 보정
+        const newStats = getFinalStats();
+        if(data.hp > newStats.hp) data.hp = newStats.hp;
+        
+        updateUI();
+    };
+
+    const sellItem = (idx) => {
+        const it = data.inventory[idx];
+        const sellPrice = Math.floor(it.p * 0.5);
+        data.gold += sellPrice;
+        if(data.equipment[it.type] && data.equipment[it.type].id === it.id) {
+            data.equipment[it.type] = null;
+        }
+        data.inventory.splice(idx, 1);
+        updateUI();
+    };
+
+    /* 상점 시스템 */
+    const openShop = (cat) => {
+        showPage('page-shop-detail');
+        const list = document.getElementById('shop-list');
+        list.innerHTML = '';
+        if(cat === 'equip') {
+            document.getElementById('shop-title').innerText = '장비 상점';
+            EQUIP_DB.forEach(proto => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div style="flex:1;">
+                        <strong>${proto.name}</strong> (Lv.${proto.lv})<br>
+                        상수: ${proto.k} / 가격: ${proto.p.toLocaleString()}G
+                    </div>
+                    <button class="item-btn" style="background:var(--money); color:black;" onclick="buyEquip(${JSON.stringify(proto).replace(/"/g, '&quot;')})">구매</button>
+                `;
+                list.appendChild(card);
+            });
+        } else {
+            document.getElementById('shop-title').innerText = '소비 상점';
+            // 포션
+            const potTiers = [
+                { n:'최하급 포션', r:100, p:2000 },
+                { n:'하급 포션', r:1000, p:20000 },
+                { n:'중급 포션', r:5000, p:100000 },
+                { n:'상급 포션', r:10000, p:200000 },
+                { n:'최상급 포션', r:50000, p:1000000 }
+            ];
+            potTiers.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `<div><strong>${p.n}</strong><br>회복: ${p.r.toLocaleString()} / ${p.p.toLocaleString()}G</div>
+                <button class="item-btn" style="background:var(--mine); color:black;" onclick="buyPotion(${p.r}, ${p.p})">구매</button>`;
+                list.appendChild(card);
+            });
+            // 강화 주문서
+            const scrolls = [
+                { n:'하급 방지권', t:1, p:100000 },
+                { n:'중급 방지권', t:2, p:500000 },
+                { n:'상급 방지권', t:3, p:2000000 }
+            ];
+            scrolls.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `<div><strong>${s.n}</strong><br>${s.p.toLocaleString()}G</div>
+                <button class="item-btn" style="background:var(--hunt);" onclick="buyScroll(${s.t}, ${s.p})">구매</button>`;
+                list.appendChild(card);
+            });
+        }
+    };
+
+    const buyEquip = (proto) => {
+        if(data.gold < proto.p) return alert('골드 부족!');
+        data.gold -= proto.p;
+        data.inventory.push({ ...proto, en: 0, id: Date.now() + Math.random() });
+        updateUI();
+    };
+
+    const buyPotion = (rec, price) => {
+        if(data.gold < price) return alert('골드 부족!');
+        if(data.potionCount >= 10) return alert('물약은 최대 10개까지만 소지 가능합니다!');
+        data.gold -= price;
+        data.potions += rec;
+        data.potionCount += 1;
+        updateUI();
+    };
+
+    const buyScroll = (tier, price) => {
+        if(data.gold < price) return alert('골드 부족!');
+        data.gold -= price;
+        data.scrolls['item'+tier]++;
+        updateUI();
+    };
+
+    /* 강화 시스템 */
+    let upIdx = -1;
+    let autoTimer = null;
+
+    const openInventoryModal = () => {
+        document.getElementById('inv-modal').style.display = 'block';
+        const list = document.getElementById('modal-item-list');
+        list.innerHTML = '';
+        data.inventory.forEach((it, idx) => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `<div><strong>${it.name} +${it.en}</strong></div><button class="item-btn" style="background:var(--hunt);" onclick="selectUpgrade(${idx})">선택</button>`;
+            list.appendChild(card);
+        });
+    };
+
+    const selectUpgrade = (idx) => {
+        upIdx = idx;
+        const it = data.inventory[idx];
+        document.getElementById('upgrade-target-display').innerHTML = `<strong>${it.name} +${it.en}</strong> <button onclick="sellFromUp()" style="width:60px; font-size:0.7em; background:#c0392b; margin-left:10px;">판매</button>`;
+        
+        const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
         const btn = document.getElementById('btn-up-exec');
         btn.innerText = `강화하기 (${cost.toLocaleString()}G)`;
         btn.disabled = false;
 
-        const sc = item.en < 3 ? 100 : item.en < 6 ? 85 : item.en < 9 ? 60 : 40;
-        const bc = item.en >= 10 ? Math.min(50, 5 + (item.en - 10) * 5) : 0;
+        const sc = it.en < 3 ? 100 : it.en < 6 ? 85 : it.en < 9 ? 60 : 40;
+        const bc = it.en >= 10 ? Math.min(50, 5 + (it.en - 10) * 5) : 0;
         document.getElementById('up-chance').innerText = sc;
         document.getElementById('up-break').innerText = bc;
-        showPage('page-upgrade');
-    }
-
-    function sellFromUpgrade() {
-        if(upTargetIdx === -1) return;
-        const item = data.inventory[upTargetIdx];
-        const sp = Math.floor(item.p * 0.4 * Math.pow(1.2, item.en));
-        data.gold += sp;
-        if(data.equipment[item.type] && data.equipment[item.type].id === item.id) data.equipment[item.type] = null;
-        data.inventory.splice(upTargetIdx, 1);
-        upTargetIdx = -1;
-        document.getElementById('upgrade-target-display').innerHTML = "판매 완료.";
-        document.getElementById('btn-up-exec').disabled = true;
-        save();
-    }
-
-    function tryUpgrade() {
-        if(upTargetIdx === -1) return;
-        const item = data.inventory[upTargetIdx];
-        const cost = Math.floor(item.p * 0.5 * Math.pow(1.5, item.en));
         
-        if(data.gold < cost) { isAuto = false; alert("골드가 부족합니다!"); return; }
+        closeModal();
+    };
+
+    const tryUpgrade = () => {
+        if(upIdx === -1) return;
+        const it = data.inventory[upIdx];
+        const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
+        if(data.gold < cost) { stopAuto(); return alert('골드 부족!'); }
 
         const sel = document.querySelector('input[name="prot"]:checked').value;
-        if(sel !== "0") {
-            if(data.invScrolls[`item${sel}`] > 0) data.invScrolls[`item${sel}`]--;
-            else { isAuto = false; alert("방지권 부족!"); return; }
+        if(sel !== '0') {
+            if(data.scrolls['item'+sel] > 0) data.scrolls['item'+sel]--;
+            else { stopAuto(); return alert('방지권 부족!'); }
         }
 
         data.gold -= cost;
-        const sc = item.en < 3 ? 100 : item.en < 6 ? 85 : item.en < 9 ? 60 : 40;
-        const bc = item.en >= 10 ? Math.min(50, 5 + (item.en - 10) * 5) : 0;
+        const sc = it.en < 3 ? 100 : it.en < 6 ? 85 : it.en < 9 ? 60 : 40;
+        const bc = it.en >= 10 ? Math.min(50, 5 + (it.en - 10) * 5) : 0;
 
         if(Math.random()*100 < sc) {
-            item.en++; addLog(`+${item.en} 성공!`, "#4ecca3");
+            it.en++;
+            addLog(`강화 성공! +${it.en}`, 'var(--mine)');
         } else {
-            if(Math.random()*100 < bc && sel !== "3") {
-                if(data.equipment[item.type] && data.equipment[item.type].id === item.id) data.equipment[item.type] = null;
-                data.inventory.splice(upTargetIdx, 1);
-                data.shards++; addLog("장비 파괴!", "red");
-                upTargetIdx = -1; isAuto = false;
-                document.getElementById('upgrade-target-display').innerHTML = "파괴됨";
+            if(Math.random()*100 < bc && sel !== '3') {
+                if(data.equipment[it.type] && data.equipment[it.type].id === it.id) data.equipment[it.type] = null;
+                data.inventory.splice(upIdx, 1);
+                addLog('강화 실패! 장비가 파괴되었습니다.', 'red');
+                upIdx = -1; stopAuto();
+                document.getElementById('upgrade-target-display').innerText = '강화할 장비를 선택하세요.';
                 document.getElementById('btn-up-exec').disabled = true;
             } else {
-                item.en = Math.max(0, item.en - 1); addLog("실패(하락)");
+                it.en = Math.max(0, it.en - 1);
+                addLog('강화 실패! 단계가 하락했습니다.', '#95a5a6');
             }
         }
-        save();
-        if(upTargetIdx !== -1) selectUpgrade(upTargetIdx);
-    }
+        updateUI();
+        if(upIdx !== -1) selectUpgrade(upIdx);
+    };
 
-    /* [전투 시스템] */
-    const MON_DB = [
-        { lv:1, hp:280, atk:25, def:5, g:100 },
-        { lv:5, hp:380, atk:35, def:8, g:1000 },
-        { lv:10, hp:650, atk:55, def:15, g:7000 },
-        { lv:15, hp:1200, atk:95, def:30, g:10000 },
-        { lv:20, hp:2200, atk:160, def:55, g:15000 },
-        { lv:25, hp:4200, atk:300, def:100, g:30000 },
-        { lv:30, hp:7500, atk:550, def:180, g:50000 }
-    ];
+    const startAutoUpgrade = () => {
+        if(autoTimer) { stopAuto(); }
+        else {
+            autoTimer = setInterval(tryUpgrade, 100);
+            document.getElementById('auto-btn').innerText = '자동 중단';
+        }
+    };
+    const stopAuto = () => {
+        clearInterval(autoTimer); autoTimer = null;
+        document.getElementById('auto-btn').innerText = '자동 강화 (+10강)';
+    };
 
-    function getMonStats(lv) {
-        let low = MON_DB[0], high = MON_DB[MON_DB.length-1];
-        for(let i=0; i<MON_DB.length-1; i++) {
-            if(lv >= MON_DB[i].lv && lv <= MON_DB[i+1].lv) {
-                low = MON_DB[i]; high = MON_DB[i+1]; break;
+    /* 전투 시스템 */
+    const getMonsterStats = (lv) => {
+        let low = MON_STAGES[0], high = MON_STAGES[MON_STAGES.length-1];
+        for(let i=0; i<MON_STAGES.length-1; i++) {
+            if(lv >= MON_STAGES[i].lv && lv <= MON_STAGES[i+1].lv) {
+                low = MON_STAGES[i]; high = MON_STAGES[i+1]; break;
             }
         }
-        const ratio = (lv - low.lv) / (high.lv - low.lv || 1);
-        const lerp = (a, b) => a + (b - a) * ratio;
+        const r = (lv - low.lv) / (high.lv - low.lv || 1);
+        const lerp = (a, b) => a + (b - a) * r;
         return {
-            lv, hp: lerp(low.hp, high.hp), atk: lerp(low.atk, high.atk),
-            def: lerp(low.def, high.def), g: lerp(low.g, high.g)
+            lv,
+            hp: lerp(low.hp, high.hp),
+            atk: lerp(low.atk, high.atk),
+            def: lerp(low.def, high.def),
+            gold: lerp(low.gold, high.gold),
+            exp: lerp(low.exp, high.exp)
         };
-    }
+    };
 
-    function scanHunt() {
-        if(data.gold < 5000) return alert("골드 부족!");
-        data.gold -= 5000;
-        const g = document.getElementById('hunt-grid'); g.innerHTML = "";
+    const scanHunt = () => {
+        const grid = document.getElementById('hunt-grid');
+        grid.innerHTML = '';
         for(let i=0; i<5; i++) {
             const lv = Math.max(1, data.level + Math.floor(Math.random()*11) - 5);
-            const m = getMonStats(lv);
-            const cell = document.createElement('div'); cell.className = "cell";
+            const m = getMonsterStats(lv);
+            const cell = document.createElement('div');
+            cell.className = 'cell';
             cell.innerHTML = `👾<span class="monster-lv">Lv.${lv}</span>`;
             cell.onclick = () => startBattle(m);
-            g.appendChild(cell);
+            grid.appendChild(cell);
         }
-        save();
-    }
+    };
 
-    function startBattle(m) {
-        if(data.hp <= 0) return alert("체력이 없습니다!");
-        document.getElementById('hunt-grid').style.pointerEvents = 'none';
-        const log = document.getElementById('hunt-log');
-        log.innerHTML = `Lv.${m.lv} 몬스터와 조우!<br>`;
-        
-        let pStats = getFinalStats();
+    const startBattle = (m) => {
+        if(data.hp <= 0) return alert('치료소에서 회복 후 사냥하세요!');
+        const log = document.getElementById('battle-log');
+        log.innerHTML = `Lv.${m.lv} 몬스터와 전투 시작!<br>`;
+        const pStats = getFinalStats();
         let mHP = m.hp;
-        
+
         const bItv = setInterval(() => {
-            // [방어력 시스템 적용 대미지 공식]
-            const calcDmg = (atk, def) => atk >= def ? (atk * 2 - def) : (Math.pow(atk, 2) / def);
+            // 데미지 공식
+            const calcDmg = (a, d) => (a >= d) ? (a * 2 - d) : (Math.pow(a, 2) / d);
             
             // 내 턴
-            let pDmg = Math.floor(calcDmg(pStats.atk, m.def));
+            const pDmg = Math.floor(calcDmg(pStats.atk, m.def));
             mHP -= pDmg;
-            log.innerHTML = `내가 ${pDmg} 데미지! (몬스터 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
-
+            log.innerHTML = `유저는 공격했다. ${pDmg}의 데미지 (남은 적 체력 : ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
+            
             if(mHP <= 0) {
                 clearInterval(bItv);
-                data.gold += m.g;
-                const earnedExp = m.lv * 20;
-                data.exp += earnedExp;
-                log.innerHTML = `<span style="color:var(--mine)">승리! ${Math.floor(m.g)}G와 ${earnedExp} Exp 획득!</span><br>` + log.innerHTML;
+                data.gold += m.gold;
+                data.exp += m.exp;
+                log.innerHTML = `<span style="color:var(--money)">승리! 획득 골드 +${Math.floor(m.gold)}G, 획득 경험치 +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
                 checkLevelUp();
-                document.getElementById('hunt-grid').style.pointerEvents = 'auto';
-                save(); return;
+                updateUI(); return;
             }
 
-            // 몬스터 턴
+            // 적 턴
             let mDmg = Math.floor(calcDmg(m.atk, pStats.def));
+            
+            // 물약 자동 회복 로직
+            let originalHP = data.hp;
             data.hp -= mDmg;
-            log.innerHTML = `<span style="color:var(--hp)">몬스터가 ${mDmg} 데미지!</span><br>` + log.innerHTML;
-
+            if(data.potions > 0) {
+                const heal = Math.min(mDmg, data.potions);
+                data.hp += heal;
+                data.potions -= heal;
+                if(data.potions <= 0) data.potionCount = 0;
+            }
+            
+            log.innerHTML = `공격받았다. ${mDmg}의 데미지 (남은 체력 : ${Math.max(0, Math.floor(data.hp))}) [물약 잔량: ${Math.floor(data.potions)}]<br>` + log.innerHTML;
+            
             if(data.hp <= 0) {
                 clearInterval(bItv);
                 data.hp = 0;
-                log.innerHTML = `<span style="color:red">패배... 마을로 도망쳤습니다.</span><br>` + log.innerHTML;
-                document.getElementById('hunt-grid').style.pointerEvents = 'auto';
-                save();
+                log.innerHTML = `<span style="color:red">패배... 마을로 귀환합니다.</span><br>` + log.innerHTML;
+                updateUI();
             }
         }, 100);
-    }
+    };
 
-    function checkLevelUp() {
+    const checkLevelUp = () => {
         while(data.exp >= getNextExp(data.level)) {
             data.exp -= getNextExp(data.level);
             data.level++;
-            addLog(`⭐ 레벨업! Lv.${data.level} 달성!`, "var(--exp)");
+            alert(`레벨업! 현재 Lv.${data.level}`);
         }
-    }
-
-    /* [광산 시스템 개편] */
-    const MINE_SETTINGS = {
-        1: { p:1000, rates: { empty:0.4, stone:0.4, copper:0.2, silver:0, gold:0, dia:0 } },
-        2: { p:10000, rates: { empty:0.4, stone:0.2, copper:0.3, silver:0.1, gold:0, dia:0 } },
-        3: { p:100000, rates: { empty:0.4, stone:0.1, copper:0.2, silver:0.25, gold:0.05, dia:0 } },
-        4: { p:500000, rates: { empty:0.39, stone:0.1, copper:0.15, silver:0.2, gold:0.15, dia:0.01 } }
     };
-    const ORE_VAL = { stone:1000, copper:2000, silver:20000, gold:100000, dia:2000000 };
-    const ORE_IMG = { stone:"🪨", copper:"🥉", silver:"🥈", gold:"🥇", dia:"💎" };
 
-    function enterMine(tier) {
-        const s = MINE_SETTINGS[tier];
-        if(data.gold < s.p) return alert("골드 부족!");
-        data.gold -= s.p;
-        data.currentMine = tier;
-        generateMineGrid(s.rates);
+    /* 광산 시스템 */
+    const enterMine = (tier) => {
+        const cost = MINE_DATA[tier].p;
+        if(data.gold < cost) return alert('골드 부족!');
+        data.gold -= cost;
+        data.currentMineTier = tier;
+        generateMine();
         showPage('page-mine-play');
-        save();
-    }
+        updateUI();
+    };
 
-    function generateMineGrid(rates) {
+    const generateMine = () => {
+        const rates = MINE_DATA[data.currentMineTier].rates;
         data.mineGrid = [];
         for(let i=0; i<16; i++) {
             const r = Math.random();
-            let acc = 0, type = null;
-            for(let k in rates) {
-                acc += rates[k];
-                if(r <= acc) { type = k; break; }
+            let acc = 0;
+            let type = 0;
+            for(let j=0; j<rates.length; j++) {
+                acc += rates[j];
+                if(r < acc) { type = j; break; }
             }
-            data.mineGrid.push(type === 'empty' ? null : { type, val: ORE_VAL[type], img: ORE_IMG[type] });
+            data.mineGrid.push(type);
         }
         renderMine();
-    }
+    };
 
-    function renderMine() {
-        const g = document.getElementById('mine-grid'); g.innerHTML = "";
+    const renderMine = () => {
+        const grid = document.getElementById('mine-grid');
+        grid.innerHTML = '';
         let hasOre = false;
-        data.mineGrid.forEach((ore, i) => {
-            const cell = document.createElement('div'); cell.className = "cell";
-            if(ore) {
-                cell.innerText = ore.img;
-                cell.onclick = () => collectOre(i);
+        data.mineGrid.forEach((oreIdx, i) => {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            const ore = ORE_INFO[oreIdx];
+            cell.innerText = ore.s;
+            if(oreIdx > 0) {
                 hasOre = true;
+                cell.onclick = () => {
+                    data.gold += ore.v;
+                    data.mineGrid[i] = 0;
+                    renderMine();
+                    updateUI();
+                };
             }
-            g.appendChild(cell);
+            grid.appendChild(cell);
         });
-        document.getElementById('mine-refresh-btn').style.display = hasOre ? 'none' : 'block';
-    }
+        document.getElementById('mine-refresh').style.display = hasOre ? 'none' : 'block';
+    };
 
-    function collectOre(i) {
-        data.gold += data.mineGrid[i].val;
-        data.mineGrid[i] = null;
-        renderMine();
-        save();
-    }
+    const refreshMine = () => {
+        const cost = MINE_DATA[data.currentMineTier].p;
+        if(data.gold < cost) return alert('골드 부족!');
+        data.gold -= cost;
+        generateMine();
+        updateUI();
+    };
 
-    function refreshMine() {
-        const s = MINE_SETTINGS[data.currentMine];
-        if(data.gold < s.p) return alert("골드 부족!");
-        data.gold -= s.p;
-        generateMineGrid(s.rates);
-        save();
-    }
+    /* 기타 기능 */
+    const showPage = (id) => {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'page-info') updateUI();
+    };
+    const closeModal = () => document.getElementById('inv-modal').style.display = 'none';
+    const addLog = (m, c) => {
+        const log = document.getElementById('log-container');
+        log.innerHTML = `<div style="color:${c || '#95a5a6'}">> ${m}</div>` + log.innerHTML;
+    };
+    const fullHeal = () => { data.hp = getFinalStats().hp; updateUI(); alert('체력이 전부 회복되었습니다.'); };
+    const getEmergencyMoney = () => { data.gold += 1000; updateUI(); alert('구제금 1,000G가 지급되었습니다.'); };
+    const sellFromUp = () => { if(upIdx !== -1) sellItem(upIdx); upIdx = -1; document.getElementById('upgrade-target-display').innerText = '강화할 장비를 선택하세요.'; };
 
-    /* [상점 시스템] */
-    function openShop(cat) {
-        showPage('page-shop-detail');
-        const list = document.getElementById('shop-list'); list.innerHTML = "";
-        if(cat === 'equip') {
-            document.getElementById('shop-title').innerText = "⚔️ 장비 상점";
-            ITEM_DB.forEach(item => {
-                const card = document.createElement('div'); card.className = "item-card";
-                card.innerHTML = `
-                    <div class="item-info">
-                        <img src="${item.img || 'https://placehold.co/40x40/000/fff?text=?'}" class="item-icon">
-                        <div><strong>${item.name}</strong><br><small>Lv.${item.lv} ${item.p.toLocaleString()}G</small></div>
-                    </div>
-                    <button class="item-btn" style="background:var(--money); color:black;" onclick="buyEquip(${JSON.stringify(item).replace(/"/g, '&quot;')})">구매</button>`;
-                list.appendChild(card);
-            });
-        } else {
-            document.getElementById('shop-title').innerText = "📜 소비 상점";
-            const items = [{t:1, n:"하급 방지권", p:100000, img:"image/scroll_1.png"}, {t:2, n:"중급 방지권", p:500000, img:"image/scroll_2.png"}, {t:3, n:"상급 방지권", p:2000000, img:"image/scroll_3.png"}];
-            items.forEach(it => {
-                const card = document.createElement('div'); card.className = "item-card";
-                card.innerHTML = `<div class="item-info"><img src="${it.img}" class="item-icon"><div><strong>${it.n}</strong><br><small>${it.p.toLocaleString()}G</small></div></div><button class="item-btn" style="background:var(--money); color:black;" onclick="buyScroll(${it.t}, ${it.p})">구매</button>`;
-                list.appendChild(card);
-            });
-        }
-    }
-
-    function buyEquip(proto) {
-        if(data.gold < proto.p) return alert("골드 부족!");
-        data.gold -= proto.p;
-        data.inventory.push({ ...proto, en: 0, id: Date.now() + Math.random() });
-        alert(`${proto.name} 구매 완료!`);
-        save();
-    }
-
-    function buyScroll(t, p) {
-        if(data.gold < p) return alert("골드 부족!");
-        data.gold -= p; data.invScrolls[`item${t}`]++; save();
-    }
-
-    /* [공통 로직] */
-    function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); updateUI(); }
-    function addLog(m, c) { const l = document.getElementById('log-container'); l.innerHTML = `<div style="color:${c || '#95a5a6'}">> ${m}</div>` + l.innerHTML; }
-    function openInventoryModal() { document.getElementById('inv-modal').style.display = 'block'; renderModalInventory(); }
-    function closeModal() { document.getElementById('inv-modal').style.display = 'none'; }
-    function getEmergencyMoney() { data.gold += 1000; alert("구제금 1,000G 지급 완료!"); save(); }
-    function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); updateUI(); }
-    function load() { const s = localStorage.getItem(SAVE_KEY); if(s) data = JSON.parse(s); updateUI(); }
-    function renderModalInventory() {
-        const list = document.getElementById('modal-item-list'); list.innerHTML = "";
-        data.inventory.forEach((item, idx) => {
-            const card = document.createElement('div'); card.className = "item-card";
-            card.innerHTML = `<div class="item-info"><img src="${item.img || 'https://placehold.co/40x40/000/fff?text=?'}" class="item-icon"><div><strong>${item.name} +${item.en}</strong></div></div><button class="item-btn" style="background:var(--hunt);" onclick="confirmSelect(${idx})">선택</button>`;
-            list.appendChild(card);
-        });
-    }
-    function confirmSelect(idx) { closeModal(); selectUpgrade(idx); }
-    function startAutoUpgrade() {
-        if(isAuto) { isAuto=false; return; }
-        if(upTargetIdx === -1) return;
-        isAuto = true;
-        const itv = setInterval(() => {
-            if(!isAuto || upTargetIdx === -1 || data.inventory[upTargetIdx].en >= 10) { clearInterval(itv); isAuto=false; updateUI(); return; }
-            tryUpgrade();
-        }, 100);
-    }
-    setInterval(() => { if(data.hp < getFinalStats().hp) { data.hp = Math.min(getFinalStats().hp, data.hp + 1); updateUI(); } }, 2000);
-    load();
+    updateUI();
 </script>
 </body>
 </html>
