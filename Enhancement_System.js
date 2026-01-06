@@ -1,92 +1,82 @@
-/* ==========================================
-   [Enhancement_System.js] 
-   강화 로직 및 확률 테이블 제어
-   ========================================== */
-
+/* Enhancement_System.js */
 const UpgradeSystem = {
-    // 1. 단계별 확률 반환 (v1.2 리뉴얼 사양)
-    getRates: (currentEn) => {
+    // 1. 단계별 성공/파괴 확률 반환 (v1.2 리뉴얼 사양)
+    getRates: (en) => {
         let success = 100;
         let destroy = 0;
 
-        if (currentEn < 10) {
-            success = 100 - (currentEn * 6);
-            if (success < 40) success = 40;
-        } else if (currentEn === 10) {
+        // 성공 확률: 10강 40%, 11강부터 30% 고정
+        if (en < 10) {
+            success = Math.max(40, 100 - (en * 6)); 
+        } else if (en === 10) {
             success = 40;
         } else {
             success = 30;
         }
 
-        if (currentEn >= 11) {
-            destroy = 5 + (currentEn - 11) * 5;
+        // 파괴 확률: 11강부터 5%씩 증가
+        if (en >= 11) {
+            destroy = 5 + (en - 11) * 5;
         }
 
         return { success, destroy };
     },
 
-    // 2. 강화 실행 함수
-    try: () => {
-        // 전역 변수 upIdx와 data가 존재하는지 먼저 체크
-        if (typeof upIdx === 'undefined' || upIdx === -1) return;
-        if (typeof data === 'undefined' || !data.inventory[upIdx]) return;
+    // 2. 강화 비용 계산 공식 (강화 수치에 따라 비례하여 급증)
+    getCost: (it) => {
+        // 공식: 기본가 * 0.5 * (1.8 ^ 현재강화단계)
+        // 1.8배씩 복리로 증가하므로 고강일수록 매우 비싸집니다.
+        return Math.floor(it.p * 0.5 * Math.pow(1.8, it.en));
+    },
 
+    // 3. 강화 실행
+    try: () => {
+        if (typeof upIdx === 'undefined' || upIdx === -1) return;
         const it = data.inventory[upIdx];
         const rates = UpgradeSystem.getRates(it.en);
-        
-        // 강화 비용 계산
-        const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
+        const cost = UpgradeSystem.getCost(it);
 
+        // 골드 체크
         if (data.gold < cost) {
             UpgradeSystem.stopAuto();
-            return alert("골드가 부족하여 강화를 중단합니다.");
+            return alert("강화 비용이 부족합니다!");
         }
 
         data.gold -= cost;
         const rand = Math.random() * 100;
 
         if (rand < rates.success) {
+            // 성공
             it.en++;
-            // addLog가 전역인지 MainEngine 소속인지 체크하여 호출
-            const msg = `[성공] ${it.name} +${it.en} 강화 성공!`;
-            if (typeof addLog === 'function') addLog(msg, 'var(--mine)');
-            else if (window.addLog) window.addLog(msg, 'var(--mine)');
+            addLog(`[성공] ${it.name} +${it.en} 강화 성공!`, 'var(--mine)');
         } else {
+            // 실패 시 파괴 체크
             const failRand = Math.random() * 100;
             if (failRand < rates.destroy) {
-                const msg = `[파괴] 실패로 인해 '${it.name}' 소멸...`;
-                if (typeof addLog === 'function') addLog(msg, 'var(--point)');
-                
+                // 파괴
+                addLog(`[파괴] 실패로 인해 '${it.name}' 소멸...`, 'var(--point)');
                 data.inventory.splice(upIdx, 1);
                 upIdx = -1;
-                
-                // UI 초기화 함수 호출 방식 보정
-                if (window.MainEngine && MainEngine.resetUpgradeUI) MainEngine.resetUpgradeUI();
-                else if (typeof resetUpgradeUI === 'function') resetUpgradeUI();
-                
+                if (window.MainEngine) MainEngine.resetUpgradeUI();
                 UpgradeSystem.stopAuto();
             } else {
+                // 단계 하락 (최소 0강)
                 it.en = Math.max(0, it.en - 1);
-                const msg = `[실패] 강화 실패 (단계 하락: +${it.en})`;
-                if (typeof addLog === 'function') addLog(msg, '#aaa');
+                addLog(`[실패] 강화 실패 (단계 하락: +${it.en})`, '#aaa');
             }
         }
 
-        // UI 갱신 함수 호출 방식 보정
-        if (window.MainEngine && MainEngine.updateUI) MainEngine.updateUI();
-        else if (typeof updateUI === 'function') updateUI();
-        
+        // UI 갱신 및 재선택
+        if (window.MainEngine) MainEngine.updateUI();
         if (upIdx !== -1) UpgradeSystem.selectUpgrade(upIdx);
     },
 
-    // 3. 강화 대상 선택 처리
+    // 4. 강화 대상 선택 시 UI 업데이트
     selectUpgrade: (idx) => {
-        if (typeof data === 'undefined' || !data.inventory[idx]) return;
-        
         upIdx = idx;
         const it = data.inventory[idx];
         const rates = UpgradeSystem.getRates(it.en);
-        const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
+        const cost = UpgradeSystem.getCost(it);
 
         const display = document.getElementById('upgrade-target-display');
         const btn = document.getElementById('btn-up-exec');
@@ -96,29 +86,26 @@ const UpgradeSystem = {
         if (btn) {
             btn.innerText = `강화하기 (${cost.toLocaleString()}G)`;
             btn.disabled = false;
+            btn.style.width = "100%"; // UI 깨짐 방지
         }
         if (sellBtn) sellBtn.style.display = 'block';
 
-        const chanceEl = document.getElementById('up-chance');
-        const breakEl = document.getElementById('up-break');
-        if (chanceEl) chanceEl.innerText = Math.floor(rates.success);
-        if (breakEl) breakEl.innerText = rates.destroy;
+        document.getElementById('up-chance').innerText = Math.floor(rates.success);
+        document.getElementById('up-break').innerText = rates.destroy;
     },
 
-    // 4. 자동 강화 제어
+    // 5. 자동 강화 제어
     startAuto: () => {
-        if (typeof autoTimer !== 'undefined' && autoTimer) {
+        if (autoTimer) {
             UpgradeSystem.stopAuto();
         } else {
-            // 전역 변수 autoTimer에 할당
             autoTimer = setInterval(UpgradeSystem.try, 100);
-            const btn = document.getElementById('auto-btn');
-            if (btn) btn.innerText = '중단';
+            document.getElementById('auto-btn').innerText = '중단';
         }
     },
 
     stopAuto: () => {
-        if (typeof autoTimer !== 'undefined' && autoTimer) {
+        if (autoTimer) {
             clearInterval(autoTimer);
             autoTimer = null;
         }
