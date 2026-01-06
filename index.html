@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v1.4</title>
+    <title>강화하기 v1.4 (Fixed)</title>
     <style>
         /* [필수] 레이아웃 깨짐 방지 초기화 */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +15,7 @@
         body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; user-select: none; }
         #game-container { background: var(--panel); max-width: 600px; margin: 0 auto; padding: 15px; border-radius: 15px; border: 2px solid var(--point); min-height: 95vh; position: relative; display: none; overflow: hidden; }
         
-        /* [페이지 전환 - 필수] */
+        /* [페이지 전환] */
         .page { display: none; animation: fadeIn 0.2s; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -33,7 +33,7 @@
         .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 8px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.1s; font-weight: bold; width: 100%; display: block; }
         .main-menu-btn:active { transform: scale(0.98); }
 
-        /* [아이템 카드 - 중요: 깨짐 방지] */
+        /* [아이템 카드] */
         .item-card { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid #333; }
         .item-icon { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #000; border: 1px solid #555; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5em; }
         .item-info { flex: 1; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 0.9em; line-height: 1.4; }
@@ -261,7 +261,6 @@
                 localStorage.setItem('game_users', JSON.stringify(users));
             }
         },
-        /* 파일 저장/불러오기 */
         exportSaveFile: () => {
             const saveStr = localStorage.getItem('game_users');
             if(!saveStr || saveStr === "{}") return alert("저장된 데이터가 없습니다.");
@@ -285,9 +284,16 @@
             };
             reader.readAsText(file);
         },
-        /* UI 업데이트 */
         updateUI: () => {
             if(!data) return;
+            
+            // [수정] 경험치 꽉 찼으면 자동 레벨업 체크
+            const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+            if(data.exp >= nextExp) {
+                MainEngine.checkLevelUp();
+                return; // 레벨업 함수에서 다시 updateUI를 호출함
+            }
+
             const stats = MainEngine.getFinalStats();
             
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
@@ -298,9 +304,9 @@
             document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
             document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
             
-            const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+            // 경험치 표시 수정
             const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
-            document.getElementById('exp-fill').style.width = expPer + '%';
+            document.getElementById('exp-fill').style.width = Math.min(100, expPer) + '%';
             document.getElementById('user-lv').innerText = data.level;
             document.getElementById('exp-text').innerText = `${Math.floor(data.exp).toLocaleString()} / ${Math.floor(nextExp).toLocaleString()} (${expPer}%)`;
             
@@ -332,8 +338,8 @@
             data.inventory.forEach((it, idx) => {
                 const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
                 const div = document.createElement('div'); div.className = 'item-card';
-                // 이미지 에러 시 텍스트 아이콘 표시
-                const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null;this.parentNode.innerHTML='<div class=\\'item-icon\\'>⚔️</div>'">` : '<div class="item-icon">📦</div>';
+                // [수정] 이미지 없을 때 깨짐 방지: 텍스트 아이콘 대체
+                const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
                 
                 div.innerHTML = `
                     ${imgTag}
@@ -392,7 +398,24 @@
             document.getElementById('up-break').innerText='0';
             upIdx = -1;
         },
-        checkLevelUp: () => { /* Combat_System에서 처리됨 (중복 제거) */ }
+        
+        /* [수정] 레벨업 로직 복구 */
+        checkLevelUp: () => {
+            let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+            let lvUp = false;
+            while(data.exp >= next) {
+                data.exp -= next;
+                data.level++;
+                next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+                lvUp = true;
+            }
+            if(lvUp) {
+                alert(`🎉 레벨업! Lv.${data.level} (체력 완전 회복)`);
+                const stats = MainEngine.getFinalStats();
+                data.hp = stats.hp; // HP 완전 회복
+                MainEngine.updateUI();
+            }
+        }
     };
 
     function showPage(id) {
