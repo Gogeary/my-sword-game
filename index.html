@@ -18,14 +18,14 @@
         .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 16px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black; }
 
         /* 메뉴 버튼 */
-        .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 10px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; font-weight: bold; }
+        .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 10px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; font-weight: bold; width: 100%; box-sizing: border-box; }
         .main-menu-btn:hover { background: var(--point); transform: scale(1.02); }
 
         /* 리스트 및 카드 */
         #shop-list, #inventory-list, #modal-item-list { max-height: 400px; overflow-y: auto; padding: 5px; scrollbar-width: thin; }
         .item-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .item-icon { width: 45px; height: 45px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
-        .item-btn { width: 55px; padding: 8px 0; font-size: 0.8em; margin-left: 3px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
+        .item-icon { width: 50px; height: 50px; margin-right: 12px; border-radius: 5px; object-fit: cover; background: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2em; border: 1px solid #444; }
+        .item-btn { width: 58px; padding: 8px 0; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; }
 
         /* 강화 UI */
         #upgrade-target-display { min-height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px; border: 1px dashed #555; font-size: 1.1em; }
@@ -114,20 +114,14 @@
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
-    <div id="page-hunt" class="page">
-        <h2>⚔️ 사냥터</h2>
-        <button onclick="scanHunt()" style="background:var(--hunt); color:white; margin-bottom:12px; font-weight:bold; padding:12px; border:none; border-radius:8px; width:100%;">📡 몬스터 탐색 (Lv.±5)</button>
-        <div id="hunt-grid" class="grid-5"></div>
-        <div id="battle-log" style="height: 220px; overflow-y: auto; background: #000; border-radius: 10px; padding: 12px; font-size: 0.85em; text-align: left; margin-top: 10px; color: #adbac7; border: 1px solid #444; line-height: 1.5;">전투 대기 중...</div>
-        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
-    </div>
-
     <div id="page-mine-select" class="page">
         <h2>⛏️ 광산 선택</h2>
-        <button class="main-menu-btn" style="background:#7f8c8d;" onclick="enterMine(0)">1. 고갈된 광산 (1,000G)</button>
-        <button class="main-menu-btn" style="background:#95a5a6;" onclick="enterMine(1)">2. 무너진 광산 (10,000G)</button>
-        <button class="main-menu-btn" style="background:var(--mine); color:black;" onclick="enterMine(2)">3. 빛나는 광산 (100,000G)</button>
-        <button class="main-menu-btn" style="background:#f1c40f; color:black;" onclick="enterMine(3)">4. 찬란한 광산 (500,000G)</button>
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <button class="main-menu-btn" style="background:#7f8c8d; margin: 2px 0;" onclick="enterMine(0)">1. 고갈된 광산 (1,000G)</button>
+            <button class="main-menu-btn" style="background:#95a5a6; margin: 2px 0;" onclick="enterMine(1)">2. 무너진 광산 (10,000G)</button>
+            <button class="main-menu-btn" style="background:var(--mine); color:black; margin: 2px 0;" onclick="enterMine(2)">3. 빛나는 광산 (100,000G)</button>
+            <button class="main-menu-btn" style="background:#f1c40f; color:black; margin: 2px 0;" onclick="enterMine(3)">4. 찬란한 광산 (500,000G)</button>
+        </div>
         <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
     </div>
 
@@ -149,6 +143,14 @@
         <h2 id="shop-title">상점</h2>
         <div id="shop-list"></div>
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 뒤로가기</button>
+    </div>
+
+    <div id="page-hunt" class="page">
+        <h2>⚔️ 사냥터</h2>
+        <button onclick="scanHunt()" style="background:var(--hunt); color:white; margin-bottom:12px; font-weight:bold; padding:12px; border:none; border-radius:8px; width:100%;">📡 몬스터 탐색 (Lv.±5)</button>
+        <div id="hunt-grid" class="grid-5"></div>
+        <div id="battle-log" style="height: 220px; overflow-y: auto; background: #000; border-radius: 10px; padding: 12px; font-size: 0.85em; text-align: left; margin-top: 10px; color: #adbac7; border: 1px solid #444; line-height: 1.5;">전투 대기 중...</div>
+        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="inv-modal" class="modal">
@@ -200,6 +202,7 @@
         return { atk: fAtk, def: fDef, hp: fHP };
     };
 
+    /* 데이터베이스 */
     const EQUIP_DB = [
         { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
         { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
@@ -251,7 +254,7 @@
     ];
 
     /* ==========================================
-       2. UI 및 상호작용 로직
+       2. UI 및 로직
        ========================================== */
     const updateUI = () => {
         const stats = getFinalStats();
@@ -288,16 +291,17 @@
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
             const card = document.createElement('div');
             card.className = 'item-card';
-            // 요구사항: 이미지 적용 로직 추가
-            const imgHtml = it.img ? `<img src="image/${it.img}" class="item-icon" alt="${it.name}">` : '<div class="item-icon" style="background:#333;">?</div>';
+            
+            // 이미지 적용 로직
+            const imgHtml = it.img ? `<img src="image/${it.img}" class="item-icon">` : '<div class="item-icon">?</div>';
 
             card.innerHTML = `
                 ${imgHtml}
                 <div style="flex:1; min-width: 100px;">
-                    <strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine); font-size:0.85em;">[E]</span>' : ''}<br>
-                    <small>${it.type}</small>
+                    <strong>${it.name} +${it.en}</strong> ${isEquipped ? '<span style="color:var(--mine); font-size:0.85em;">[장착중]</span>' : ''}<br>
+                    <small style="color: #aaa;">${it.type}</small>
                 </div>
-                <div style="display:flex; flex-direction:row; gap:5px; align-items:center;">
+                <div style="display:flex; flex-direction:row; gap:4px; align-items:center;">
                     <button class="item-btn" style="background:var(--money); color:black;" onclick="goToUpgrade(${idx})">강화</button>
                     <button class="item-btn" style="background:var(--hunt); color:white;" onclick="equipItem(${idx})">${isEquipped ? '해제' : '장착'}</button>
                     <button class="item-btn" style="background:#c0392b; color:white;" onclick="sellItem(${idx})">판매</button>
@@ -313,6 +317,7 @@
         if(currentEquip && currentEquip.id === it.id) { data.equipment[it.type] = null; } 
         else { data.equipment[it.type] = it; }
         const newStats = getFinalStats();
+        // 벨트 해제 시 체력 보정 로직
         if(data.hp > newStats.hp) data.hp = newStats.hp;
         updateUI();
     };
@@ -398,7 +403,7 @@
     const stopAuto = () => { clearInterval(autoTimer); autoTimer = null; document.getElementById('auto-btn').innerText = '자동 강화 (+10강)'; };
 
     /* ==========================================
-       4. 전투 시스템
+       4. 사냥 및 전투 (0.1s 턴제)
        ========================================== */
     const getMonsterStats = (lv) => {
         let low = MON_STAGES[0], high = MON_STAGES[MON_STAGES.length-1];
@@ -443,6 +448,7 @@
             }
             let mDmg = Math.floor(calcDmg(m.atk, pStats.def));
             data.hp -= mDmg;
+            // 물약 자동 회복 로직
             if(data.potions > 0 && data.hp < pStats.hp) {
                 const heal = Math.min(mDmg, data.potions);
                 data.hp += heal; data.potions -= heal;
@@ -507,26 +513,28 @@
             EQUIP_DB.forEach(proto => {
                 const card = document.createElement('div');
                 card.className = 'item-card';
-                const imgHtml = proto.img ? `<img src="image/${proto.img}" class="item-icon" alt="${proto.name}">` : '<div class="item-icon" style="background:#333;">?</div>';
+                const imgHtml = proto.img ? `<img src="image/${proto.img}" class="item-icon">` : '<div class="item-icon">?</div>';
                 card.innerHTML = `${imgHtml}<div style="flex:1;"><strong>${proto.name}</strong> (Lv.${proto.lv})<br>${proto.p.toLocaleString()}G</div>
                     <button class="item-btn" style="background:var(--money); color:black;" onclick="buyItem('equip', ${JSON.stringify(proto).replace(/"/g, '&quot;')})">구매</button>`;
                 list.appendChild(card);
             });
         } else {
             document.getElementById('shop-title').innerText = '소비 상점';
+            // 물약 (1-5 이미지 적용)
             const potTiers = [{n:'최하급',r:100,p:2000},{n:'하급',r:1000,p:20000},{n:'중급',r:5000,p:100000},{n:'상급',r:10000,p:200000},{n:'최상급',r:50000,p:1000000}];
-            potTiers.forEach(p => {
+            potTiers.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.className = 'item-card';
-                card.innerHTML = `<div class="item-icon" style="background:#c0392b;">🧪</div><div style="flex:1;"><strong>${p.n} 물약</strong> (회복:${p.r.toLocaleString()})<br>${p.p.toLocaleString()}G</div>
+                card.innerHTML = `<img src="image/health_potion_${i+1}.png" class="item-icon"><div style="flex:1;"><strong>${p.n} 물약</strong> (회복:${p.r.toLocaleString()})<br>${p.p.toLocaleString()}G</div>
                     <button class="item-btn" style="background:var(--mine); color:black;" onclick="buyItem('potion', ${p.r}, ${p.p})">구매</button>`;
                 list.appendChild(card);
             });
+            // 방지권 (1-3 이미지 적용)
             const scrolls = [{n:'하급 방지권',t:1,p:100000},{n:'중급 방지권',t:2,p:500000},{n:'상급 방지권',t:3,p:2000000}];
             scrolls.forEach(s => {
                 const card = document.createElement('div');
                 card.className = 'item-card';
-                card.innerHTML = `<div class="item-icon" style="background:#f1c40f; color:black;">📜</div><div style="flex:1;"><strong>${s.n}</strong><br>${s.p.toLocaleString()}G</div>
+                card.innerHTML = `<img src="image/scroll_${s.t}.png" class="item-icon"><div style="flex:1;"><strong>${s.n}</strong><br>${s.p.toLocaleString()}G</div>
                     <button class="item-btn" style="background:var(--hunt); color:white;" onclick="buyItem('scroll', ${s.t}, ${s.p})">구매</button>`;
                 list.appendChild(card);
             });
