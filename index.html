@@ -380,26 +380,59 @@
         document.getElementById('btn-up-exec').disabled = true;
         document.getElementById('btn-up-sell').style.display = 'none';
     };
+    
+<script>
+    let currentUser = null, data = null, upIdx = -1, autoTimer = null;
+
+    /* ==========================================
+       1. 강화 확률 핵심 로직 (요청 사항 반영)
+       ========================================== */
+    const getUpgradeRates = (currentEn) => {
+        let success = 100;
+        let destroy = 0;
+
+        // 성공 확률: 0~9강까지 줄어들다 10강 40%, 11강부터 30% 고정
+        if (currentEn < 10) {
+            // 100%에서 40%까지 선형 감소 (예시)
+            success = 100 - (currentEn * 6); 
+            if(success < 40) success = 40;
+        } else if (currentEn === 10) {
+            success = 40;
+        } else {
+            success = 30;
+        }
+
+        // 파괴 확률: 11강부터 실패 시 5% 시작, 1강당 5%씩 증가
+        if (currentEn >= 11) {
+            destroy = 5 + (currentEn - 11) * 5;
+        }
+
+        return { success, destroy };
+    };
 
     const tryUpgrade = () => {
         if(upIdx === -1) return;
         const it = data.inventory[upIdx];
+        const rates = getUpgradeRates(it.en);
+        
         const cost = Math.floor(it.p * 0.5 * Math.pow(1.5, it.en));
         if(data.gold < cost) { stopAuto(); return alert("골드 부족!"); }
+        
         data.gold -= cost;
-        const sc = it.en < 3 ? 100 : it.en < 6 ? 85 : it.en < 9 ? 60 : 40;
-        const bc = (it.en >= 7 ? 20 : (it.en >= 5 ? 5 : 0));
-        if(Math.random()*100 < sc) {
+        const rand = Math.random() * 100;
+
+        if(rand < rates.success) {
             it.en++;
-            addLog(`성공: +${it.en} 강화!`, 'var(--mine)');
+            addLog(`[성공] +${it.en} 강화 성공!`, 'var(--mine)');
         } else {
-            if(Math.random()*100 < bc) {
+            const failRand = Math.random() * 100;
+            if(failRand < rates.destroy) {
+                addLog(`[파괴] 강화 실패로 '${it.name}'이(가) 소멸했습니다.`, 'red');
                 data.inventory.splice(upIdx, 1);
-                addLog(`파괴: ${it.name} 소멸`, 'red');
-                upIdx = -1; stopAuto(); resetUpgradeUI();
+                upIdx = -1; resetUpgradeUI(); stopAuto();
             } else {
                 it.en = Math.max(0, it.en - 1);
-                addLog('실패: 단계 하락', '#aaa');
+                addLog(`[실패] 강화 실패 (단계 하락: +${it.en})`, '#aaa');
             }
         }
         updateUI();
@@ -666,5 +699,6 @@
 </script>
 </body>
 </html>
+
 
 
