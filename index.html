@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v3.9</title>
+    <title>검 강화 & 사냥터 온라인 v3.9</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; }
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; }
@@ -59,7 +59,7 @@
         </div>
         <button class="btn-upgrade" onclick="tryUpgrade()">강 화 시 작 (<span id="cost">0</span>G)</button>
         <button class="btn-nav" style="background:#3498db;" id="auto-btn" onclick="startAutoUpgrade()">+10강 자동 도전</button>
-        <div id="log">시스템: 사냥터 탐색 버튼이 추가되고, 광산 화면이 개선되었습니다.</div>
+        <div id="log">시스템: 데이터 저장소가 통합되었습니다. 이전 기록을 불러옵니다.</div>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
             <button class="btn-nav" onclick="showPage('page-shop')">💰 상점</button>
             <button class="btn-nav" style="background:var(--mine); color:black;" onclick="showPage('page-mine')">⛏️ 광산</button>
@@ -188,7 +188,6 @@
         document.getElementById('prot-none').checked = true; save();
     }
 
-    // [수정된 부분] 사냥터 입장 (비용 차감 X)
     function enterZone(z) {
         if(data.equippedLv === -1) { alert("무기를 장착하세요!"); return; }
         currentZone = z;
@@ -202,7 +201,6 @@
         document.getElementById('hunt-scan-btn').innerText = `📡 몬스터 탐색 (${fee.toLocaleString()}G)`;
     }
 
-    // [신규] 사냥터 탐색 (비용 차감 O)
     function scanHunt() {
         let fee = currentZone === 1 ? 5000 : Math.floor(getUpgradeData(data.equippedLv).sp * 0.4);
         if(data.gold < fee) { alert(`입장료 부족! (${fee.toLocaleString()}G 필요)`); return; }
@@ -256,7 +254,6 @@
         renderMine(); save(); 
     }
     
-    // [수정] 광산 격자 렌더링
     function renderMine() { 
         const g = document.getElementById('mine-grid'); g.innerHTML = ""; 
         mineData.forEach((ore, i) => { 
@@ -268,8 +265,32 @@
 
     function exitZone() { document.getElementById('hunt-zone-select').style.display='block'; document.getElementById('hunt-ground').style.display='none'; document.getElementById('hunt-back-btn').style.display='block'; }
     function showPage(p) { document.querySelectorAll('.page').forEach(el => el.classList.remove('active')); document.getElementById(p).classList.add('active'); if(p==='page-mine') renderMine(); }
-    function save() { localStorage.setItem('swordRPG_v39', JSON.stringify(data)); updateUI(); }
-    function load() { const s = localStorage.getItem('swordRPG_v39'); if(s) data = JSON.parse(s); updateUI(); }
+    
+    // [데이터 저장 로직 변경: 고정된 키 사용]
+    const SAVE_KEY = 'swordRPG_fixed'; // 앞으로는 이 키만 사용
+    function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); updateUI(); }
+    
+    // [데이터 로드 로직 변경: 마이그레이션 포함]
+    function load() { 
+        const s = localStorage.getItem(SAVE_KEY); 
+        if(s) {
+            data = JSON.parse(s); // 고정 키에 데이터가 있으면 그거 씀
+        } else {
+            // 없으면 옛날 키들을 뒤져서 가져옴 (마이그레이션)
+            const oldKeys = ['swordRPG_v38', 'swordRPG_v37', 'swordRPG_v36', 'swordRPG_save'];
+            for(let key of oldKeys) {
+                const oldData = localStorage.getItem(key);
+                if(oldData) {
+                    data = JSON.parse(oldData);
+                    save(); // 찾자마자 새 키로 저장
+                    addLog("이전 데이터를 성공적으로 불러왔습니다!");
+                    break;
+                }
+            }
+        }
+        updateUI(); 
+    }
+    
     function addLog(m, c) { const l = document.getElementById('log'); l.innerHTML = `<div style="color:${c || '#95a5a6'}">> ${m}</div>` + l.innerHTML; }
     function addHuntLog(m, c) { document.getElementById('hunt-log').innerHTML = `<span style="color:${c}">> ${m}</span>`; }
     function startAutoUpgrade() { if(isAuto) { isAuto=false; return; } isAuto=true; const itv = setInterval(() => { if(!isAuto || data.level >= 10) { clearInterval(itv); isAuto=false; save(); return; } tryUpgrade(); }, 350); }
