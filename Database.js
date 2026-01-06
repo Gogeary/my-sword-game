@@ -1,13 +1,14 @@
 /* ==========================================
    [Database.js]
-   아이템 가격 2배수 밸런스 적용
+   게임 내 모든 상수, 아이템, 몬스터, 광산 데이터 관리
    ========================================== */
+
 const GameDatabase = {
     SYSTEM: {
-        TITLE: "강화하기 v1.2",
-        START_GOLD: 100000,
+        TITLE: "강화하기 v1.4",
+        START_GOLD: 100000, // 테스트용 넉넉한 초기 자금
         EMERGENCY_GOLD: 1000,
-        MAX_ENHANCE: 15, // 최대 강화 15강으로 확장
+        MAX_ENHANCE: 15, // 최대 강화 15강
         AUTO_ENHANCE_SPEED: 100,
         COMBAT_SPEED: 100,
         MAX_POTION_CAPACITY: 10,
@@ -16,18 +17,15 @@ const GameDatabase = {
 
     USER_STATS: {
         BASE: { ATK: 10, DEF: 2, HP: 100 },
-        GET_NEXT_EXP: (lv) => lv * 100 * 1.4,
-        CALC_ATK: (lv) => 10 + 0.5 * Math.pow(lv - 1, 1.2),
-        CALC_DEF: (lv) => 2 + 0.1 * Math.pow(lv - 1, 1.1),
-        CALC_HP: (lv) => 100 + 5 * Math.pow(lv - 1, 1.3)
+        // 레벨업 필요 경험치 공식
+        GET_NEXT_EXP: (lv) => Math.floor(lv * 100 * 1.4),
+        // 스탯 성장 공식
+        CALC_ATK: (lv) => Math.floor(10 + 0.5 * Math.pow(lv - 1, 1.2)),
+        CALC_DEF: (lv) => Math.floor(2 + 0.1 * Math.pow(lv - 1, 1.1)),
+        CALC_HP: (lv) => Math.floor(100 + 5 * Math.pow(lv - 1, 1.3))
     },
 
-    /* [가격 밸런스 패치]
-       1티어: 1,000 G
-       2티어: 2,000 G
-       3티어: 4,000 G
-       ... 2배씩 증가
-    */
+    /* [가격 밸런스: 2배수 적용] */
     EQUIPMENT: [
         // Tier 1 (Lv.1) - 1,000 G
         { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
@@ -86,6 +84,7 @@ const GameDatabase = {
         ]
     },
 
+    // 몬스터 기준 데이터 (구간별 기준점)
     MONSTER_STAGES: [
         { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,   exp: 10 },
         { lv: 5,  hp: 380,  atk: 35,  def: 8,   gold: 300,   exp: 50 },
@@ -112,3 +111,38 @@ const GameDatabase = {
     ]
 };
 
+/* ============================================================
+   [몬스터 데이터 보간 로직]
+   MONSTER_STAGES를 바탕으로 1~30레벨 전체 데이터를 생성합니다.
+   ============================================================ */
+(function generateFullMonsterData() {
+    const fullStages = [];
+    const stages = GameDatabase.MONSTER_STAGES;
+
+    for (let i = 0; i < stages.length - 1; i++) {
+        const start = stages[i];
+        const end = stages[i+1];
+        const steps = end.lv - start.lv;
+
+        // 시작 레벨 추가
+        fullStages.push(start);
+
+        // 중간 레벨 계산 (선형 보간법)
+        for (let j = 1; j < steps; j++) {
+            const ratio = j / steps;
+            fullStages.push({
+                lv: start.lv + j,
+                hp: Math.floor(start.hp + (end.hp - start.hp) * ratio),
+                atk: Math.floor(start.atk + (end.atk - start.atk) * ratio),
+                def: Math.floor(start.def + (end.def - start.def) * ratio),
+                gold: Math.floor(start.gold + (end.gold - start.gold) * ratio),
+                exp: Math.floor(start.exp + (end.exp - start.exp) * ratio)
+            });
+        }
+    }
+    // 마지막 30레벨 추가
+    fullStages.push(stages[stages.length - 1]);
+
+    // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
+    GameDatabase.MONSTER_TABLE = fullStages;
+})();
