@@ -308,49 +308,8 @@
                 localStorage.setItem('game_users', JSON.stringify(users));
             }
         },
-
-        // [추가된 부분] 도박 시스템
-    const GamblingSystem = {
-        init: () => {
-            // 들어올 때 현재 골드 표시 갱신
-            if(document.getElementById('gamble-gold-display')) {
-                document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
-            }
-            document.getElementById('gamble-amount').value = ''; // 입력창 초기화
-        },
-
-        play: (choice) => {
-            const input = document.getElementById('gamble-amount');
-            const bet = parseInt(input.value);
-            const log = document.getElementById('gamble-log');
-
-            // 1. 유효성 검사
-            if (!bet || bet <= 0) return alert("베팅 금액을 올바르게 입력해주세요.");
-            if (bet > data.gold) return alert("가진 돈보다 많이 걸 수 없습니다!");
-
-            // 2. 결과 판정 (랜덤)
-            // 1~100 사이 숫자 생성 -> 홀수면 'odd', 짝수면 'even'
-            const num = Math.floor(Math.random() * 100) + 1;
-            const resultType = (num % 2 !== 0) ? 'odd' : 'even';
-            const resultText = (resultType === 'odd') ? '🔴 홀' : '🔵 짝';
-
-            // 3. 승패 처리
-            if (choice === resultType) {
-                // 승리: 건 돈만큼 추가 (원금 포함 2배 효과)
-                data.gold += bet;
-                log.innerHTML = `<div style="color:#2ecc71; margin-bottom:5px;">🎉 <strong>승리!</strong> 결과: [${resultText}]<br>+${bet.toLocaleString()}G 획득!</div>` + log.innerHTML;
-            } else {
-                // 패배: 건 돈 차감
-                data.gold -= bet;
-                log.innerHTML = `<div style="color:#e74c3c; margin-bottom:5px;">💀 <strong>패배...</strong> 결과: [${resultText}]<br>-${bet.toLocaleString()}G 증발...</div>` + log.innerHTML;
-            }
-
-            // 4. UI 갱신
-            MainEngine.updateUI();
-            document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
-        }
-    };
-        //동냥기능
+        
+        // [위치 수정됨] 동냥 기능은 MainEngine 안에 있어야 합니다.
         begging: () => {
             // 1. 1~500 골드 랜덤 획득
             const amount = Math.floor(Math.random() * 500) + 1;
@@ -360,26 +319,29 @@
 
             // 2. 버튼 비활성화 및 타이머 시작
             const btn = document.getElementById('btn-beg');
-            btn.disabled = true; // 클릭 방지
-            btn.style.background = '#555'; // 회색으로 변경
-            let timeLeft = 10;
-            
-            // 3. 1초마다 텍스트 갱신 (새로고침 효과)
-            btn.innerText = `⏳ ${timeLeft}초 뒤 가능...`;
-            
-            const timer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    btn.innerText = `⏳ ${timeLeft}초 뒤 가능...`;
-                } else {
-                    // 10초 끝: 버튼 활성화
-                    clearInterval(timer);
-                    btn.disabled = false;
-                    btn.style.background = '#8e44ad'; // 원래 색 복구
-                    btn.innerText = '🤲 동냥하기 (쿨타임 10초)';
-                }
-            }, 1000);
+            if(btn) {
+                btn.disabled = true; // 클릭 방지
+                btn.style.background = '#555'; // 회색으로 변경
+                let timeLeft = 10;
+                
+                // 3. 1초마다 텍스트 갱신 (새로고침 효과)
+                btn.innerText = `⏳ ${timeLeft}초 뒤 가능...`;
+                
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        btn.innerText = `⏳ ${timeLeft}초 뒤 가능...`;
+                    } else {
+                        // 10초 끝: 버튼 활성화
+                        clearInterval(timer);
+                        btn.disabled = false;
+                        btn.style.background = '#8e44ad'; // 원래 색 복구
+                        btn.innerText = '🤲 동냥하기 (쿨타임 10초)';
+                    }
+                }, 1000);
+            }
         },
+
         exportSaveFile: () => {
             const saveStr = localStorage.getItem('game_users');
             if(!saveStr || saveStr === "{}") return alert("데이터 없음");
@@ -528,9 +490,50 @@
                 MainEngine.updateUI();
             }
         }
+    }; // MainEngine 종료
+
+    // [위치 수정됨] 도박 시스템은 MainEngine 밖으로 나와야 합니다.
+    const GamblingSystem = {
+        init: () => {
+            // 들어올 때 현재 골드 표시 갱신
+            if(document.getElementById('gamble-gold-display')) {
+                document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
+            }
+            document.getElementById('gamble-amount').value = ''; // 입력창 초기화
+        },
+
+        play: (choice) => {
+            const input = document.getElementById('gamble-amount');
+            const bet = parseInt(input.value);
+            const log = document.getElementById('gamble-log');
+
+            // 1. 유효성 검사
+            if (!bet || bet <= 0) return alert("베팅 금액을 올바르게 입력해주세요.");
+            if (bet > data.gold) return alert("가진 돈보다 많이 걸 수 없습니다!");
+
+            // 2. 결과 판정 (랜덤)
+            const num = Math.floor(Math.random() * 100) + 1;
+            const resultType = (num % 2 !== 0) ? 'odd' : 'even';
+            const resultText = (resultType === 'odd') ? '🔴 홀' : '🔵 짝';
+
+            // 3. 승패 처리
+            if (choice === resultType) {
+                // 승리
+                data.gold += bet;
+                log.innerHTML = `<div style="color:#2ecc71; margin-bottom:5px;">🎉 <strong>승리!</strong> 결과: [${resultText}]<br>+${bet.toLocaleString()}G 획득!</div>` + log.innerHTML;
+            } else {
+                // 패배
+                data.gold -= bet;
+                log.innerHTML = `<div style="color:#e74c3c; margin-bottom:5px;">💀 <strong>패배...</strong> 결과: [${resultText}]<br>-${bet.toLocaleString()}G 증발...</div>` + log.innerHTML;
+            }
+
+            // 4. UI 갱신
+            MainEngine.updateUI();
+            document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
+        }
     };
 
-    // [추가] 사냥터 목록 렌더링 함수
+    // 사냥터 목록 렌더링 함수
     function renderHuntingZones() {
         const list = document.getElementById('hunting-zone-list');
         if (!list) return;
@@ -557,7 +560,6 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         const t = document.getElementById(id); if(t) t.classList.add('active');
         
-        // [수정] 사냥터 선택 페이지 진입 시 리스트 갱신
         if (id === 'page-hunt-select') {
             renderHuntingZones();
         }
@@ -570,6 +572,7 @@
 </script>
 </body>
 </html>
+
 
 
 
