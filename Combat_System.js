@@ -192,14 +192,14 @@ const CombatSystem = {
             // [집 앞마당] (id: 0) -> 슬라임, 쥐
             targetMonsters = [
                 { name: '슬라임', img: 'slime.png' },
-                { name: '시궁창 쥐', img: 'rat.png' } 
+                { name: '앞마당 쥐', img: 'rat.png' } 
             ];
         } 
         else if (zoneId === 1) {
             // [뒷산] (id: 1) -> 산적, 늑대 (예시)
             targetMonsters = [
-                { name: '산적', img: 'bandit.png' },
-                { name: '늑대', img: 'wolf.png' }
+                { name: '화가난 등산객', img: 'hiker.png' },
+                { name: '고라니', img: 'wolf.png' }
             ];
         }
         else {
@@ -244,4 +244,5 @@ const CombatSystem = {
         if (window.MainEngine) MainEngine.updateUI();
     }
 };
+
 
