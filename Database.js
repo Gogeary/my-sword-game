@@ -3,7 +3,7 @@
    ========================================== */
 const GameDatabase = {
     SYSTEM: {
-        TITLE: "강화하기 v2.0",
+        TITLE: "강화하기 v2.2",
         START_GOLD: 100000,
         MAX_ENHANCE: 20,
         COMBAT_SPEED: 100,
@@ -165,4 +165,5 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
