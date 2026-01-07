@@ -8,7 +8,7 @@ const GameDatabase = {
     SYSTEM: {
         TITLE: "강화하기 v1.4",
         START_GOLD: 100000,
-        MAX_ENHANCE: 15, // 최대 강화 15강
+        MAX_ENHANCE: 20, // 최대 강화 20강
         COMBAT_SPEED: 100,
         MAX_POTION_CAPACITY: 10, // 물약 최대 소지 개수
         IMAGE_PATH: "image/"
@@ -145,3 +145,4 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
