@@ -30,7 +30,7 @@ const GameDatabase = {
         { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
         
         // Tier 2 (10,000 G)
-        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' },
+        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png' },
         { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
         { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
         
@@ -170,6 +170,7 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
