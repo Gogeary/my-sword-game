@@ -143,6 +143,7 @@ const CombatSystem = {
                 autoTimer = null;
                 data.gold += m.gold;
                 data.exp += m.exp;
+                if (window.MainEngine) MainEngine.updateUI();
                 
                 log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
                 
@@ -254,3 +255,4 @@ const CombatSystem = {
         if (window.MainEngine) MainEngine.updateUI();
     }
 };
+
