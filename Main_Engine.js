@@ -232,6 +232,27 @@ const MainEngine = {
     goToUpgrade: (idx) => { showPage('page-upgrade'); if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); },
     sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
 
+   fullHeal: () => {
+        const stats = MainEngine.getFinalStats();
+        const maxHP = Math.floor(stats.hp);
+        const currentHP = Math.floor(data.hp);
+        const missingHP = maxHP - currentHP;
+
+        if (missingHP <= 0) return alert("이미 체력이 가득 차 있습니다.");
+        
+        const costPerHP = 25; // HP 1당 25골드
+        const totalCost = missingHP * costPerHP;
+
+        if (confirm(`체력을 회복하시겠습니까?\n(회복량: ${missingHP}, 비용: ${totalCost.toLocaleString()} G)`)) {
+            if (data.gold < totalCost) return alert(`골드가 부족합니다.\n(필요: ${totalCost.toLocaleString()} G / 보유: ${Math.floor(data.gold).toLocaleString()} G)`);
+            
+            data.gold -= totalCost;
+            data.hp = maxHP;
+            MainEngine.updateUI();
+            alert(`치료가 완료되었습니다. (비용: ${totalCost.toLocaleString()} G 소모)`);
+        }
+    },
+   
     openInventoryModal: () => {
         const modal = document.getElementById('inv-modal');
         const mList = document.getElementById('modal-item-list');
@@ -301,4 +322,5 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
