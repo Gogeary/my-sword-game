@@ -67,7 +67,7 @@ const GameDatabase = {
             { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 20000, img: 'ticket5.png' },
             { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 50000, img: 'ticket7.png' },
             { id: 't10', name: '+10 강화권', val: 10, type: 'ticket', p: 1000000, img: 'ticket10.png' },
-            { id: 't12', name: '+12 강화권', val: 12, type: 'ticket', p: 2000000, img: 'ticket12.png' }
+            { id: 't12', name: '+12 강화권', val: 12, type: 'ticket', p: 2000000, img: 'ticket12.png' },
             { id: 't13', name: '+13 강화권', val: 13, type: 'ticket', p: 4000000, img: 'ticket13.png' },
             { id: 't14', name: '+14 강화권', val: 14, type: 'ticket', p: 10000000, img: 'ticket14.png' },
             { id: 't15', name: '+15 강화권', val: 15, type: 'ticket', p: 20000000, img: 'ticket15.png' }
@@ -165,5 +165,6 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
