@@ -305,16 +305,25 @@ const CombatSystem = {
 
     tryAutoPotion: (pStats) => {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
+        
         const missingHp = pStats.hp - data.hp;
-        if (missingHp <= 0) return; 
+        if (missingHp <= 0) return { healed: 0 }; // 회복 필요 없음
+
         const potions = data.inventory.filter(i => i.type === 'potion').sort((a, b) => a.val - b.val);
-        if (potions.length === 0) return;
+        if (potions.length === 0) return { healed: 0 }; // 포션 없음
+
         const totalPotionsValue = potions.reduce((acc, cur) => acc + cur.val, 0);
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
-        if (realRemainingPool <= 0) return;
+        
+        if (realRemainingPool <= 0) return { healed: 0 }; // 버퍼가 이미 꽉 참
+
+        // 회복량 계산
         const healAmount = Math.min(missingHp, realRemainingPool);
         data.hp += healAmount;
         data.potionBuffer += healAmount;
+
+        // 실제 아이템 소모 로직
+        let usedCount = 0;
         while (potions.length > 0) {
             const smallestPotion = potions[0];
             if (data.potionBuffer >= smallestPotion.val) {
@@ -323,9 +332,15 @@ const CombatSystem = {
                 if (realIdx !== -1) {
                     data.inventory.splice(realIdx, 1);
                     potions.shift();
+                    usedCount++; // 소모된 개수 카운트
                 } else break;
             } else break;
         }
+
         if (window.MainEngine) MainEngine.updateUI();
+        
+        // [변경점] 회복량과 소모 개수를 반환합니다.
+        return { healed: healAmount, usedCount: usedCount };
     }
 };
+
