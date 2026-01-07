@@ -1,28 +1,34 @@
 /* Skill_System.js */
 const SkillSystem = {
-    // 아이템에 확률적으로 스킬 부여 (drop 시 호출됨)
-    attachSkill: (item) => {
-        if (item.skill || !['weapon', 'armor', 'belt'].includes(item.type)) return item;
+    // 1. 아이템에 스킬 부여 (확장성 개선)
+    attachSkill: (item, count) => {
+        // [수정] 하드코딩 제거: DB에 해당 타입의 스킬 목록이 있는지 확인
+        const pool = GameDatabase.SKILLS[item.type]; 
+        
+        // 스킬 목록이 없거나 장비가 아니면 패스
+        if (!pool || pool.length === 0) return item;
+        
+        // 스킬 목록 초기화
+        if (!item.skills) item.skills = [];
 
-        // 드랍 아이템 스킬 부여 확률: 50% (테스트를 위해 높게 잡음)
-        const chance = Math.random() * 100;
-        if (chance < 50) { 
-            const pool = GameDatabase.SKILLS[item.type];
-            if (pool && pool.length > 0) {
-                const pick = pool[Math.floor(Math.random() * pool.length)];
-                item.skill = { ...pick }; 
-                item.name = `${item.name} [${pick.name}]`; // 이름 뒤에 [스킬명] 붙임
-            }
+        // 요청한 개수만큼 스킬 추가
+        for (let i = 0; i < count; i++) {
+            // 중복 방지
+            const available = pool.filter(p => !item.skills.some(s => s.id === p.id));
+            if (available.length === 0) break;
+
+            const pick = available[Math.floor(Math.random() * available.length)];
+            
+            // 스킬 추가
+            item.skills.push({ ...pick });
+            item.name = `${item.name} [${pick.name}]`; 
         }
         return item;
     },
 
-    // 전투 중 발동 체크
+    // 2. 전투 중 발동 체크 (기존 유지)
     check: (item, turn) => {
-        if (!item || !item.skill) return null;
-        if (turn % item.skill.turn === 0) {
-            return item.skill;
-        }
-        return null;
+        if (!item || !item.skills || item.skills.length === 0) return [];
+        return item.skills.filter(s => turn % s.turn === 0);
     }
 };
