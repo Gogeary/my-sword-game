@@ -1,9 +1,6 @@
 /* ==========================================
-   [Database.js]
-   게임 내 모든 상수, 아이템, 몬스터, 광산 데이터 관리
-   (수정 완료: GACHA 설정 위치 수정됨)
+   [Database.js] (문법 오류 수정본)
    ========================================== */
-
 const GameDatabase = {
     SYSTEM: {
         TITLE: "강화하기 v2.0",
@@ -12,7 +9,7 @@ const GameDatabase = {
         COMBAT_SPEED: 100,
         MAX_POTION_CAPACITY: 10,
         IMAGE_PATH: "image/",
-        SCAN_COST: 20000 // 탐색 비용
+        SCAN_COST: 20000
     },
 
     USER_STATS: {
@@ -23,39 +20,25 @@ const GameDatabase = {
         CALC_HP: (lv) => Math.floor(100 + 5 * Math.pow(lv - 1, 1.3))
     },
 
-    /* [장비 가격: 티어별 가격 적용] */
     EQUIPMENT: [
-        // Tier 1 (1,000 G)
         { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
         { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
         { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
-        
-        // Tier 2 (10,000 G)
         { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png' },
         { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
         { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
-        
-        // Tier 3 (50,000 G)
         { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon' },
         { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor' },
         { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt' },
-        
-        // Tier 4 (250,000 G)
         { lv: 15, name: '강철 검', k: 1.7, p: 250000, type: 'weapon' },
         { lv: 15, name: '가죽 옷', k: 1.6, p: 250000, type: 'armor' },
         { lv: 15, name: '가죽 벨트', k: 1.9, p: 250000, type: 'belt' },
-        
-        // Tier 5 (1,250,000 G)
         { lv: 20, name: '연마된 강철 검', k: 2.1, p: 1250000, type: 'weapon' },
         { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 1250000, type: 'armor' },
         { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 1250000, type: 'belt' },
-        
-        // Tier 6 (6,000,000 G)
         { lv: 25, name: '은빛 강철 검', k: 2.7, p: 6000000, type: 'weapon' },
         { lv: 25, name: '비늘 갑옷', k: 2.5, p: 6000000, type: 'armor' },
         { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 6000000, type: 'belt' },
-        
-        // Tier 7 (30,000,000 G)
         { lv: 30, name: '은 검', k: 3.5, p: 30000000, type: 'weapon' },
         { lv: 30, name: '강철 갑옷', k: 3.2, p: 30000000, type: 'armor' },
         { lv: 30, name: '용병 벨트', k: 4.5, p: 30000000, type: 'belt' }
@@ -80,7 +63,6 @@ const GameDatabase = {
             { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', img: 'scroll_2.png' },
             { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', img: 'scroll_3.png' }
         ],
-        // [신규] 강화권 아이템 추가
         tickets: [
             { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 500000, img: 'ticket.png' },
             { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 1000000, img: 'ticket.png' },
@@ -89,7 +71,6 @@ const GameDatabase = {
         ]
     },
 
-    // [몬스터 골드 수정]
     MONSTER_STAGES: [
         { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,      exp: 10 },
         { lv: 5,  hp: 380,  atk: 35,  def: 8,   gold: 1000,     exp: 50 },
@@ -99,8 +80,7 @@ const GameDatabase = {
         { lv: 25, hp: 4200, atk: 300, def: 100, gold: 400000,   exp: 300 },
         { lv: 30, hp: 7500, atk: 550, def: 180, gold: 1000000,  exp: 500 }
     ],
-    
-   // [사냥터 목록: cost(탐색 비용) 추가]
+
     HUNTING_ZONES: [
         { id: 0, name: "집 앞마당", minLv: 1, maxLv: 5, cost: 1000 },
         { id: 1, name: "뒷산", minLv: 6, maxLv: 10, cost: 5000 },
@@ -126,7 +106,6 @@ const GameDatabase = {
         { n: '다이아', v: 3000000, s: '💎' }
     ],
 
-    // [이동 완료] 장비 부위별 패시브 스킬 목록
     SKILLS: {
         weapon: [
             { id: 'smash', name: '강타', turn: 3, val: 2.0, desc: '3턴마다 2배 데미지' },
@@ -141,10 +120,10 @@ const GameDatabase = {
         ]
     },
 
-    // [수정] GACHA 설정을 이곳으로 이동 (GameDatabase 객체 내부)
+    // [중요] 여기가 GACHA의 올바른 위치입니다. (GameDatabase 닫히기 전)
     GACHA: {
         ENHANCE_BOX: {
-            COST: 100000, // 비용 확인 (10만 골드)
+            COST: 100000,
             RATES: [
                 { type: 'ticket', val: 5,  name: '+5 강화권', chance: 30, color: '#2ecc71' },
                 { type: 'ticket', val: 7,  name: '+7 강화권', chance: 15, color: '#3498db' },
@@ -158,24 +137,16 @@ const GameDatabase = {
     }
 };
 
-/* ============================================================
-   [몬스터 데이터 자동 생성 로직]
-   ============================================================ */
+/* 몬스터 자동 생성 */
 (function generateFullMonsterData() {
     const fullStages = [];
     const stages = GameDatabase.MONSTER_STAGES;
-
     if(!stages) return;
-
     for (let i = 0; i < stages.length - 1; i++) {
         const start = stages[i];
         const end = stages[i+1];
         const steps = end.lv - start.lv;
-
-        // 시작 레벨 추가
         fullStages.push(start);
-
-        // 중간 레벨 계산 (선형 보간법)
         for (let j = 1; j < steps; j++) {
             const ratio = j / steps;
             fullStages.push({
@@ -188,10 +159,6 @@ const GameDatabase = {
             });
         }
     }
-
-    // 마지막 30레벨 추가
     fullStages.push(stages[stages.length - 1]);
-
-    // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
