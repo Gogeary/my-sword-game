@@ -273,16 +273,22 @@ const MainEngine = {
     closeModal: () => document.getElementById('inv-modal').style.display='none',
 
     checkLevelUp: () => {
-        let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
-        while(data.exp >= next) {
-            data.exp -= next;
-            data.level++;
-            next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
-        }
+    let leveledUp = false;
+    let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+
+    while (data.exp >= next) {
+        data.exp -= next;
+        data.level++;
+        leveledUp = true;
+        next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+    }
+
+    if (leveledUp) {
         alert(`🎉 레벨업! Lv.${data.level}`);
         data.hp = MainEngine.getFinalStats().hp;
         MainEngine.updateUI();
     }
+}
 };
 
 // ... 이하 GamblingSystem, renderHuntingZones, showPage 등은 기존과 동일 ...
@@ -322,5 +328,6 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
