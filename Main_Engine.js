@@ -1,25 +1,67 @@
 /* ==========================================
    [Main_Engine.js]
-   게임의 핵심 로직 (로그인, 저장, UI 갱신, 도박 등)
-   (수정 완료: 유료 치료소 기능 추가)
+   게임의 핵심 로직 (암호화 적용 버전)
    ========================================== */
 
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
 
+// [보안] 암호화 키 (이 키가 다르면 세이브 파일을 풀 수 없음)
+const SECRET_KEY = "my_super_secret_game_key_v1.8";
+
 const MainEngine = {
+    // [암호화 헬퍼] 데이터 암호화
+    encrypt: (dataObj) => {
+        try {
+            const str = JSON.stringify(dataObj);
+            return CryptoJS.AES.encrypt(str, SECRET_KEY).toString();
+        } catch (e) {
+            console.error("암호화 실패", e);
+            return null;
+        }
+    },
+
+    // [암호화 헬퍼] 데이터 복호화 (실패 시 원본 반환 시도)
+    decrypt: (encryptedStr) => {
+        try {
+            if (!encryptedStr) return {};
+            const bytes = CryptoJS.AES.decrypt(encryptedStr, SECRET_KEY);
+            const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+            
+            // 복호화된 문자열이 없으면(빈 문자열) 기존 방식(일반 JSON)일 수 있음
+            if (!decryptedData) return JSON.parse(encryptedStr); 
+            
+            return JSON.parse(decryptedData);
+        } catch (e) {
+            // 암호화된 데이터가 아니면 그냥 파싱 시도 (기존 유저 호환성)
+            try { return JSON.parse(encryptedStr); } catch (err) { return {}; }
+        }
+    },
+
     init: () => {
         if(typeof GameDatabase === 'undefined') return console.error("Database 로드 실패");
         const auto = localStorage.getItem('game_auto_user');
         if(auto) {
-            const users = JSON.parse(localStorage.getItem('game_users') || "{}");
-            if(users[auto]) { currentUser = auto; data = users[auto].data; MainEngine.enterGame(); }
+            // [수정] 복호화하여 로드
+            const savedData = localStorage.getItem('game_users');
+            const users = MainEngine.decrypt(savedData);
+            
+            if(users && users[auto]) { 
+                currentUser = auto; 
+                data = users[auto].data; 
+                MainEngine.enterGame(); 
+            }
         }
     },
+
     handleLogin: () => {
         const id = document.getElementById('login-id').value;
         const pw = document.getElementById('login-pw').value;
         if(!id || !pw) return alert("정보를 입력해주세요.");
-        const users = JSON.parse(localStorage.getItem('game_users') || "{}");
+
+        // [수정] 복호화하여 로드
+        const savedData = localStorage.getItem('game_users');
+        const users = MainEngine.decrypt(savedData);
+
         if(users[id]) {
             if(users[id].pw !== pw) return alert("비밀번호가 틀립니다.");
             data = users[id].data;
@@ -35,29 +77,40 @@ const MainEngine = {
         }
         currentUser = id;
         if(typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
+        
         if(document.getElementById('auto-login').checked) localStorage.setItem('game_auto_user', id);
-        localStorage.setItem('game_users', JSON.stringify(users));
+        
+        // [수정] 암호화하여 저장
+        localStorage.setItem('game_users', MainEngine.encrypt(users));
+        
         MainEngine.enterGame();
     },
+
     enterGame: () => {
         document.getElementById('login-container').style.display='none';
         document.getElementById('game-container').style.display='block';
         MainEngine.updateUI();
     },
+
     logout: () => {
         showPage('page-main');
         localStorage.removeItem('game_auto_user');
         location.reload();
     },
+
     saveGame: () => {
         if(currentUser && data) {
-            const users = JSON.parse(localStorage.getItem('game_users') || "{}");
+            // [수정] 불러올 때도 복호화
+            const savedData = localStorage.getItem('game_users');
+            const users = MainEngine.decrypt(savedData);
+            
             users[currentUser].data = data;
-            localStorage.setItem('game_users', JSON.stringify(users));
+            
+            // [수정] 저장할 때 암호화
+            localStorage.setItem('game_users', MainEngine.encrypt(users));
         }
     },
     
-    // 동냥 기능
     begging: () => {
         const amount = Math.floor(Math.random() * 500) + 1;
         data.gold += amount;
@@ -69,9 +122,7 @@ const MainEngine = {
             btn.disabled = true; 
             btn.style.background = '#555'; 
             let timeLeft = 10;
-            
             btn.innerText = `⏳ ${timeLeft}초 뒤 가능...`;
-            
             const timer = setInterval(() => {
                 timeLeft--;
                 if (timeLeft > 0) {
@@ -87,28 +138,45 @@ const MainEngine = {
     },
 
     exportSaveFile: () => {
+        // [수정] 저장된 문자열 그대로 내보냄 (이미 암호화되어 있음)
         const saveStr = localStorage.getItem('game_users');
-        if(!saveStr || saveStr === "{}") return alert("데이터 없음");
+        if(!saveStr) return alert("데이터 없음");
+        
+        // 파일명도 변경
         const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `강화하기_v1.7_세이브.txt`;
+        link.download = `강화하기_v1.8_Encrypted_Save.txt`;
         link.click();
     },
+
     importSaveFile: (input) => {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                JSON.parse(e.target.result);
-                localStorage.setItem('game_users', e.target.result);
+                const loadedStr = e.target.result;
+                // [수정] 복호화 테스트: 올바른 형식인지 확인
+                const testParse = MainEngine.decrypt(loadedStr);
+                
+                if (!testParse || Object.keys(testParse).length === 0) {
+                     // 복호화 실패 시 (옛날 파일일 수도 있으니 일반 파싱 시도)
+                     JSON.parse(loadedStr); 
+                }
+                
+                // 통과되면 저장
+                localStorage.setItem('game_users', loadedStr);
                 alert("복구 완료!");
                 location.reload();
-            } catch(err) { alert("파일 오류"); }
+            } catch(err) { 
+                console.error(err);
+                alert("유효하지 않은 세이브 파일입니다."); 
+            }
         };
         reader.readAsText(file);
     },
+
     updateUI: () => {
         if(!data) return;
         const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
@@ -197,34 +265,20 @@ const MainEngine = {
     goToUpgrade: (idx) => { showPage('page-upgrade'); if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); },
     sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
     
-    // [수정된 부분] 유료 치료소 로직 (HP 1당 25골드)
     fullHeal: () => {
         const stats = MainEngine.getFinalStats();
         const maxHP = Math.floor(stats.hp);
         const currentHP = Math.floor(data.hp);
         const missingHP = maxHP - currentHP;
 
-        // 1. 이미 체력이 가득 찬 경우
-        if (missingHP <= 0) {
-            return alert("이미 체력이 가득 차 있습니다.");
-        }
-
-        // 2. 비용 계산 (HP 1당 25골드)
+        if (missingHP <= 0) return alert("이미 체력이 가득 차 있습니다.");
         const costPerHP = 25;
         const totalCost = missingHP * costPerHP;
 
-        // 3. 사용자 확인 (비용 안내)
         if (confirm(`체력을 회복하시겠습니까?\n(회복량: ${missingHP}, 비용: ${totalCost.toLocaleString()} G)`)) {
-            
-            // 4. 골드 부족 체크
-            if (data.gold < totalCost) {
-                return alert(`골드가 부족합니다.\n(필요: ${totalCost.toLocaleString()} G / 보유: ${Math.floor(data.gold).toLocaleString()} G)`);
-            }
-
-            // 5. 결제 및 회복 실행
+            if (data.gold < totalCost) return alert(`골드가 부족합니다.\n(필요: ${totalCost.toLocaleString()} G / 보유: ${Math.floor(data.gold).toLocaleString()} G)`);
             data.gold -= totalCost;
             data.hp = maxHP;
-            
             MainEngine.updateUI();
             alert(`치료가 완료되었습니다. (비용: ${totalCost.toLocaleString()} G 소모)`);
         }
@@ -269,7 +323,6 @@ const MainEngine = {
     }
 };
 
-// 도박 시스템
 const GamblingSystem = {
     init: () => {
         if(document.getElementById('gamble-gold-display')) {
@@ -277,7 +330,6 @@ const GamblingSystem = {
         }
         document.getElementById('gamble-amount').value = ''; 
     },
-
     play: (choice) => {
         const input = document.getElementById('gamble-amount');
         const bet = parseInt(input.value);
@@ -297,13 +349,11 @@ const GamblingSystem = {
             data.gold -= bet;
             log.innerHTML = `<div style="color:#e74c3c; margin-bottom:5px;">💀 <strong>패배...</strong> 결과: [${resultText}]<br>-${bet.toLocaleString()}G 증발...</div>` + log.innerHTML;
         }
-
         MainEngine.updateUI();
         document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
     }
 };
 
-// 사냥터 목록 렌더링 함수
 function renderHuntingZones() {
     const list = document.getElementById('hunting-zone-list');
     if (!list) return;
@@ -324,7 +374,6 @@ function renderHuntingZones() {
     });
 }
 
-// 페이지 전환 함수
 function showPage(id) {
     if(autoTimer) { clearInterval(autoTimer); autoTimer=null; }
     if(typeof UpgradeSystem !== 'undefined' && UpgradeSystem.stopAuto) UpgradeSystem.stopAuto();
@@ -334,11 +383,9 @@ function showPage(id) {
     if (id === 'page-hunt-select') {
         renderHuntingZones();
     }
-    
     MainEngine.updateUI();
 }
 
 function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
-
 
 window.onload = MainEngine.init;
