@@ -118,7 +118,7 @@ const MainEngine = {
         const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `강화하기_v2.0_Save.txt`;
+        link.download = `강화하기_v2.2_Save.txt`;
         link.click();
     },
 
@@ -301,3 +301,4 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
