@@ -385,7 +385,41 @@ function showPage(id) {
     }
     MainEngine.updateUI();
 }
+/* ==========================================
+   [보안] 우클릭 및 F12 개발자 도구 차단 스크립트
+   ========================================== */
+
+// 1. 마우스 우클릭 차단
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    alert("보안을 위해 우클릭이 제한됩니다.");
+});
+
+// 2. F12 및 개발자 도구 단축키 차단
+document.addEventListener('keydown', function(e) {
+    // F12 키
+    if (e.keyCode === 123) {
+        e.preventDefault();
+        e.returnValue = false;
+    }
+    // Ctrl + Shift + I (개발자 도구)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+        e.preventDefault();
+        e.returnValue = false;
+    }
+    // Ctrl + Shift + J (콘솔)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+        e.preventDefault();
+        e.returnValue = false;
+    }
+    // Ctrl + U (소스 보기)
+    if (e.ctrlKey && e.keyCode === 85) {
+        e.preventDefault();
+        e.returnValue = false;
+    }
+});
 
 function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
 
 window.onload = MainEngine.init;
+
