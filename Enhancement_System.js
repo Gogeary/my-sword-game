@@ -10,12 +10,33 @@ const UpgradeSystem = {
     isAuto: false,
     autoTimer: null,
     
-    // [신규] 강화 비용 계산기 (기본 가격의 5% + 레벨 비례)
+    // [수정] 강화 비용 계산기 (5강 유지 -> 1.2배 -> 11강부터 1.8배)
     calcCost: (item) => {
         if (!item) return 0;
-        const baseCost = Math.floor(item.p * 0.05); // 템 가격의 5%
-        const levelCost = item.en * 1000;           // 1강당 1000골드 추가
-        return baseCost + levelCost;
+
+        // 1. 기본 비용 (아이템 가격의 10%)
+        let baseCost = Math.floor(item.p * 0.1);
+
+        // [구간 A] 5강 미만: 기존 선형 방식 유지
+        if (item.en < 5) {
+            return baseCost + (item.en * 1000);
+        }
+
+        // [구간 B] 5강 이상: 배율 적용 (복리 계산)
+        // 기준점: 5강일 때의 비용을 먼저 계산합니다.
+        let cost = baseCost + (5 * 1000);
+
+        // 5강부터 현재 레벨까지 반복문을 돌며 배율을 곱합니다.
+        for (let i = 5; i < item.en; i++) {
+            if (i < 10) {
+                // 5강~9강 구간 (즉, 6~10강 도전 시): 1.2배 증가
+                cost *= 1.2;
+            } else {
+                // 10강 이상 구간 (즉, 11강 도전부터): 1.8배 증가
+                cost *= 1.8;
+            }
+        }
+       return Math.floor(cost);
     },
 
     selectUpgrade: (idx) => {
@@ -293,3 +314,4 @@ const UpgradeSystem = {
         if(btn) btn.innerText = "자동 강화 시작";
     }
 };
+
