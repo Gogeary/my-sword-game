@@ -243,12 +243,17 @@
 
     <div id="page-info" class="page">
         <h2>👤 내 정보</h2>
+        
         <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px; text-align:left; font-size:0.95em;">
             <p>⚔️ 공격력: <span id="info-atk" style="color:#f39c12; font-weight:bold;">0</span></p>
             <p>🛡️ 방어력: <span id="info-def" style="color:#3498db; font-weight:bold;">0</span></p>
             <p>❤️ 최대 체력: <span id="info-hp" style="color:#e74c3c; font-weight:bold;">0</span></p>
         </div>
-        <h3>🎒 보유 아이템</h3>
+
+        <h3 style="color:#2ecc71; border-bottom:2px solid #333; padding-bottom:5px; margin-top:20px; text-align:left;">⚔️ 장착 중인 장비</h3>
+        <div id="equipped-list" style="margin-bottom:20px;"></div>
+
+        <h3 style="border-bottom:2px solid #333; padding-bottom:5px; text-align:left;">🎒 인벤토리</h3>
         <div id="inventory-list" style="padding-bottom:10px;"></div>
 
         <div class="save-manage-box">
@@ -291,4 +296,5 @@
 </div>
 </body>
 </html>
+
 
