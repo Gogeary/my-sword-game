@@ -94,12 +94,12 @@ const GameDatabase = {
     
     // [사냥터 목록]
     HUNTING_ZONES: [
-        { id: 0, name: "초심자의 숲", minLv: 1, maxLv: 5 },
-        { id: 1, name: "바위 산맥", minLv: 6, maxLv: 10 },
-        { id: 2, name: "어둠의 동굴", minLv: 11, maxLv: 15 },
-        { id: 3, name: "버려진 신전", minLv: 16, maxLv: 20 },
-        { id: 4, name: "용암 지대", minLv: 21, maxLv: 25 },
-        { id: 5, name: "절망의 탑", minLv: 26, maxLv: 30 }
+        { id: 0, name: "집 앞마당", minLv: 1, maxLv: 5 },
+        { id: 1, name: "뒷산", minLv: 6, maxLv: 10 },
+        { id: 2, name: "뒷산 동굴", minLv: 11, maxLv: 15 },
+        { id: 3, name: "우리동네 폐허", minLv: 16, maxLv: 20 },
+        { id: 4, name: "회사 근처", minLv: 21, maxLv: 25 },
+        { id: 5, name: "회사", minLv: 26, maxLv: 30 }
     ],
 
     MINES: [
@@ -156,3 +156,4 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
