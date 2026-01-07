@@ -1,4 +1,4 @@
-/* Combat_System.js - 확장성 강화 버전 */
+/* Combat_System.js - 확장성 강화 버전 (로그 업데이트 기능 추가됨) */
 
 // [핵심] 장비 타입별 스킬 효과 정의 (여기만 수정하면 장비 확장 가능)
 const SkillHandlers = {
@@ -100,7 +100,7 @@ const CombatSystem = {
         else { alert("도망 실패! 전투 시작!"); CombatSystem.startBattle(); }
     },
 
-    // 4. 전투 시작 (확장성 + 드랍 로직 적용됨)
+    // 4. 전투 시작 (확장성 + 드랍 로직 + 포션 로그 적용됨)
     startBattle: () => {
         const m = CombatSystem.tempMonster;
         if (!m) return alert("오류 발생");
@@ -226,10 +226,16 @@ const CombatSystem = {
                 });
             });
 
-            data.hp -= incDmg;
-            CombatSystem.tryAutoPotion(pStats);
+            data.hp -= incDmg; // 데미지 적용
 
-            log.innerHTML = `피격: ${incDmg} ${defMsg} (내 HP: ${Math.max(0, Math.floor(data.hp))})<br>` + log.innerHTML;
+            // [수정된 부분] 포션 자동 사용 및 결과 로그 출력
+            const potionResult = CombatSystem.tryAutoPotion(pStats);
+            let potionMsg = "";
+            if (potionResult.healed > 0) {
+                potionMsg = `<br><span style="color:var(--mine)">🧪 자동 회복: +${Math.floor(potionResult.healed)} (소모: ${potionResult.usedCount}개)</span>`;
+            }
+
+            log.innerHTML = `피격: ${incDmg} ${defMsg} (내 HP: ${Math.max(0, Math.floor(data.hp))})${potionMsg}<br>` + log.innerHTML;
             if (window.MainEngine) MainEngine.updateUI();
 
             // [패배]
@@ -307,15 +313,15 @@ const CombatSystem = {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
         
         const missingHp = pStats.hp - data.hp;
-        if (missingHp <= 0) return { healed: 0 }; // 회복 필요 없음
+        if (missingHp <= 0) return { healed: 0, usedCount: 0 }; // 회복 필요 없음
 
         const potions = data.inventory.filter(i => i.type === 'potion').sort((a, b) => a.val - b.val);
-        if (potions.length === 0) return { healed: 0 }; // 포션 없음
+        if (potions.length === 0) return { healed: 0, usedCount: 0 }; // 포션 없음
 
         const totalPotionsValue = potions.reduce((acc, cur) => acc + cur.val, 0);
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
         
-        if (realRemainingPool <= 0) return { healed: 0 }; // 버퍼가 이미 꽉 참
+        if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 }; // 버퍼가 이미 꽉 참
 
         // 회복량 계산
         const healAmount = Math.min(missingHp, realRemainingPool);
@@ -343,4 +349,3 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
-
