@@ -33,14 +33,31 @@ const MainEngine = {
 
     init: () => {
         if(typeof GameDatabase === 'undefined') return console.error("Database 로드 실패");
+        
         const auto = localStorage.getItem('game_auto_user');
+        
+        // 자동 로그인 설정이 있을 경우
         if(auto) {
-            const savedData = localStorage.getItem('game_users');
-            const users = MainEngine.decrypt(savedData);
-            if(users && users[auto]) { 
-                currentUser = auto; 
-                data = users[auto].data; 
-                MainEngine.enterGame(); 
+            try {
+                const savedData = localStorage.getItem('game_users');
+                
+                // 데이터가 아예 없으면 무시
+                if (!savedData) return;
+
+                const users = MainEngine.decrypt(savedData);
+                
+                // 복호화 결과가 유효하고, 해당 유저 데이터가 존재하는지 확인
+                if(users && typeof users === 'object' && users[auto]) { 
+                    currentUser = auto; 
+                    data = users[auto].data; 
+                    MainEngine.enterGame(); 
+                } else {
+                    console.warn("자동 로그인 데이터가 손상되었습니다. 다시 로그인해주세요.");
+                    localStorage.removeItem('game_auto_user'); // 잘못된 자동 로그인 정보 삭제
+                }
+            } catch (e) {
+                console.error("초기화 중 오류 발생:", e);
+                localStorage.removeItem('game_auto_user');
             }
         }
     },
@@ -453,3 +470,4 @@ document.addEventListener('keydown', function(e) {
 function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
 
 window.onload = MainEngine.init;
+
