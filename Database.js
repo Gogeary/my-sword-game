@@ -150,11 +150,26 @@ const GameDatabase = {
             });
         }
     }
+   // [추가] 장비 부위별 패시브 스킬 목록
+    SKILLS: {
+        weapon: [
+            { id: 'smash', name: '강타', turn: 3, val: 2.0, desc: '3턴마다 2배 데미지' },
+            { id: 'crit', name: '치명타', turn: 4, val: 1.5, desc: '4턴마다 1.5배 데미지' }
+        ],
+        armor: [
+            { id: 'iron', name: '철벽', turn: 3, val: 0.5, desc: '3턴마다 받는 피해 50% 감소' },
+            { id: 'evade', name: '회피', turn: 5, val: 0.0, desc: '5턴마다 데미지 무효화' }
+        ],
+        belt: [
+            { id: 'heal', name: '재생', turn: 4, val: 0.1, desc: '4턴마다 최대 체력의 10% 회복' }
+        ]
+    }
     // 마지막 30레벨 추가
     fullStages.push(stages[stages.length - 1]);
 
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
