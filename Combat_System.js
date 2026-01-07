@@ -177,9 +177,46 @@ const CombatSystem = {
         let idx = lv - 1; if(idx < 0) idx=0; if(idx >= table.length) idx=table.length-1;
         return { ...table[idx] };
     },
-    setMonsterIdentity: (m) => { /* 기존 코드 유지 */ 
-        if(m.name && m.img) return m;
-        m.name = '슬라임'; m.img = 'slime.png'; return m;
+    // [여기만 덮어쓰세요] 몬스터 종류 결정 로직
+    setMonsterIdentity: (m) => {
+        // 1. DB에 이미 이름/이미지가 있다면 유지
+        if (m.name && m.img) return m;
+
+        // 2. 현재 사냥터 ID 확인
+        const zoneId = CombatSystem.currentZone ? CombatSystem.currentZone.id : 0;
+        
+        let targetMonsters = [];
+
+        // 3. 사냥터별 몬스터 명단 작성
+        if (zoneId === 0) {
+            // [집 앞마당] (id: 0) -> 슬라임, 쥐
+            targetMonsters = [
+                { name: '슬라임', img: 'slime.png' },
+                { name: '시궁창 쥐', img: 'rat.png' } 
+            ];
+        } 
+        else if (zoneId === 1) {
+            // [뒷산] (id: 1) -> 산적, 늑대 (예시)
+            targetMonsters = [
+                { name: '산적', img: 'bandit.png' },
+                { name: '늑대', img: 'wolf.png' }
+            ];
+        }
+        else {
+            // [나머지 구역] (임시)
+            targetMonsters = [
+                { name: '알 수 없는 적', img: 'unknown.png' }
+            ];
+        }
+
+        // 4. 명단에서 랜덤 1마리 뽑기
+        const pick = targetMonsters[Math.floor(Math.random() * targetMonsters.length)];
+
+        // 5. 몬스터 정보 적용
+        m.name = pick.name;
+        m.img = pick.img;
+
+        return m;
     },
     tryAutoPotion: (pStats) => { /* 기존 코드 유지 */
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
@@ -207,3 +244,4 @@ const CombatSystem = {
         if (window.MainEngine) MainEngine.updateUI();
     }
 };
+
