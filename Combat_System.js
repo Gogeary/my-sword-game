@@ -78,66 +78,128 @@ const CombatSystem = {
         else { alert("도망 실패! 전투 시작!"); CombatSystem.startBattle(); }
     },
 
-    // 4. 전투 시작 (승리 시 다시 탐색 버튼 비용 수정)
+   // 4. 전투 시작 (턴제 스킬 + 아이템 드랍 추가)
     startBattle: () => {
         const m = CombatSystem.tempMonster;
-        if (!m) return alert("오류");
+        if (!m) return alert("오류 발생");
         
-        // ... (전투 UI 세팅 부분 기존 유지) ...
+        // UI 초기화
         const grid = document.getElementById('hunt-grid');
         const imgPath = `image/${m.img}`;
         if(grid) grid.innerHTML = `
             <div style="padding:20px; text-align:center; border:2px solid #e74c3c; border-radius:10px; background:rgba(231, 76, 60, 0.1);">
                 <img src="${imgPath}" style="width:100px; height:100px; object-fit:contain; animation: shake 0.5s infinite alternate; mix-blend-mode: multiply;" onerror="this.style.display='none';">
                 <h3 style="margin:10px 0; color:#e74c3c;">VS ${m.name}</h3>
-                <div id="battle-status" style="font-size:0.9em; color:#ccc;">전투 진행 중...</div>
+                <div id="battle-status" style="font-size:0.9em; color:#ccc;">전투 시작!</div>
             </div>`;
 
         const log = document.getElementById('battle-log');
-        const pStats = MainEngine.getFinalStats();
         let mHP = m.hp;
+        let turn = 0; // 턴 카운트
+
         if (autoTimer) clearInterval(autoTimer);
 
         autoTimer = setInterval(() => {
+            turn++; // 턴 증가
+            const pStats = MainEngine.getFinalStats();
+            const eq = data.equipment;
+
+            // --- [유저 턴] ---
+            let finalAtk = pStats.atk;
+            let atkMsg = "";
+
+            // 무기 스킬 체크
+            if (eq.weapon) {
+                const s = SkillSystem.check(eq.weapon, turn);
+                if (s) {
+                    finalAtk *= s.val;
+                    atkMsg = `<br><span style="color:#f1c40f">⚡ [${eq.weapon.name}] 발동! (x${s.val})</span>`;
+                }
+            }
+            // 벨트 스킬 체크
+            if (eq.belt) {
+                const s = SkillSystem.check(eq.belt, turn);
+                if (s && s.id === 'heal') {
+                    const heal = Math.floor(pStats.hp * s.val);
+                    data.hp = Math.min(pStats.hp, data.hp + heal);
+                    atkMsg += `<br><span style="color:#2ecc71">✨ [${eq.belt.name}] 체력 회복 +${heal}</span>`;
+                }
+            }
+
             const calcDmg = (atk, dfs) => (atk >= dfs) ? (atk * 2 - dfs) : (Math.pow(atk, 2) / dfs);
-            const pDmg = Math.floor(calcDmg(pStats.atk, m.def));
+            const pDmg = Math.floor(calcDmg(finalAtk, m.def));
             mHP -= pDmg;
-            log.innerHTML = `유저 공격: ${pDmg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
-            
-            if (mHP <= 0) { // [승리]
+
+            log.innerHTML = `[Turn ${turn}] 유저 공격: ${pDmg} ${atkMsg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
+
+            // [승리 및 드랍 로직]
+            if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
                 data.gold += m.gold;
                 data.exp += m.exp;
-                if (window.MainEngine) MainEngine.updateUI(); // UI 즉시 갱신
+                
+                // --- [여기 추가됨] 아이템 드랍 시스템 ---
+                let dropMsg = "";
+                // 1. 드랍 확률 (예: 30%)
+                if (Math.random() * 100 < 30) {
+                    // 2. 몬스터 레벨 이하의 아이템 중 랜덤 선택
+                    const dropList = GameDatabase.EQUIPMENT.filter(e => e.lv <= m.lv);
+                    if (dropList.length > 0) {
+                        const baseItem = dropList[Math.floor(Math.random() * dropList.length)];
+                        
+                        // 3. 새 아이템 생성 및 스킬 부여 시도
+                        let newItem = { ...baseItem, id: Date.now(), en: 0 };
+                        newItem = SkillSystem.attachSkill(newItem); // 확률적으로 스킬 붙음
+                        
+                        // 4. 인벤토리 지급
+                        data.inventory.push(newItem);
+                        dropMsg = `<br><span style="color:#e94560">🎁 [${newItem.name}] 획득!</span>`;
+                    }
+                }
+                // ------------------------------------
 
-                log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span><br>` + log.innerHTML;
+                if (window.MainEngine) MainEngine.updateUI();
+
+                log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span>${dropMsg}<br>` + log.innerHTML;
                 
                 CombatSystem.isEncounter = false;
                 CombatSystem.tempMonster = null;
                 
-                // [수정] 다시 탐색 버튼에 현재 구역 비용 표시
                 const cost = CombatSystem.currentZone.cost;
-                if(grid) {
-                    grid.innerHTML = `
-                        <div style="text-align:center; padding:20px;">
-                            <h3>승리했습니다!</h3>
-                            <button class="main-menu-btn" style="background:var(--hunt);" onclick="CombatSystem.scanHunt()">🔍 다시 탐색 (${cost.toLocaleString()}G)</button>
-                            <button class="btn-nav" onclick="showPage('page-hunt-select')">🔙 사냥터 목록</button>
-                        </div>
-                    `;
-                }
+                if(grid) grid.innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <h3>승리했습니다!</h3>
+                        <p style="font-size:0.9em; margin-bottom:10px;">${dropMsg ? dropMsg : "아이템을 발견하지 못했습니다."}</p>
+                        <button class="main-menu-btn" style="background:var(--hunt);" onclick="CombatSystem.scanHunt()">🔍 다시 탐색 (${cost.toLocaleString()}G)</button>
+                        <button class="btn-nav" onclick="showPage('page-hunt-select')">🔙 사냥터 목록</button>
+                    </div>`;
+                
                 if (window.MainEngine) MainEngine.checkLevelUp();
                 return;
             }
 
-            let mDmg = Math.floor(calcDmg(m.atk, pStats.def));
-            data.hp -= mDmg;
+            // --- [몬스터 턴] ---
+            let incDmg = Math.floor(calcDmg(m.atk, pStats.def));
+            let defMsg = "";
+
+            // 갑옷 스킬 체크
+            if (eq.armor) {
+                const s = SkillSystem.check(eq.armor, turn);
+                if (s) {
+                    incDmg = Math.floor(incDmg * s.val);
+                    defMsg = `<br><span style="color:#3498db">🛡️ [${eq.armor.name}] 발동! 피해 감소</span>`;
+                }
+            }
+
+            data.hp -= incDmg;
             CombatSystem.tryAutoPotion(pStats);
-            log.innerHTML = `피격: ${mDmg} (내 HP: ${Math.max(0, Math.floor(data.hp))})<br>` + log.innerHTML;
+
+            log.innerHTML = `피격: ${incDmg} ${defMsg} (내 HP: ${Math.max(0, Math.floor(data.hp))})<br>` + log.innerHTML;
             if (window.MainEngine) MainEngine.updateUI();
 
-            if (data.hp <= 0) { // [패배]
+            // [패배]
+            if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
                 data.hp = 1;
@@ -146,9 +208,10 @@ const CombatSystem = {
                 if (window.MainEngine) { MainEngine.updateUI(); MainEngine.saveGame(); }
                 showPage('page-main');
             }
+
         }, GameDatabase.SYSTEM.COMBAT_SPEED);
     },
-
+    
     // [수정] UI 리셋 시 비용 표시
     resetBattleUI: () => {
         if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
@@ -244,6 +307,7 @@ const CombatSystem = {
         if (window.MainEngine) MainEngine.updateUI();
     }
 };
+
 
 
 
