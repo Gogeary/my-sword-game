@@ -215,4 +215,104 @@ const ShopSystem = {
 
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
+/* ==========================================
+   [추가] 강화권 합성 시스템
+   ========================================== */
+const SynthesisSystem = {
+    // 합성 공식 정의
+    recipes: [
+        { src: 5, dst: 7 },
+        { src: 7, dst: 10 },
+        { src: 10, dst: 12 },
+        { src: 12, dst: 13 },
+        { src: 13, dst: 14 },
+        { src: 14, dst: 15 }
+    ],
+
+    open: () => {
+        showPage('page-synthesis');
+        SynthesisSystem.render();
+    },
+
+    render: () => {
+        const list = document.getElementById('synthesis-list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        // 인벤토리 내 강화권 개수 파악
+        const ticketCounts = {};
+        data.inventory.forEach(item => {
+            if (item.type === 'ticket') {
+                ticketCounts[item.val] = (ticketCounts[item.val] || 0) + 1;
+            }
+        });
+
+        // 레시피별 카드 생성
+        SynthesisSystem.recipes.forEach(recipe => {
+            const count = ticketCounts[recipe.src] || 0;
+            const canCraft = count >= 3;
+
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.style.border = canCraft ? '1px solid #2ecc71' : '1px solid #444';
+            
+            div.innerHTML = `
+                <div style="flex:1; text-align:left; padding-left:10px;">
+                    <div style="font-size:1.1em; font-weight:bold; color:#fff;">
+                        +${recipe.src} 강화권 <span style="color:#aaa;">x3</span> 
+                        <span style="margin:0 5px;">➡</span> 
+                        <span style="color:#f1c40f">+${recipe.dst} 강화권</span>
+                    </div>
+                    <div style="font-size:0.85em; color:${canCraft ? '#2ecc71' : '#e74c3c'}; margin-top:4px;">
+                        보유량: ${count} / 3
+                    </div>
+                </div>
+                <button class="item-btn" 
+                    style="background:${canCraft ? '#27ae60' : '#555'}; color:#fff; width:70px; padding:10px;" 
+                    onclick="SynthesisSystem.craft(${recipe.src}, ${recipe.dst})" 
+                    ${canCraft ? '' : 'disabled'}>
+                    합성
+                </button>
+            `;
+            list.appendChild(div);
+        });
+    },
+
+    craft: (srcVal, dstVal) => {
+        // 1. 재료 3개 찾기
+        const materialIndices = [];
+        data.inventory.forEach((item, idx) => {
+            if (item.type === 'ticket' && item.val === srcVal) {
+                materialIndices.push(idx);
+            }
+        });
+
+        if (materialIndices.length < 3) return alert("재료가 부족합니다.");
+
+        if (!confirm(`+${srcVal} 강화권 3개를 소모하여 +${dstVal} 강화권을 만드시겠습니까?`)) return;
+
+        // 2. 재료 삭제 (뒤에서부터 삭제해야 인덱스 안 꼬임)
+        // 사용할 3개의 인덱스만 추출
+        const toRemove = materialIndices.slice(0, 3).sort((a, b) => b - a);
+        toRemove.forEach(idx => {
+            data.inventory.splice(idx, 1);
+        });
+
+        // 3. 결과물 지급
+        const targetTicket = GameDatabase.CONSUMABLES.tickets.find(t => t.val === dstVal);
+        if (targetTicket) {
+            data.inventory.push({ 
+                ...targetTicket, 
+                id: Date.now() + Math.random(), 
+                en: 0 
+            });
+            alert(`🎉 합성 성공! [+${dstVal} 강화권] 획득!`);
+        } else {
+            alert("데이터베이스 오류: 목표 강화권을 찾을 수 없습니다.");
+        }
+
+        // 4. UI 갱신
+        SynthesisSystem.render();
+        if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
+    }
 };
