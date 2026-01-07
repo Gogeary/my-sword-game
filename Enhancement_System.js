@@ -304,7 +304,7 @@ const UpgradeSystem = {
                 return;
             }
             UpgradeSystem.try();
-        }, 800);
+        }, 100);
     },
 
     stopAuto: () => {
@@ -314,4 +314,5 @@ const UpgradeSystem = {
         if(btn) btn.innerText = "자동 강화 시작";
     }
 };
+
 
