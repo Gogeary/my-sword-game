@@ -6,10 +6,8 @@
     <title>강화하기 v2.0</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    
     <script src="Database.js"></script>
     <script src="Main_Engine.js"></script>
-    
     <script src="Skill.js"></script> 
     <script src="Combat_System.js"></script>
     <script src="Enhancement_System.js"></script>
@@ -17,68 +15,40 @@
     <script src="mine.js"></script>
 
     <style>
-        /* [필수] 레이아웃 깨짐 방지 초기화 */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        
-        /* [테마 색상] */
         :root { --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1; --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; --hp: #ff4d4d; --exp: #9b59b6; }
-        
-        /* [기본 레이아웃] */
         body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; text-align: center; background-color: var(--bg); color: var(--text); padding: 5px; margin: 0; user-select: none; }
         #game-container { background: var(--panel); max-width: 600px; margin: 0 auto; padding: 15px; border-radius: 15px; border: 2px solid var(--point); min-height: 95vh; position: relative; display: none; overflow: hidden; }
-        
-        /* [페이지 전환] */
         .page { display: none; animation: fadeIn 0.2s; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* [상단 바] */
         .top-bar-container { background: #0f3460; padding: 10px; border-radius: 12px; margin-bottom: 15px; border-bottom: 2px solid var(--point); }
         .status-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95em; font-weight: bold; }
-        
         .bar-outer { background: #333; height: 20px; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid #000; margin-bottom: 5px; }
         #hp-fill { background: var(--hp); height: 100%; width: 100%; transition: width 0.3s ease-out; }
         #exp-fill { background: var(--exp); height: 100%; width: 0%; transition: width 0.3s ease-out; }
         .bar-text { position: absolute; width: 100%; left: 0; top: 0; font-size: 0.75em; line-height: 20px; color: white; text-align: center; text-shadow: 1px 1px 2px black; z-index: 2; font-weight: bold; }
-
-        /* [메인 버튼] */
         .main-menu-btn { background: #533483; color: white; padding: 18px; margin: 8px 0; font-size: 1.1em; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.1s; font-weight: bold; width: 100%; display: block; }
         .main-menu-btn:active { transform: scale(0.98); }
-
-        /* [아이템 카드] */
         .item-card { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid #333; }
         .item-icon { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #000; border: 1px solid #555; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5em; }
         .item-info { flex: 1; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 0.9em; line-height: 1.4; }
         .item-actions { display: flex; gap: 4px; flex-shrink: 0; }
         .item-btn { padding: 6px 10px; font-size: 0.8em; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; min-width: 50px; }
-
-        /* [강화 버튼] */
         .btn-upgrade { background: var(--point); color: white; height: 55px; font-size: 1.2em; margin: 10px 0; font-weight: bold; width: 100%; border: none; border-radius: 10px; cursor: pointer; }
         .btn-upgrade:disabled { background: #444; color: #888; cursor: not-allowed; }
-
-        /* [그리드 시스템] */
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 15px 0; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
         .cell { aspect-ratio: 1/1; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5em; border: 2px solid #2a2a4e; position: relative; transition: 0.1s; }
         .cell:active { transform: scale(0.95); }
         .monster-lv { position: absolute; bottom: 2px; right: 2px; font-size: 0.6em; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 4px; border-radius: 4px; }
-
-        /* [로그창] */
         #log-container, #battle-log { height: 150px; overflow-y: auto; background: #121225; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.85em; text-align: left; color: #ccc; border: 1px solid #444; }
-
-        /* [로그인 화면] */
         #login-container { max-width: 400px; margin: 60px auto; padding: 30px; background: var(--panel); border: 2px solid var(--point); border-radius: 15px; }
         .login-input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 8px; border: 1px solid #555; background: #0f3460; color: white; font-size: 1em; }
         .login-btn { width: 100%; padding: 15px; background: var(--point); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 1.1em; }
-
-        /* [세이브 관리 (이제 내부용)] */
         .save-manage-box { margin-top: 25px; border-top: 1px solid #444; padding-top: 20px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; }
         .btn-small { padding: 10px 15px; background: #444; color: #ddd; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; margin: 5px; width: 48%; }
-        
-        /* [공통] 네비게이션 버튼 */
         .btn-nav { background: #333; color: white; margin-top: 10px; padding: 12px; border: none; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; border: 1px solid #555; }
-        
-        /* [모달] */
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index: 2000; }
         .modal-content { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); background: var(--panel); border: 2px solid var(--point); padding: 20px; border-radius: 12px; width: 90%; max-width: 420px; }
     </style>
@@ -96,7 +66,7 @@
     </div>
     
     <button class="login-btn" onclick="MainEngine.handleLogin()">게임 시작</button>
-    </div>
+</div>
 
 <div id="game-container">
     <div class="top-bar-container">
@@ -131,29 +101,24 @@
         <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt-select')">⚔️ 사냥터 입장</button>
         <button class="main-menu-btn" style="background:var(--mine); color:#000;" onclick="showPage('page-mine-select')">⛏️ 광산 입장</button>
         <button id="btn-beg" class="main-menu-btn" style="background:#8e44ad;" onclick="MainEngine.begging()">🤲 동냥하기 (쿨타임 10초)</button>
-        
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
     <div id="page-hunt-select" class="page">
         <h2>🗺️ 사냥터 선택</h2>
-        <div id="hunting-zone-list" style="display:flex; flex-direction:column; gap:8px;">
-            </div>
+        <div id="hunting-zone-list" style="display:flex; flex-direction:column; gap:8px;"></div>
         <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
     </div>
 
     <div id="page-hunt-play" class="page">
         <h2 id="hunt-title">⚔️ 사냥터</h2>
-        
         <button onclick="CombatSystem.scanHunt()" class="main-menu-btn" style="background:var(--hunt);">📡 몬스터 탐색 (2만G)</button>
-        
         <div id="hunt-grid" style="min-height:250px; display:flex; flex-direction:column; justify-content:center; gap:10px;">
             <div style="text-align:center; color:#888; padding:30px;">
                 <div style="font-size:3em; margin-bottom:10px;">📡</div>
                 <p>몬스터를 탐색해주세요.</p>
             </div>
         </div>
-        
         <div id="battle-log">전투 대기 중...</div>
         <button class="btn-nav" onclick="CombatSystem.resetBattleUI(); showPage('page-hunt-select');">🏃 사냥터 나가기</button>
     </div>
@@ -178,78 +143,62 @@
     
     <div id="page-gamble" class="page">
         <h2>🎲 인생 한방 도박장</h2>
-        
         <div style="padding:20px; background:rgba(0,0,0,0.2); border-radius:10px; margin-bottom:15px; border:1px solid #555;">
             <p style="margin-bottom:10px;">내 돈: <span id="gamble-gold-display" style="color:var(--money); font-weight:bold;">0</span> G</p>
-            
-            <input type="number" id="gamble-amount" placeholder="얼마를 거시겠습니까?" 
-                   style="width:90%; padding:15px; border-radius:8px; border:none; margin-bottom:15px; font-size:1.1em; text-align:center;">
-            
+            <input type="number" id="gamble-amount" placeholder="얼마를 거시겠습니까?" style="width:90%; padding:15px; border-radius:8px; border:none; margin-bottom:15px; font-size:1.1em; text-align:center;">
             <div style="display:flex; gap:10px; justify-content:center;">
                 <button class="main-menu-btn" style="width:48%; margin:0; background:#c0392b;" onclick="GamblingSystem.play('odd')">🔴 홀</button>
                 <button class="main-menu-btn" style="width:48%; margin:0; background:#2980b9;" onclick="GamblingSystem.play('even')">🔵 짝</button>
             </div>
         </div>
-
         <div id="gamble-log" style="height:120px; overflow-y:auto; background:#111; padding:10px; border-radius:8px; border:1px solid #333; font-size:0.9em; text-align:center; color:#888;">
             베팅 금액을 입력하고 홀/짝을 선택하세요.<br>
             성공 시 2배, 실패 시 0원!
         </div>
-
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 나가기</button>
     </div>
-// 뽑기상자
+    
     <div id="page-shop-gacha" class="page">
-        <h2>🎁 랜덤 뽑기 상점</h2>
-        
-            <div style="padding:15px; background:rgba(0,0,0,0.2); border-radius:10px; border:1px solid #9b59b6;">
-                <h3 style="margin:5px 0; color:#9b59b6;">📜 강화권 뽑기 상자</h3>
-                <p style="color:#aaa; font-size:0.9em;"> 강화권 & 파괴 방지권</p>
-                <p style="font-weight:bold; color:var(--money);">비용: 100,000 G</p>
-                <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-                    <button class="main-menu-btn" style="background:#8e44ad; width:45%; margin:0; padding:10px;" onclick="ShopSystem.playGacha('enhance', 1)">1회</button>
-                    <button class="main-menu-btn" style="background:#9b59b6; width:45%; margin:0; padding:10px;" onclick="ShopSystem.playGacha('enhance', 10)">10회</button>
-                </div>
+        <h2>📜 강화권 뽑기 상점</h2>
+        <div style="padding:20px; background:rgba(0,0,0,0.2); border-radius:10px; border:2px solid #9b59b6; margin-bottom:20px;">
+            <div style="font-size:3em; margin-bottom:10px;">🎁</div>
+            <h3 style="margin:5px 0; color:#9b59b6;">강화권 & 보호권 패키지</h3>
+            <p style="color:#aaa; font-size:0.9em; margin-bottom:15px;">+5~+12 강화권 및 파괴 방지권 획득 가능</p>
+            <p style="font-weight:bold; color:var(--money); font-size:1.2em;">비용: 300,000 G</p>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                <button class="main-menu-btn" style="background:#8e44ad; width:45%; margin:0; padding:15px;" onclick="ShopSystem.playGacha('enhance', 1)">1회 뽑기</button>
+                <button class="main-menu-btn" style="background:#9b59b6; width:45%; margin:0; padding:15px;" onclick="ShopSystem.playGacha('enhance', 10)">10회 뽑기</button>
             </div>
         </div>
-
-        <div id="gacha-log" style="height:150px; overflow-y:auto; background:#111; padding:10px; border-radius:8px; border:1px solid #333; margin-top:15px; font-size:0.9em; text-align:left;">
-            <div style="text-align:center; color:#555; margin-top:60px;">원하는 상자의 버튼을 눌러주세요.</div>
+        <div id="gacha-log" style="height:150px; overflow-y:auto; background:#111; padding:10px; border-radius:8px; border:1px solid #333; font-size:0.9em; text-align:left;">
+            <div style="text-align:center; color:#555; margin-top:60px;">버튼을 눌러 뽑기를 시작하세요.</div>
         </div>
-
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 나가기</button>
     </div>
 
-
-    
     <div id="page-upgrade" class="page">
         <h2>🔨 장비 강화</h2>
         <div id="upgrade-target-display" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:10px;">강화할 장비를 선택하세요.</div>
-        
         <button onclick="MainEngine.openInventoryModal()" class="btn-nav" style="background:var(--hunt); margin-bottom:15px;">📦 인벤토리에서 장비 선택</button>
-        
         <div style="display:flex; justify-content:space-between; margin:10px 0; font-weight:bold; font-size:1.1em;">
             <span style="color:#4ecca3;">성공: <span id="up-chance">0</span>%</span>
             <span style="color:var(--point);">파괴: <span id="up-break">0</span>%</span>
         </div>
-        
         <button class="btn-upgrade" id="btn-up-exec" onclick="UpgradeSystem.try()" disabled>강화하기</button>
         <button class="btn-nav" style="background:#3498db;" id="auto-btn" onclick="UpgradeSystem.startAuto()">자동 강화 시작</button>
         <button class="btn-nav" id="btn-up-sell" style="background:#c0392b; display:none;" onclick="MainEngine.sellFromUpgrade()">아이템 판매</button>
-        
         <div id="log-container">시스템: 준비 완료.</div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
     <div id="page-info" class="page">
         <h2>👤 내 정보</h2>
-        
         <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px; text-align:left; font-size:0.95em;">
             <p>⚔️ 공격력: <span id="info-atk" style="color:#f39c12; font-weight:bold;">0</span></p>
             <p>🛡️ 방어력: <span id="info-def" style="color:#3498db; font-weight:bold;">0</span></p>
             <p>❤️ 최대 체력: <span id="info-hp" style="color:#e74c3c; font-weight:bold;">0</span></p>
         </div>
-
+        
         <h3 style="color:#2ecc71; border-bottom:2px solid #333; padding-bottom:5px; margin-top:20px; text-align:left;">⚔️ 장착 중인 장비</h3>
         <div id="equipped-list" style="margin-bottom:20px;"></div>
 
@@ -265,7 +214,6 @@
             <input type="file" id="file-input" style="display:none;" onchange="MainEngine.importSaveFile(this)">
             <p style="font-size:0.8em; color:#888; margin-top:5px;">※ 불러오기 성공 시 게임이 재시작됩니다.</p>
         </div>
-
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
@@ -274,7 +222,7 @@
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button class="main-menu-btn" onclick="ShopSystem.open('equip')">⚔️ 장비 상점</button>
             <button class="main-menu-btn" style="background:var(--hunt);" onclick="ShopSystem.open('consume')">🧪 소비 아이템 상점</button>
-            
+            <button class="main-menu-btn" style="background:#e67e22;" onclick="showPage('page-shop-gacha')">🎁 강화권 뽑기</button>
             <button class="main-menu-btn" style="background:#8e44ad;" onclick="showPage('page-gamble'); GamblingSystem.init();">🎲 도박장 (홀짝)</button>
         </div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
@@ -296,6 +244,3 @@
 </div>
 </body>
 </html>
-
-
-
