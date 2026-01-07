@@ -1,6 +1,7 @@
 /* ==========================================
    [Main_Engine.js]
    게임의 핵심 로직 (로그인, 저장, UI 갱신, 도박 등)
+   (수정 완료: 유료 치료소 기능 추가)
    ========================================== */
 
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
@@ -195,7 +196,40 @@ const MainEngine = {
     },
     goToUpgrade: (idx) => { showPage('page-upgrade'); if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); },
     sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
-    fullHeal: () => { data.hp = MainEngine.getFinalStats().hp; MainEngine.updateUI(); alert("체력이 모두 회복되었습니다."); },
+    
+    // [수정된 부분] 유료 치료소 로직 (HP 1당 25골드)
+    fullHeal: () => {
+        const stats = MainEngine.getFinalStats();
+        const maxHP = Math.floor(stats.hp);
+        const currentHP = Math.floor(data.hp);
+        const missingHP = maxHP - currentHP;
+
+        // 1. 이미 체력이 가득 찬 경우
+        if (missingHP <= 0) {
+            return alert("이미 체력이 가득 차 있습니다.");
+        }
+
+        // 2. 비용 계산 (HP 1당 25골드)
+        const costPerHP = 25;
+        const totalCost = missingHP * costPerHP;
+
+        // 3. 사용자 확인 (비용 안내)
+        if (confirm(`체력을 회복하시겠습니까?\n(회복량: ${missingHP}, 비용: ${totalCost.toLocaleString()} G)`)) {
+            
+            // 4. 골드 부족 체크
+            if (data.gold < totalCost) {
+                return alert(`골드가 부족합니다.\n(필요: ${totalCost.toLocaleString()} G / 보유: ${Math.floor(data.gold).toLocaleString()} G)`);
+            }
+
+            // 5. 결제 및 회복 실행
+            data.gold -= totalCost;
+            data.hp = maxHP;
+            
+            MainEngine.updateUI();
+            alert(`치료가 완료되었습니다. (비용: ${totalCost.toLocaleString()} G 소모)`);
+        }
+    },
+
     openInventoryModal: () => {
         document.getElementById('inv-modal').style.display='block';
         const mList = document.getElementById('modal-item-list'); mList.innerHTML = '';
@@ -305,5 +339,6 @@ function showPage(id) {
 }
 
 function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
+
 
 window.onload = MainEngine.init;
