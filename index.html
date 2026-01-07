@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v1.6</title>
-    <style>
+    <title>강화하기 v1.7</title> <style>
         /* [필수] 레이아웃 깨짐 방지 초기화 */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
@@ -80,8 +79,7 @@
 <body>
 
 <div id="login-container">
-    <h1 style="color:var(--money); margin-bottom:20px;">🎮 강화하기 v1.6</h1>
-    <input type="text" id="login-id" class="login-input" placeholder="아이디를 입력하세요">
+    <h1 style="color:var(--money); margin-bottom:20px;">🎮 강화하기 v1.7</h1> <input type="text" id="login-id" class="login-input" placeholder="아이디를 입력하세요">
     <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요">
     
     <div style="text-align:left; margin-top:10px; color:#ccc; display:flex; align-items:center;">
@@ -129,17 +127,32 @@
 
     <div id="page-earn" class="page">
         <h2>💰 골드 수급</h2>
-        <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt')">⚔️ 사냥터 입장</button>
+        <button class="main-menu-btn" style="background:var(--hunt);" onclick="showPage('page-hunt-select')">⚔️ 사냥터 입장</button>
         <button class="main-menu-btn" style="background:var(--mine); color:#000;" onclick="showPage('page-mine-select')">⛏️ 광산 입장</button>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
-    <div id="page-hunt" class="page">
-        <h2>⚔️ 몬스터 사냥</h2>
-        <button onclick="CombatSystem.scanHunt()" class="main-menu-btn" style="background:var(--hunt);">📡 몬스터 탐색</button>
-        <div id="hunt-grid" class="grid-5"></div>
+    <div id="page-hunt-select" class="page">
+        <h2>🗺️ 사냥터 선택</h2>
+        <div id="hunting-zone-list" style="display:flex; flex-direction:column; gap:8px;">
+            </div>
+        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
+    </div>
+
+    <div id="page-hunt-play" class="page">
+        <h2 id="hunt-title">⚔️ 사냥터</h2>
+        
+        <button onclick="CombatSystem.scanHunt()" class="main-menu-btn" style="background:var(--hunt);">📡 몬스터 탐색 (2만G)</button>
+        
+        <div id="hunt-grid" style="min-height:250px; display:flex; flex-direction:column; justify-content:center; gap:10px;">
+            <div style="text-align:center; color:#888; padding:30px;">
+                <div style="font-size:3em; margin-bottom:10px;">📡</div>
+                <p>몬스터를 탐색해주세요.</p>
+            </div>
+        </div>
+        
         <div id="battle-log">전투 대기 중...</div>
-        <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 나가기</button>
+        <button class="btn-nav" onclick="CombatSystem.resetBattleUI(); showPage('page-hunt-select');">🏃 사냥터 나가기</button>
     </div>
 
     <div id="page-mine-select" class="page">
@@ -239,22 +252,18 @@
                 data = { 
                     level:1, exp:0, gold:100000, hp:100, 
                     inventory:[], equipment:{weapon:null, armor:null, belt:null}, 
-                    potions:0, potionCount:0, // 구버전 데이터 호환용
-                    potionBuffer: 0, // [NEW] 포션 사용 누적치
+                    potions:0, potionCount:0, 
+                    potionBuffer: 0, 
                     mineGrid: [], scrolls: {} 
                 };
                 users[id] = { pw, data };
             }
             currentUser = id;
-            
-            // [중요] 기존 유저에게 potionBuffer가 없을 경우 초기화
             if(typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
-
             if(document.getElementById('auto-login').checked) localStorage.setItem('game_auto_user', id);
             localStorage.setItem('game_users', JSON.stringify(users));
             MainEngine.enterGame();
         },
-        // ... (enterGame, logout, saveGame, export/import는 기존과 동일) ...
         enterGame: () => {
             document.getElementById('login-container').style.display='none';
             document.getElementById('game-container').style.display='block';
@@ -278,7 +287,7 @@
             const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `강화하기_v1.5_세이브.txt`;
+            link.download = `강화하기_v1.7_세이브.txt`;
             link.click();
         },
         importSaveFile: (input) => {
@@ -295,26 +304,18 @@
             };
             reader.readAsText(file);
         },
-        /* [UI 업데이트 핵심 수정] */
         updateUI: () => {
             if(!data) return;
-            
-            // 레벨업 체크
             const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
             if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
             const stats = MainEngine.getFinalStats();
-            
-            // [물약 계산 로직]
-            // 총 보유량 = (인벤토리 물약 합) - (이미 사용한 Buffer)
             const potions = data.inventory.filter(i => i.type === 'potion');
             const rawTotal = potions.reduce((sum, p) => sum + (p.val || 0), 0);
             const currentBuffer = data.potionBuffer || 0;
             const realTotal = Math.max(0, rawTotal - currentBuffer);
 
             document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-            
-            // 표기: "남은총량 (개수)"
             document.getElementById('potion-val').innerText = realTotal.toLocaleString();
             document.getElementById('potion-cnt').innerText = potions.length;
 
@@ -336,7 +337,6 @@
             MainEngine.renderInventory();
             MainEngine.saveGame();
         },
-        // ... (나머지 getFinalStats, renderInventory 등 기존 유지) ...
         getFinalStats: () => {
             if(typeof GameDatabase === 'undefined') return { atk:10, def:2, hp:100 };
             let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
@@ -392,7 +392,6 @@
         goToUpgrade: (idx) => { showPage('page-upgrade'); if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); },
         sellFromUpgrade: () => { if(upIdx !== -1) MainEngine.confirmSell(upIdx); },
         fullHeal: () => { data.hp = MainEngine.getFinalStats().hp; MainEngine.updateUI(); alert("체력이 모두 회복되었습니다."); },
-        
         openInventoryModal: () => {
             document.getElementById('inv-modal').style.display='block';
             const mList = document.getElementById('modal-item-list'); mList.innerHTML = '';
@@ -432,11 +431,38 @@
         }
     };
 
+    // [추가] 사냥터 목록 렌더링 함수
+    function renderHuntingZones() {
+        const list = document.getElementById('hunting-zone-list');
+        if (!list) return;
+        list.innerHTML = '';
+        
+        GameDatabase.HUNTING_ZONES.forEach(zone => {
+            const btn = document.createElement('button');
+            btn.className = 'main-menu-btn';
+            btn.style.background = '#34495e';
+            btn.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🌲 ${zone.name}</span>
+                    <span style="font-size:0.8em; background:#2c3e50; padding:4px 8px; border-radius:4px;">Lv.${zone.minLv}~${zone.maxLv}</span>
+                </div>
+            `;
+            btn.onclick = () => CombatSystem.enterZone(zone.id);
+            list.appendChild(btn);
+        });
+    }
+
     function showPage(id) {
         if(autoTimer) { clearInterval(autoTimer); autoTimer=null; }
         if(typeof UpgradeSystem !== 'undefined' && UpgradeSystem.stopAuto) UpgradeSystem.stopAuto();
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         const t = document.getElementById(id); if(t) t.classList.add('active');
+        
+        // [수정] 사냥터 선택 페이지 진입 시 리스트 갱신
+        if (id === 'page-hunt-select') {
+            renderHuntingZones();
+        }
+        
         MainEngine.updateUI();
     }
     function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
@@ -445,6 +471,3 @@
 </script>
 </body>
 </html>
-
-
-
