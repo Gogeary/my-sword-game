@@ -1,28 +1,23 @@
-/* Combat_System.js - 확장성 강화 버전 (로그 업데이트 기능 추가됨) */
+/* Combat_System.js - UI 실시간 갱신 버그 수정판 */
 
-// [핵심] 장비 타입별 스킬 효과 정의 (여기만 수정하면 장비 확장 가능)
+// [핵심] 장비 타입별 스킬 효과 정의
 const SkillHandlers = {
-    // 1. 공격 턴에 발동하는 효과 (리턴값: 데미지 배율)
     OFFENSIVE: {
         'weapon': (val, pStats) => { return { mul: val, msg: `(x${val})` }; }, 
-        'gloves': (val, pStats) => { return { mul: 1.0, msg: `(공격력+${val} 미구현)` }; } // 나중에 장갑 추가 시 여기만 작성하면 됨
+        'gloves': (val, pStats) => { return { mul: 1.0, msg: `(공격력+${val} 미구현)` }; }
     },
-    
-    // 2. 공격 턴에 발동하지만, 버프/회복 성격인 효과
     RECOVERY: {
         'belt': (val, pStats, currentHP) => {
             const heal = Math.floor(pStats.hp * val);
             return { heal: heal, msg: `체력 회복 +${heal}` };
         },
         'ring': (val, pStats, currentHP) => { 
-             return { heal: 0, msg: "마나 회복(미구현)" }; // 나중에 반지 추가 시 예시
+             return { heal: 0, msg: "마나 회복(미구현)" };
         }
     },
-
-    // 3. 방어 턴(적 공격 시)에 발동하는 효과 (리턴값: 데미지 감소 배율)
     DEFENSIVE: {
         'armor': (val) => { return { mul: val, msg: `피해 감소` }; },
-        'shoes': (val) => { return { mul: 0, msg: `완전 회피` }; } // 나중에 신발 추가 시 예시
+        'shoes': (val) => { return { mul: 0, msg: `완전 회피` }; }
     }
 };
 
@@ -59,7 +54,8 @@ const CombatSystem = {
         }
 
         data.gold -= cost;
-        if (window.MainEngine) MainEngine.updateUI();
+        // [수정] window. 제거
+        if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
         const z = CombatSystem.currentZone;
         const range = z.maxLv - z.minLv + 1;
@@ -100,12 +96,11 @@ const CombatSystem = {
         else { alert("도망 실패! 전투 시작!"); CombatSystem.startBattle(); }
     },
 
-    // 4. 전투 시작 (확장성 + 드랍 로직 + 포션 로그 적용됨)
+    // 4. 전투 시작
     startBattle: () => {
         const m = CombatSystem.tempMonster;
         if (!m) return alert("오류 발생");
         
-        // UI 세팅
         const grid = document.getElementById('hunt-grid');
         const imgPath = `image/${m.img}`;
         if(grid) grid.innerHTML = `
@@ -124,24 +119,20 @@ const CombatSystem = {
         autoTimer = setInterval(() => {
             turn++;
             const pStats = MainEngine.getFinalStats();
-            // [중요] 장착된 모든 장비를 배열로 가져옴 (타입 상관없이 순회 가능)
             const equippedItems = Object.values(data.equipment).filter(e => e !== null);
 
             // --- [유저 턴] ---
             let finalAtk = pStats.atk;
             let atkMsg = "";
 
-            // 모든 장착 장비를 돌면서 '공격형' 또는 '회복형' 스킬 체크
             equippedItems.forEach(item => {
                 const triggered = SkillSystem.check(item, turn);
                 triggered.forEach(s => {
-                    // 1. 공격형 핸들러가 있는지 확인 (Weapon 등)
                     if (SkillHandlers.OFFENSIVE[item.type]) {
                         const res = SkillHandlers.OFFENSIVE[item.type](s.val, pStats);
                         if (res.mul) finalAtk *= res.mul;
                         atkMsg += `<br><span style="color:#f1c40f">⚡ [${s.name}] 발동! ${res.msg}</span>`;
                     }
-                    // 2. 회복형 핸들러가 있는지 확인 (Belt 등)
                     else if (SkillHandlers.RECOVERY[item.type]) {
                         const res = SkillHandlers.RECOVERY[item.type](s.val, pStats, data.hp);
                         if (res.heal) data.hp = Math.min(pStats.hp, data.hp + res.heal);
@@ -156,40 +147,32 @@ const CombatSystem = {
 
             log.innerHTML = `[Turn ${turn}] 유저 공격: ${pDmg} ${atkMsg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
 
-            // [승리 및 드랍 로직]
+            // [승리]
             if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
                 data.gold += m.gold;
                 data.exp += m.exp;
                 
-                // --- 드랍 로직 시작 ---
+                // --- 드랍 로직 ---
                 let dropMsg = "";
-                // 드랍 확률 30%
                 if (Math.random() * 100 < 30) {
-                    // 조건: 몬스터 레벨(m.lv) 이하, 그리고 몬스터 레벨 -10 이상인 장비만 드랍
                     const validItems = GameDatabase.EQUIPMENT.filter(e => e.lv <= m.lv && e.lv >= m.lv - 10);
-                    
                     if (validItems.length > 0) {
                         const baseItem = validItems[Math.floor(Math.random() * validItems.length)];
-                        // 새 아이템 생성
                         let newItem = { ...baseItem, id: Date.now(), en: 0, skills: [] };
-                        
-                        // 스킬 부여 확률 30%
                         if (Math.random() * 100 < 30) {
-                            // 스킬 개수: 1개(80%) vs 2개(20%)
                             const countRoll = Math.random() * 100;
                             const skillCount = (countRoll < 80) ? 1 : 2;
                             newItem = SkillSystem.attachSkill(newItem, skillCount);
                         }
-                        
                         data.inventory.push(newItem);
                         dropMsg = `<br><span style="color:#e94560">🎁 [${newItem.name}] 획득!</span>`;
                     }
                 }
-                // ---------------------
 
-                if (window.MainEngine) MainEngine.updateUI();
+                // [수정] 승리 시 UI 즉시 갱신 (window. 제거)
+                if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
                 log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span>${dropMsg}<br>` + log.innerHTML;
                 
@@ -205,7 +188,7 @@ const CombatSystem = {
                         <button class="btn-nav" onclick="showPage('page-hunt-select')">🔙 사냥터 목록</button>
                     </div>`;
                 
-                if (window.MainEngine) MainEngine.checkLevelUp();
+                if (typeof MainEngine !== 'undefined') MainEngine.checkLevelUp();
                 return;
             }
 
@@ -213,11 +196,9 @@ const CombatSystem = {
             let incDmg = Math.floor(calcDmg(m.atk, pStats.def));
             let defMsg = "";
 
-            // 모든 장착 장비를 돌면서 '방어형' 스킬 체크
             equippedItems.forEach(item => {
                 const triggered = SkillSystem.check(item, turn);
                 triggered.forEach(s => {
-                    // 3. 방어형 핸들러가 있는지 확인 (Armor 등)
                     if (SkillHandlers.DEFENSIVE[item.type]) {
                         const res = SkillHandlers.DEFENSIVE[item.type](s.val);
                         if (res.mul !== undefined) incDmg = Math.floor(incDmg * res.mul);
@@ -226,9 +207,9 @@ const CombatSystem = {
                 });
             });
 
-            data.hp -= incDmg; // 데미지 적용
+            data.hp -= incDmg;
 
-            // [수정된 부분] 포션 자동 사용 및 결과 로그 출력
+            // [수정] 포션 로직 후 UI 갱신 (window. 제거)
             const potionResult = CombatSystem.tryAutoPotion(pStats);
             let potionMsg = "";
             if (potionResult.healed > 0) {
@@ -236,7 +217,9 @@ const CombatSystem = {
             }
 
             log.innerHTML = `피격: ${incDmg} ${defMsg} (내 HP: ${Math.max(0, Math.floor(data.hp))})${potionMsg}<br>` + log.innerHTML;
-            if (window.MainEngine) MainEngine.updateUI();
+            
+            // [수정] 몬스터 피격/회복 후 UI 즉시 갱신
+            if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
             // [패배]
             if (data.hp <= 0) {
@@ -245,7 +228,7 @@ const CombatSystem = {
                 data.hp = 1;
                 alert("패배했습니다... 마을로 귀환합니다.");
                 CombatSystem.resetBattleUI();
-                if (window.MainEngine) { MainEngine.updateUI(); MainEngine.saveGame(); }
+                if (typeof MainEngine !== 'undefined') { MainEngine.updateUI(); MainEngine.saveGame(); }
                 showPage('page-main');
             }
 
@@ -281,54 +264,32 @@ const CombatSystem = {
 
     setMonsterIdentity: (m) => {
         if (m.name && m.img) return m;
-
         const zoneId = CombatSystem.currentZone ? CombatSystem.currentZone.id : 0;
         let targetMonsters = [];
-
-        if (zoneId === 0) {
-            targetMonsters = [
-                { name: '슬라임', img: 'slime.png' },
-                { name: '앞마당 쥐', img: 'rat.png' } 
-            ];
-        } 
-        else if (zoneId === 1) {
-            targetMonsters = [
-                { name: '화가난 등산객', img: 'hiker.png' },
-                { name: '고라니', img: 'Elk.png' }
-            ];
-        }
-        else {
-            targetMonsters = [
-                { name: '알 수 없는 적', img: 'unknown.png' }
-            ];
-        }
-
+        if (zoneId === 0) targetMonsters = [{ name: '슬라임', img: 'slime.png' }, { name: '앞마당 쥐', img: 'rat.png' }];
+        else if (zoneId === 1) targetMonsters = [{ name: '화가난 등산객', img: 'hiker.png' }, { name: '고라니', img: 'Elk.png' }];
+        else targetMonsters = [{ name: '알 수 없는 적', img: 'unknown.png' }];
         const pick = targetMonsters[Math.floor(Math.random() * targetMonsters.length)];
-        m.name = pick.name;
-        m.img = pick.img;
+        m.name = pick.name; m.img = pick.img;
         return m;
     },
 
     tryAutoPotion: (pStats) => {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
-        
         const missingHp = pStats.hp - data.hp;
-        if (missingHp <= 0) return { healed: 0, usedCount: 0 }; // 회복 필요 없음
+        if (missingHp <= 0) return { healed: 0, usedCount: 0 };
 
         const potions = data.inventory.filter(i => i.type === 'potion').sort((a, b) => a.val - b.val);
-        if (potions.length === 0) return { healed: 0, usedCount: 0 }; // 포션 없음
+        if (potions.length === 0) return { healed: 0, usedCount: 0 };
 
         const totalPotionsValue = potions.reduce((acc, cur) => acc + cur.val, 0);
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
-        
-        if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 }; // 버퍼가 이미 꽉 참
+        if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 };
 
-        // 회복량 계산
         const healAmount = Math.min(missingHp, realRemainingPool);
         data.hp += healAmount;
         data.potionBuffer += healAmount;
 
-        // 실제 아이템 소모 로직
         let usedCount = 0;
         while (potions.length > 0) {
             const smallestPotion = potions[0];
@@ -338,14 +299,13 @@ const CombatSystem = {
                 if (realIdx !== -1) {
                     data.inventory.splice(realIdx, 1);
                     potions.shift();
-                    usedCount++; // 소모된 개수 카운트
+                    usedCount++;
                 } else break;
             } else break;
         }
 
-        if (window.MainEngine) MainEngine.updateUI();
-        
-        // [변경점] 회복량과 소모 개수를 반환합니다.
+        // [수정] UI 갱신 (window. 제거)
+        if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
         return { healed: healAmount, usedCount: usedCount };
     }
 };
