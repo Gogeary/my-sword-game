@@ -174,7 +174,30 @@
         <button id="mine-refresh" class="main-menu-btn" style="background:var(--mine); color:#000; display:none;" onclick="MiningSystem.refresh()">💎 새로운 광맥 찾기</button>
         <button class="btn-nav" onclick="showPage('page-mine-select')">⬅️ 광산 나가기</button>
     </div>
+    
+    <div id="page-gamble" class="page">
+        <h2>🎲 인생 한방 도박장</h2>
+        
+        <div style="padding:20px; background:rgba(0,0,0,0.2); border-radius:10px; margin-bottom:15px; border:1px solid #555;">
+            <p style="margin-bottom:10px;">내 돈: <span id="gamble-gold-display" style="color:var(--money); font-weight:bold;">0</span> G</p>
+            
+            <input type="number" id="gamble-amount" placeholder="얼마를 거시겠습니까?" 
+                   style="width:90%; padding:15px; border-radius:8px; border:none; margin-bottom:15px; font-size:1.1em; text-align:center;">
+            
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="main-menu-btn" style="width:48%; margin:0; background:#c0392b;" onclick="GamblingSystem.play('odd')">🔴 홀</button>
+                <button class="main-menu-btn" style="width:48%; margin:0; background:#2980b9;" onclick="GamblingSystem.play('even')">🔵 짝</button>
+            </div>
+        </div>
 
+        <div id="gamble-log" style="height:120px; overflow-y:auto; background:#111; padding:10px; border-radius:8px; border:1px solid #333; font-size:0.9em; text-align:center; color:#888;">
+            베팅 금액을 입력하고 홀/짝을 선택하세요.<br>
+            성공 시 2배, 실패 시 0원!
+        </div>
+
+        <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 나가기</button>
+    </div>
+    
     <div id="page-upgrade" class="page">
         <h2>🔨 장비 강화</h2>
         <div id="upgrade-target-display" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:10px;">강화할 장비를 선택하세요.</div>
@@ -211,6 +234,8 @@
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button class="main-menu-btn" onclick="ShopSystem.open('equip')">⚔️ 장비 상점</button>
             <button class="main-menu-btn" style="background:var(--hunt);" onclick="ShopSystem.open('consume')">🧪 소비 아이템 상점</button>
+            
+            <button class="main-menu-btn" style="background:#8e44ad;" onclick="showPage('page-gamble'); GamblingSystem.init();">🎲 도박장 (홀짝)</button>
         </div>
         <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
@@ -283,6 +308,48 @@
                 localStorage.setItem('game_users', JSON.stringify(users));
             }
         },
+
+        // [추가된 부분] 도박 시스템
+    const GamblingSystem = {
+        init: () => {
+            // 들어올 때 현재 골드 표시 갱신
+            if(document.getElementById('gamble-gold-display')) {
+                document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
+            }
+            document.getElementById('gamble-amount').value = ''; // 입력창 초기화
+        },
+
+        play: (choice) => {
+            const input = document.getElementById('gamble-amount');
+            const bet = parseInt(input.value);
+            const log = document.getElementById('gamble-log');
+
+            // 1. 유효성 검사
+            if (!bet || bet <= 0) return alert("베팅 금액을 올바르게 입력해주세요.");
+            if (bet > data.gold) return alert("가진 돈보다 많이 걸 수 없습니다!");
+
+            // 2. 결과 판정 (랜덤)
+            // 1~100 사이 숫자 생성 -> 홀수면 'odd', 짝수면 'even'
+            const num = Math.floor(Math.random() * 100) + 1;
+            const resultType = (num % 2 !== 0) ? 'odd' : 'even';
+            const resultText = (resultType === 'odd') ? '🔴 홀' : '🔵 짝';
+
+            // 3. 승패 처리
+            if (choice === resultType) {
+                // 승리: 건 돈만큼 추가 (원금 포함 2배 효과)
+                data.gold += bet;
+                log.innerHTML = `<div style="color:#2ecc71; margin-bottom:5px;">🎉 <strong>승리!</strong> 결과: [${resultText}]<br>+${bet.toLocaleString()}G 획득!</div>` + log.innerHTML;
+            } else {
+                // 패배: 건 돈 차감
+                data.gold -= bet;
+                log.innerHTML = `<div style="color:#e74c3c; margin-bottom:5px;">💀 <strong>패배...</strong> 결과: [${resultText}]<br>-${bet.toLocaleString()}G 증발...</div>` + log.innerHTML;
+            }
+
+            // 4. UI 갱신
+            MainEngine.updateUI();
+            document.getElementById('gamble-gold-display').innerText = Math.floor(data.gold).toLocaleString();
+        }
+    };
         //동냥기능
         begging: () => {
             // 1. 1~500 골드 랜덤 획득
@@ -503,6 +570,7 @@
 </script>
 </body>
 </html>
+
 
 
 
