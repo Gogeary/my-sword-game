@@ -1,59 +1,55 @@
 /* ============================================================
-   [Enhancement_System.js]
-   강화 로직: 강화권/방지권 사용 및 장비 선택 처리
+   [Enhancement_System.js] - v2.1
+   기능: 강화 비용, 10강 안전 모드, 보조 아이템 UI 개선
    ============================================================ */
 
 const UpgradeSystem = {
-    targetIdx: -1,       // 강화할 장비의 인벤토리 인덱스
-    selectedScroll: -1,  // 선택된 방지권 인벤토리 인덱스
-    selectedTicket: -1,  // 선택된 강화권 인벤토리 인덱스
+    targetIdx: -1,       
+    selectedScroll: -1,  
+    selectedTicket: -1, 
     isAuto: false,
     autoTimer: null,
     
-    // 1. 장비 선택 (Main_Engine.js의 모달에서 이 함수를 호출함)
+    // [신규] 강화 비용 계산기 (기본 가격의 5% + 레벨 비례)
+    calcCost: (item) => {
+        if (!item) return 0;
+        const baseCost = Math.floor(item.p * 0.05); // 템 가격의 5%
+        const levelCost = item.en * 1000;           // 1강당 1000골드 추가
+        return baseCost + levelCost;
+    },
+
     selectUpgrade: (idx) => {
-        // 인덱스가 유효한지 확인
-        if (typeof idx === 'undefined' || idx === null || idx < 0) return console.error("잘못된 장비 인덱스입니다.");
-        
+        if (typeof idx === 'undefined' || idx === null || idx < 0) return;
         UpgradeSystem.targetIdx = idx;
-        UpgradeSystem.selectedScroll = -1; // 초기화
-        UpgradeSystem.selectedTicket = -1; // 초기화
+        UpgradeSystem.selectedScroll = -1;
+        UpgradeSystem.selectedTicket = -1;
         
-        // 화면 갱신
         UpgradeSystem.renderUI();
         UpgradeSystem.renderSupportItems(); 
     },
 
-    // 2. UI 렌더링 (확률 및 정보 표시)
     renderUI: () => {
         const display = document.getElementById('upgrade-target-display');
         const btnExec = document.getElementById('btn-up-exec');
         const btnSell = document.getElementById('btn-up-sell');
+        const costDisplay = document.getElementById('up-cost-display'); // 비용 표시용
         
-        // 데이터 유효성 검사
-        if (typeof data === 'undefined' || !data.inventory) return;
-
-        // 선택된 장비가 없거나 유효하지 않으면 초기화
         if (UpgradeSystem.targetIdx === -1 || !data.inventory[UpgradeSystem.targetIdx]) {
             if(display) display.innerHTML = '<span style="color:#888">강화할 장비를 선택해주세요.</span>';
-            if(btnExec) {
-                btnExec.disabled = true;
-                btnExec.innerText = "강화하기";
-            }
+            if(btnExec) { btnExec.disabled = true; btnExec.innerText = "강화하기"; }
             if(btnSell) btnSell.style.display = 'none';
-            
-            const elChance = document.getElementById('up-chance');
-            const elBreak = document.getElementById('up-break');
-            if(elChance) elChance.innerText = '0';
-            if(elBreak) elBreak.innerText = '0';
-            
-            const supportArea = document.getElementById('support-item-area');
-            if(supportArea) supportArea.innerHTML = '';
+            if(costDisplay) costDisplay.innerText = "0 G";
+            document.getElementById('up-chance').innerText = '0';
+            document.getElementById('up-break').innerText = '0';
+            document.getElementById('support-item-area').innerHTML = '';
             return;
         }
 
         const item = data.inventory[UpgradeSystem.targetIdx];
+        const cost = UpgradeSystem.calcCost(item);
         
+        if(costDisplay) costDisplay.innerText = `${cost.toLocaleString()} G`;
+
         // [A] 강화권 사용 대기 상태
         if (UpgradeSystem.selectedTicket !== -1) {
             const ticket = data.inventory[UpgradeSystem.selectedTicket];
@@ -67,14 +63,12 @@ const UpgradeSystem = {
             }
             document.getElementById('up-chance').innerText = '100';
             document.getElementById('up-break').innerText = '0';
-        
+            if(btnExec) { btnExec.disabled = false; btnExec.innerText = "강화권 사용"; }
         } 
         // [B] 일반 강화 상태
         else {
             const rates = UpgradeSystem.getRates(item.en);
             let destroyRate = rates.destroy;
-
-            // 방지권 적용 여부
             if (UpgradeSystem.selectedScroll !== -1) destroyRate = 0;
 
             if(display) {
@@ -84,22 +78,15 @@ const UpgradeSystem = {
                     ${UpgradeSystem.selectedScroll !== -1 ? '<div style="color:#3498db; margin-top:5px;">🛡️ 파괴 방지권 적용됨</div>' : ''}
                 `;
             }
-            
             document.getElementById('up-chance').innerText = rates.success;
             document.getElementById('up-break').innerText = destroyRate;
+            if(btnExec) { btnExec.disabled = false; btnExec.innerText = `강화하기`; }
         }
 
-        if(btnExec) {
-            btnExec.disabled = false;
-            btnExec.innerText = (UpgradeSystem.selectedTicket !== -1) ? '강화권 사용' : '강화하기 (비용 0)';
-        }
         if(btnSell) btnSell.style.display = 'inline-block';
-        
-        // 전역 변수 upIdx 동기화 (판매 기능용)
         if(typeof upIdx !== 'undefined') upIdx = UpgradeSystem.targetIdx; 
     },
 
-    // 3. 보조 아이템 목록 표시
     renderSupportItems: () => {
         const area = document.getElementById('support-item-area');
         if (!area) return;
@@ -107,17 +94,20 @@ const UpgradeSystem = {
         const item = data.inventory[UpgradeSystem.targetIdx];
         if (!item) return;
 
-        area.innerHTML = ''; // 초기화
+        area.innerHTML = ''; 
 
-        // (1) 강화권 목록
+        // 인벤토리에서 티켓과 스크롤 찾기
         const tickets = [];
+        const scrolls = [];
         data.inventory.forEach((it, idx) => {
             if (it.type === 'ticket') tickets.push({ ...it, invIdx: idx });
+            if (it.type === 'scroll') scrolls.push({ ...it, invIdx: idx });
         });
 
+        // (1) 강화권 목록
         if (tickets.length > 0) {
             const tDiv = document.createElement('div');
-            tDiv.innerHTML = '<div style="font-size:0.9em; color:#ccc; margin:5px 0;">🎫 강화권 선택</div>';
+            tDiv.innerHTML = '<div style="font-size:0.9em; color:#ccc; margin:5px 0;">🎫 강화권 (클릭하여 선택)</div>';
             const tGrid = document.createElement('div');
             tGrid.style.display = 'flex'; tGrid.style.gap = '5px'; tGrid.style.flexWrap = 'wrap';
 
@@ -143,50 +133,46 @@ const UpgradeSystem = {
                         UpgradeSystem.renderUI();
                         UpgradeSystem.renderSupportItems();
                     };
-                } else {
-                    btn.disabled = true;
-                }
+                } else { btn.disabled = true; }
                 tGrid.appendChild(btn);
             });
             tDiv.appendChild(tGrid);
             area.appendChild(tDiv);
         }
 
-        // (2) 방지권 목록 (강화권 미사용 시)
-        if (UpgradeSystem.selectedTicket === -1) {
-            const scrolls = [];
-            data.inventory.forEach((it, idx) => {
-                if (it.type === 'scroll') scrolls.push({ ...it, invIdx: idx });
+        // (2) 방지권 목록
+        if (UpgradeSystem.selectedTicket === -1 && scrolls.length > 0) {
+            const sDiv = document.createElement('div');
+            sDiv.style.marginTop = '10px';
+            sDiv.innerHTML = '<div style="font-size:0.9em; color:#ccc; margin:5px 0;">🛡️ 방지권 (파괴 확률 0%)</div>';
+            const sGrid = document.createElement('div');
+            sGrid.style.display = 'flex'; sGrid.style.gap = '5px'; sGrid.style.flexWrap = 'wrap';
+
+            scrolls.forEach(s => {
+                const btn = document.createElement('button');
+                const isSelected = (UpgradeSystem.selectedScroll === s.invIdx);
+                
+                btn.className = 'btn-small';
+                btn.style.width = 'auto';
+                btn.style.background = isSelected ? '#3498db' : '#333';
+                btn.style.border = isSelected ? '1px solid #fff' : '1px solid #444';
+                btn.innerText = s.name;
+                
+                btn.onclick = () => {
+                    if (UpgradeSystem.selectedScroll === s.invIdx) UpgradeSystem.selectedScroll = -1;
+                    else UpgradeSystem.selectedScroll = s.invIdx;
+                    UpgradeSystem.renderUI();
+                    UpgradeSystem.renderSupportItems();
+                };
+                sGrid.appendChild(btn);
             });
+            sDiv.appendChild(sGrid);
+            area.appendChild(sDiv);
+        }
 
-            if (scrolls.length > 0) {
-                const sDiv = document.createElement('div');
-                sDiv.style.marginTop = '10px';
-                sDiv.innerHTML = '<div style="font-size:0.9em; color:#ccc; margin:5px 0;">🛡️ 방지권 선택 (파괴 확률 0%)</div>';
-                const sGrid = document.createElement('div');
-                sGrid.style.display = 'flex'; sGrid.style.gap = '5px'; sGrid.style.flexWrap = 'wrap';
-
-                scrolls.forEach(s => {
-                    const btn = document.createElement('button');
-                    const isSelected = (UpgradeSystem.selectedScroll === s.invIdx);
-                    
-                    btn.className = 'btn-small';
-                    btn.style.width = 'auto';
-                    btn.style.background = isSelected ? '#3498db' : '#333';
-                    btn.style.border = isSelected ? '1px solid #fff' : '1px solid #444';
-                    btn.innerText = s.name;
-                    
-                    btn.onclick = () => {
-                        if (UpgradeSystem.selectedScroll === s.invIdx) UpgradeSystem.selectedScroll = -1;
-                        else UpgradeSystem.selectedScroll = s.invIdx;
-                        UpgradeSystem.renderUI();
-                        UpgradeSystem.renderSupportItems();
-                    };
-                    sGrid.appendChild(btn);
-                });
-                sDiv.appendChild(sGrid);
-                area.appendChild(sDiv);
-            }
+        // 아이템이 하나도 없을 때 메시지
+        if (tickets.length === 0 && scrolls.length === 0) {
+            area.innerHTML = '<div style="color:#666; font-size:0.8em; padding:5px;">(보유 중인 강화권/방지권이 없습니다)</div>';
         }
     },
 
@@ -226,13 +212,30 @@ const UpgradeSystem = {
             return;
         }
 
-        // [B] 일반 강화
+        // [B] 일반 강화 (비용 발생)
+        const cost = UpgradeSystem.calcCost(item);
+        if (data.gold < cost) {
+            UpgradeSystem.stopAuto();
+            return alert("골드가 부족합니다.");
+        }
+
+        // 골드 소모
+        data.gold -= cost;
+
         const rates = UpgradeSystem.getRates(item.en);
         const rand = Math.random() * 100;
 
         if (rand < rates.success) {
             item.en++;
-            if(log) log.innerHTML = `<div style="color:#2ecc71">성공! (+${item.en})</div>` + log.innerHTML;
+            if(log) log.innerHTML = `<div style="color:#2ecc71">성공! (+${item.en}) / -${cost}G</div>` + log.innerHTML;
+            
+            // [자동강화 안전장치] 10강 도달 시 자동 멈춤 (안전 모드 체크 시)
+            const safeMode = document.getElementById('chk-safe-mode');
+            if (UpgradeSystem.isAuto && safeMode && safeMode.checked && item.en >= 10) {
+                 UpgradeSystem.stopAuto();
+                 alert("🎉 안전 모드: +10강을 달성하여 자동 강화를 중단합니다.");
+            }
+
         } else {
             const destroyRand = Math.random() * 100;
             if (destroyRand < rates.destroy) {
@@ -243,16 +246,18 @@ const UpgradeSystem = {
                         data.inventory.splice(realScrollIdx, 1);
                         if (realScrollIdx < UpgradeSystem.targetIdx) UpgradeSystem.targetIdx--;
                     }
-                    if(log) log.innerHTML = `<div style="color:#3498db">🛡️ 강화 실패했으나 [${scroll.name}]으로 파괴를 막았습니다!</div>` + log.innerHTML;
+                    if(log) log.innerHTML = `<div style="color:#3498db">🛡️ 파괴 방어 성공! (${scroll.name} 소모) / -${cost}G</div>` + log.innerHTML;
                     UpgradeSystem.selectedScroll = -1; 
+                    UpgradeSystem.stopAuto(); // 방지권 썼으면 자동 멈춤
                 } else {
-                    if(log) log.innerHTML = `<div style="color:#e74c3c">💀 강화 실패... 장비가 파괴되었습니다.</div>` + log.innerHTML;
+                    if(log) log.innerHTML = `<div style="color:#e74c3c">💀 장비 파괴됨... / -${cost}G</div>` + log.innerHTML;
                     data.inventory.splice(UpgradeSystem.targetIdx, 1);
                     if (data.equipment[item.type] === item) data.equipment[item.type] = null;
                     UpgradeSystem.targetIdx = -1;
+                    UpgradeSystem.stopAuto(); // 장비 터지면 자동 멈춤
                 }
             } else {
-                if(log) log.innerHTML = `<div style="color:#e67e22">실패... (등급 유지)</div>` + log.innerHTML;
+                if(log) log.innerHTML = `<div style="color:#e67e22">실패 (등급 유지) / -${cost}G</div>` + log.innerHTML;
             }
         }
         UpgradeSystem.renderUI();
