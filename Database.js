@@ -80,6 +80,13 @@ const GameDatabase = {
             { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', img: 'scroll_2.png' },
             { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', img: 'scroll_3.png' }
         ]
+       // [신규] 강화권 아이템 추가
+        tickets: [
+            { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 500000, img: 'ticket.png' },
+            { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 1000000, img: 'ticket.png' },
+            { id: 't10', name: '+10 강화권', val: 10, type: 'ticket', p: 3000000, img: 'ticket.png' },
+            { id: 't12', name: '+12 강화권', val: 12, type: 'ticket', p: 10000000, img: 'ticket.png' }
+        ]
     },
 
     // [몬스터 골드 수정]
@@ -166,6 +173,19 @@ const GameDatabase = {
             });
         }
     }
+  // 1. 강화권 뽑기 상자
+        ENHANCE_BOX: {
+            COST: 100000, // 1회 10만 골드
+            RATES: [
+                { type: 'ticket', val: 5,  name: '+5 강화권', chance: 30, color: '#2ecc71' },
+                { type: 'ticket', val: 7,  name: '+7 강화권', chance: 15, color: '#3498db' },
+                { type: 'ticket', val: 10, name: '+10 강화권', chance: 10, color: '#9b59b6' },
+                { type: 'ticket', val: 12, name: '+12 강화권', chance: 3,  color: '#f1c40f' },
+                { type: 'scroll', id: 1,   name: '하급 방지권', chance: 20, color: '#bdc3c7' },
+                { type: 'scroll', id: 2,   name: '중급 방지권', chance: 15, color: '#95a5a6' },
+                { type: 'scroll', id: 3,   name: '상급 방지권', chance: 7,  color: '#e74c3c' }
+            ]
+        }
 
     // 마지막 30레벨 추가
     fullStages.push(stages[stages.length - 1]);
@@ -173,3 +193,4 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
