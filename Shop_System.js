@@ -128,4 +128,86 @@ const ShopSystem = {
         // UI 갱신 (골드 변화 등 반영)
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
+   /* Shop_System.js - playGacha 함수 수정본 */
+
+    // 3. [수정] 뽑기 로직 (장비 뽑기 제거됨, 강화권 상자만 남음)
+    playGacha: (type, count) => {
+        // 장비 뽑기('equip') 요청이 오면 무시
+        if (type !== 'enhance') return;
+
+        const config = GameDatabase.GACHA.ENHANCE_BOX;
+        const cost = config.COST * count;
+
+        if (data.gold < cost) {
+            return alert(`골드가 부족합니다. (${cost.toLocaleString()} G 필요)`);
+        }
+        
+        if (data.inventory.length + count > 100) {
+             return alert("인벤토리가 가득 찼습니다! 정리가 필요합니다.");
+        }
+
+        if(!confirm(`${cost.toLocaleString()} G를 사용하여 ${count}회 뽑으시겠습니까?`)) return;
+
+        data.gold -= cost;
+        const logBox = document.getElementById('gacha-log');
+        logBox.innerHTML = ''; 
+
+        let results = [];
+
+        for (let i = 0; i < count; i++) {
+            const rand = Math.random() * 100;
+            let currentProb = 0;
+            let pick = null;
+
+            // --- 강화권 상자 로직 ---
+            let selectedOption = null;
+            for (let rate of config.RATES) {
+                currentProb += rate.chance;
+                if (rand < currentProb) {
+                    selectedOption = rate;
+                    break;
+                }
+            }
+            // 확률 오차 시 꽝(하급 방지권)
+            if (!selectedOption) selectedOption = config.RATES[config.RATES.length - 1];
+
+            if (selectedOption.type === 'ticket') {
+                // 강화권 생성
+                const ticketBase = GameDatabase.CONSUMABLES.tickets.find(t => t.val === selectedOption.val);
+                if (ticketBase) {
+                    pick = { ...ticketBase, id: Date.now() + Math.random() + i, en: 0 };
+                    pick.displayColor = selectedOption.color;
+                    pick.displayName = selectedOption.name;
+                }
+            } else {
+                // 방지권 생성
+                const scrollBase = GameDatabase.CONSUMABLES.scrolls.find(s => s.id === selectedOption.id);
+                if (scrollBase) {
+                    pick = { ...scrollBase, id: Date.now() + Math.random() + i, en: 0 };
+                    pick.displayColor = selectedOption.color;
+                    pick.displayName = selectedOption.name;
+                }
+            }
+
+            if (pick) {
+                data.inventory.push(pick);
+                results.push(pick);
+            } else {
+                results.push({ displayName: "오류 발생 (아이템 없음)", displayColor: "#555" });
+            }
+        }
+
+        // 결과 출력
+        results.forEach((res, idx) => {
+            const div = document.createElement('div');
+            div.style.padding = "5px";
+            div.style.borderBottom = "1px solid #333";
+            div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.displayColor}; font-weight:bold;">${res.displayName}</span> 획득!`;
+            logBox.appendChild(div);
+        });
+        
+        logBox.scrollTop = logBox.scrollHeight;
+        if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
+    }
 };
+
