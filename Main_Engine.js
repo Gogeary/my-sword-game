@@ -1,15 +1,15 @@
 /* ==========================================
    [Main_Engine.js]
-   게임의 핵심 로직 (암호화 적용 버전)
+   게임의 핵심 로직 (암호화 적용 및 강화권 지원 업데이트)
    ========================================== */
 
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
 
-// [보안] 암호화 키 (이 키가 다르면 세이브 파일을 풀 수 없음)
+// [보안] 암호화 키
 const SECRET_KEY = "my_super_secret_game_key_v1.8";
 
 const MainEngine = {
-    // [암호화 헬퍼] 데이터 암호화
+    // [암호화 헬퍼]
     encrypt: (dataObj) => {
         try {
             const str = JSON.stringify(dataObj);
@@ -19,20 +19,14 @@ const MainEngine = {
             return null;
         }
     },
-
-    // [암호화 헬퍼] 데이터 복호화 (실패 시 원본 반환 시도)
     decrypt: (encryptedStr) => {
         try {
             if (!encryptedStr) return {};
             const bytes = CryptoJS.AES.decrypt(encryptedStr, SECRET_KEY);
             const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-            
-            // 복호화된 문자열이 없으면(빈 문자열) 기존 방식(일반 JSON)일 수 있음
             if (!decryptedData) return JSON.parse(encryptedStr); 
-            
             return JSON.parse(decryptedData);
         } catch (e) {
-            // 암호화된 데이터가 아니면 그냥 파싱 시도 (기존 유저 호환성)
             try { return JSON.parse(encryptedStr); } catch (err) { return {}; }
         }
     },
@@ -41,10 +35,8 @@ const MainEngine = {
         if(typeof GameDatabase === 'undefined') return console.error("Database 로드 실패");
         const auto = localStorage.getItem('game_auto_user');
         if(auto) {
-            // [수정] 복호화하여 로드
             const savedData = localStorage.getItem('game_users');
             const users = MainEngine.decrypt(savedData);
-            
             if(users && users[auto]) { 
                 currentUser = auto; 
                 data = users[auto].data; 
@@ -58,7 +50,6 @@ const MainEngine = {
         const pw = document.getElementById('login-pw').value;
         if(!id || !pw) return alert("정보를 입력해주세요.");
 
-        // [수정] 복호화하여 로드
         const savedData = localStorage.getItem('game_users');
         const users = MainEngine.decrypt(savedData);
 
@@ -80,9 +71,7 @@ const MainEngine = {
         
         if(document.getElementById('auto-login').checked) localStorage.setItem('game_auto_user', id);
         
-        // [수정] 암호화하여 저장
         localStorage.setItem('game_users', MainEngine.encrypt(users));
-        
         MainEngine.enterGame();
     },
 
@@ -100,13 +89,9 @@ const MainEngine = {
 
     saveGame: () => {
         if(currentUser && data) {
-            // [수정] 불러올 때도 복호화
             const savedData = localStorage.getItem('game_users');
             const users = MainEngine.decrypt(savedData);
-            
             users[currentUser].data = data;
-            
-            // [수정] 저장할 때 암호화
             localStorage.setItem('game_users', MainEngine.encrypt(users));
         }
     },
@@ -138,15 +123,12 @@ const MainEngine = {
     },
 
     exportSaveFile: () => {
-        // [수정] 저장된 문자열 그대로 내보냄 (이미 암호화되어 있음)
         const saveStr = localStorage.getItem('game_users');
         if(!saveStr) return alert("데이터 없음");
-        
-        // 파일명도 변경
         const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `강화하기_v1.8_Encrypted_Save.txt`;
+        link.download = `강화하기_v2.0_Encrypted_Save.txt`;
         link.click();
     },
 
@@ -157,15 +139,10 @@ const MainEngine = {
         reader.onload = (e) => {
             try {
                 const loadedStr = e.target.result;
-                // [수정] 복호화 테스트: 올바른 형식인지 확인
                 const testParse = MainEngine.decrypt(loadedStr);
-                
                 if (!testParse || Object.keys(testParse).length === 0) {
-                     // 복호화 실패 시 (옛날 파일일 수도 있으니 일반 파싱 시도)
                      JSON.parse(loadedStr); 
                 }
-                
-                // 통과되면 저장
                 localStorage.setItem('game_users', loadedStr);
                 alert("복구 완료!");
                 location.reload();
@@ -222,18 +199,16 @@ const MainEngine = {
         if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
         return { atk: fAtk, def: fDef, hp: fHP };
     },
-    // [수정] 인벤토리 렌더링 (장착/미장착 분리 표시)
+    
     renderInventory: () => {
         const eqList = document.getElementById('equipped-list');
         const invList = document.getElementById('inventory-list');
         
         if(!eqList || !invList) return;
         
-        // 목록 초기화
         eqList.innerHTML = '';
         invList.innerHTML = '';
         
-        // 아이템이 하나도 없을 때 안내 문구
         if (data.inventory.length === 0) {
             invList.innerHTML = '<div style="color:#666; padding:20px;">가방이 비어있습니다.</div>';
             eqList.innerHTML = '<div style="color:#666; padding:10px;">장착된 장비가 없습니다.</div>';
@@ -243,14 +218,10 @@ const MainEngine = {
         let equippedCount = 0;
 
         data.inventory.forEach((it, idx) => {
-            // 장착 여부 확인
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-            
-            // 카드 생성
             const div = document.createElement('div'); 
             div.className = 'item-card';
             
-            // 장착된 아이템은 테두리 색상 강조
             if (isEquipped) {
                 div.style.border = '2px solid var(--mine)'; 
                 div.style.background = 'rgba(46, 204, 113, 0.1)';
@@ -259,17 +230,14 @@ const MainEngine = {
 
             const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
             
-            // 강화권/보호권 등 소모품인지 확인 (강화 버튼 숨김 처리 등을 위함)
+            // 소모품 여부 확인 (강화권, 방지권, 포션 등은 강화 불가)
             const isConsumable = (it.type === 'ticket' || it.type === 'scroll' || it.type === 'potion');
 
-            // 버튼 구성
             let actionButtons = '';
             
             if (isConsumable) {
-                // 소모품일 경우 (판매만 가능)
                 actionButtons = `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
             } else {
-                // 장비일 경우 (강화, 장착/해제, 판매)
                 actionButtons = `
                     <button class="item-btn" style="background:var(--money); color:#000;" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
                     <button class="item-btn" style="background:${isEquipped ? '#e74c3c' : 'var(--hunt)'}; color:#fff;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
@@ -280,14 +248,13 @@ const MainEngine = {
             div.innerHTML = `
                 ${imgTag}
                 <div class="item-info">
-                    <strong>${it.name} +${it.en}</strong><br>
+                    <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong><br>
                     ${isEquipped ? '<span style="color:var(--mine); font-weight:bold;">[장착중]</span>' : (it.p ? `<span style="color:#888; font-size:0.9em;">티어 ${Math.floor(it.p/1000)}</span>` : '')}
                 </div>
                 <div class="item-actions">
                     ${actionButtons}
                 </div>`;
             
-            // [핵심] 장착 여부에 따라 다른 곳에 추가
             if (isEquipped) {
                 eqList.appendChild(div);
             } else {
@@ -295,7 +262,6 @@ const MainEngine = {
             }
         });
 
-        // 장착된 게 하나도 없을 때 빈 메시지 표시
         if (equippedCount === 0) {
             eqList.innerHTML = '<div style="color:#555; font-size:0.9em; padding:10px;">장착된 장비가 없습니다.</div>';
         }
@@ -339,15 +305,44 @@ const MainEngine = {
         }
     },
 
+    // [수정] 강화용 장비 선택 모달 (필터링 적용)
     openInventoryModal: () => {
-        document.getElementById('inv-modal').style.display='block';
-        const mList = document.getElementById('modal-item-list'); mList.innerHTML = '';
-        data.inventory.forEach((it, idx) => {
-            const btn = document.createElement('button'); btn.className='main-menu-btn';
+        const modal = document.getElementById('inv-modal');
+        const mList = document.getElementById('modal-item-list');
+        
+        if (!modal || !mList) return;
+
+        modal.style.display = 'block';
+        mList.innerHTML = ''; 
+
+        // 강화 가능한 장비만 필터링 (강화권, 방지권 제외)
+        const upgradables = data.inventory.map((item, index) => ({ ...item, realIdx: index }))
+            .filter(item => ['weapon', 'armor', 'belt'].includes(item.type));
+
+        if (upgradables.length === 0) {
+            mList.innerHTML = '<div style="padding:20px; color:#888;">강화 가능한 장비가 없습니다.</div>';
+            return;
+        }
+
+        upgradables.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'main-menu-btn';
             btn.style.padding = "10px";
             btn.style.fontSize = "0.9em";
-            btn.innerText = `${it.name} +${it.en}`;
-            btn.onclick = () => { if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.selectUpgrade(idx); MainEngine.closeModal(); };
+            btn.style.textAlign = "left";
+            
+            const isEquipped = (data.equipment[item.type] && data.equipment[item.type].id === item.id);
+            const status = isEquipped ? '<span style="color:var(--mine)">[장착중]</span> ' : '';
+
+            btn.innerHTML = `${status}<strong>${item.name} (+${item.en})</strong>`;
+            
+            btn.onclick = () => {
+                if (typeof UpgradeSystem !== 'undefined') {
+                    UpgradeSystem.selectUpgrade(item.realIdx); 
+                }
+                MainEngine.closeModal();
+            };
+            
             mList.appendChild(btn);
         });
     },
@@ -440,9 +435,6 @@ function showPage(id) {
     }
     MainEngine.updateUI();
 }
-/* ==========================================
-   [보안] 우클릭 및 F12 개발자 도구 차단 스크립트
-   ========================================== */
 
 // 1. 마우스 우클릭 차단
 document.addEventListener('contextmenu', function(e) {
@@ -452,30 +444,12 @@ document.addEventListener('contextmenu', function(e) {
 
 // 2. F12 및 개발자 도구 단축키 차단
 document.addEventListener('keydown', function(e) {
-    // F12 키
-    if (e.keyCode === 123) {
-        e.preventDefault();
-        e.returnValue = false;
-    }
-    // Ctrl + Shift + I (개발자 도구)
-    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-        e.preventDefault();
-        e.returnValue = false;
-    }
-    // Ctrl + Shift + J (콘솔)
-    if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-        e.preventDefault();
-        e.returnValue = false;
-    }
-    // Ctrl + U (소스 보기)
-    if (e.ctrlKey && e.keyCode === 85) {
-        e.preventDefault();
-        e.returnValue = false;
-    }
+    if (e.keyCode === 123) { e.preventDefault(); e.returnValue = false; }
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); e.returnValue = false; }
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); e.returnValue = false; }
+    if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); e.returnValue = false; }
 });
 
 function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
 
 window.onload = MainEngine.init;
-
-
