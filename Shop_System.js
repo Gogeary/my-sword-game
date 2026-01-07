@@ -1,6 +1,6 @@
 /* ==========================================
    [Shop_System.js] 
-   상점 시스템 (장비 / 소비 아이템 통합 처리)
+   상점 시스템 (장비 / 소비 / 뽑기 통합)
    ========================================== */
 
 const ShopSystem = {
@@ -127,13 +127,17 @@ const ShopSystem = {
 
         // UI 갱신 (골드 변화 등 반영)
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
-    }
-   /* Shop_System.js - playGacha 함수 수정본 */
+    },
 
-    // 3. [수정] 뽑기 로직 (장비 뽑기 제거됨, 강화권 상자만 남음)
+    // 3. 뽑기 로직 (강화권 상자 전용)
     playGacha: (type, count) => {
-        // 장비 뽑기('equip') 요청이 오면 무시
+        // 장비 뽑기('equip') 요청이 오면 무시 (강화권만 작동)
         if (type !== 'enhance') return;
+
+        // DB 안전성 체크
+        if (!GameDatabase.GACHA || !GameDatabase.GACHA.ENHANCE_BOX) {
+            return alert("뽑기 데이터(GACHA)를 불러올 수 없습니다. Database.js를 확인하세요.");
+        }
 
         const config = GameDatabase.GACHA.ENHANCE_BOX;
         const cost = config.COST * count;
@@ -150,7 +154,7 @@ const ShopSystem = {
 
         data.gold -= cost;
         const logBox = document.getElementById('gacha-log');
-        logBox.innerHTML = ''; 
+        if(logBox) logBox.innerHTML = ''; 
 
         let results = [];
 
@@ -168,7 +172,7 @@ const ShopSystem = {
                     break;
                 }
             }
-            // 확률 오차 시 꽝(하급 방지권)
+            // 확률 오차 시 꽝(하급 방지권) - 맨 마지막 아이템 선택
             if (!selectedOption) selectedOption = config.RATES[config.RATES.length - 1];
 
             if (selectedOption.type === 'ticket') {
@@ -198,16 +202,17 @@ const ShopSystem = {
         }
 
         // 결과 출력
-        results.forEach((res, idx) => {
-            const div = document.createElement('div');
-            div.style.padding = "5px";
-            div.style.borderBottom = "1px solid #333";
-            div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.displayColor}; font-weight:bold;">${res.displayName}</span> 획득!`;
-            logBox.appendChild(div);
-        });
-        
-        logBox.scrollTop = logBox.scrollHeight;
+        if(logBox) {
+            results.forEach((res, idx) => {
+                const div = document.createElement('div');
+                div.style.padding = "5px";
+                div.style.borderBottom = "1px solid #333";
+                div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.displayColor}; font-weight:bold;">${res.displayName}</span> 획득!`;
+                logBox.appendChild(div);
+            });
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
 };
-
