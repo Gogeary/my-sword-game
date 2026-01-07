@@ -1,37 +1,59 @@
-/* Combat_System.js 수정본 */
+/* Combat_System.js - 확장성 강화 버전 */
+
+// [핵심] 장비 타입별 스킬 효과 정의 (여기만 수정하면 장비 확장 가능)
+const SkillHandlers = {
+    // 1. 공격 턴에 발동하는 효과 (리턴값: 데미지 배율)
+    OFFENSIVE: {
+        'weapon': (val, pStats) => { return { mul: val, msg: `(x${val})` }; }, 
+        'gloves': (val, pStats) => { return { mul: 1.0, msg: `(공격력+${val} 미구현)` }; } // 나중에 장갑 추가 시 여기만 작성하면 됨
+    },
+    
+    // 2. 공격 턴에 발동하지만, 버프/회복 성격인 효과
+    RECOVERY: {
+        'belt': (val, pStats, currentHP) => {
+            const heal = Math.floor(pStats.hp * val);
+            return { heal: heal, msg: `체력 회복 +${heal}` };
+        },
+        'ring': (val, pStats, currentHP) => { 
+             return { heal: 0, msg: "마나 회복(미구현)" }; // 나중에 반지 추가 시 예시
+        }
+    },
+
+    // 3. 방어 턴(적 공격 시)에 발동하는 효과 (리턴값: 데미지 감소 배율)
+    DEFENSIVE: {
+        'armor': (val) => { return { mul: val, msg: `피해 감소` }; },
+        'shoes': (val) => { return { mul: 0, msg: `완전 회피` }; } // 나중에 신발 추가 시 예시
+    }
+};
 
 const CombatSystem = {
     currentZone: null,
     isEncounter: false,
     tempMonster: null,
 
-    // 1. 사냥터 입장 (UI 텍스트 갱신 추가)
+    // 1. 사냥터 입장
     enterZone: (zoneId) => {
         const zone = GameDatabase.HUNTING_ZONES.find(z => z.id === zoneId);
         if (!zone) return alert("존재하지 않는 사냥터입니다.");
 
         CombatSystem.currentZone = zone;
-        CombatSystem.resetBattleUI(); // 입장 시 UI 초기화
+        CombatSystem.resetBattleUI();
         
         showPage('page-hunt-play');
         document.getElementById('hunt-title').innerText = `⚔️ ${zone.name} (Lv.${zone.minLv}~${zone.maxLv})`;
         
-        // [수정] 탐색 버튼 텍스트를 현재 사냥터 비용으로 변경
         const searchBtn = document.querySelector('#page-hunt-play .main-menu-btn');
         if(searchBtn) searchBtn.innerHTML = `📡 몬스터 탐색 (${zone.cost.toLocaleString()}G)`;
 
-        // [수정] 로그에 비용 표시
         const log = document.getElementById('battle-log');
         if(log) log.innerHTML = `사냥터에 입장했습니다. (탐색 비용: ${zone.cost.toLocaleString()}G)`;
     },
 
-    // 2. 몬스터 탐색 (비용 적용)
+    // 2. 몬스터 탐색
     scanHunt: () => {
         if (CombatSystem.isEncounter) return alert("이미 몬스터와 조우 중입니다!");
 
-        // [수정] 현재 사냥터의 비용(cost)을 가져옴
         const cost = CombatSystem.currentZone.cost;
-        
         if (data.gold < cost) {
             return alert(`탐색 비용이 부족합니다. (${cost.toLocaleString()}G 필요)`);
         }
@@ -52,8 +74,8 @@ const CombatSystem = {
         CombatSystem.renderEncounterUI(monster);
     },
 
-    // ... (renderEncounterUI, runAway는 기존과 동일, 생략 가능) ...
-    renderEncounterUI: (m) => { /* 기존 코드 유지 */
+    // 3. 조우 UI 렌더링
+    renderEncounterUI: (m) => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
         const imgPath = `image/${m.img}`;
@@ -71,19 +93,19 @@ const CombatSystem = {
         const log = document.getElementById('battle-log');
         if(log) log.innerHTML = `야생의 <strong>${m.name}</strong>(을)를 발견했습니다!`;
     },
-    
-    runAway: () => { /* 기존 코드 유지 */
+
+    runAway: () => {
         if (!CombatSystem.isEncounter) return;
         if (Math.random() * 100 < 80) { alert("도망쳤습니다!"); CombatSystem.resetBattleUI(); }
         else { alert("도망 실패! 전투 시작!"); CombatSystem.startBattle(); }
     },
 
-   // 4. 전투 시작 (턴제 스킬 + 아이템 드랍 추가)
+    // 4. 전투 시작 (확장성 + 드랍 로직 적용됨)
     startBattle: () => {
         const m = CombatSystem.tempMonster;
         if (!m) return alert("오류 발생");
         
-        // UI 초기화
+        // UI 세팅
         const grid = document.getElementById('hunt-grid');
         const imgPath = `image/${m.img}`;
         if(grid) grid.innerHTML = `
@@ -95,36 +117,38 @@ const CombatSystem = {
 
         const log = document.getElementById('battle-log');
         let mHP = m.hp;
-        let turn = 0; // 턴 카운트
+        let turn = 0;
 
         if (autoTimer) clearInterval(autoTimer);
 
         autoTimer = setInterval(() => {
-            turn++; // 턴 증가
+            turn++;
             const pStats = MainEngine.getFinalStats();
-            const eq = data.equipment;
+            // [중요] 장착된 모든 장비를 배열로 가져옴 (타입 상관없이 순회 가능)
+            const equippedItems = Object.values(data.equipment).filter(e => e !== null);
 
             // --- [유저 턴] ---
             let finalAtk = pStats.atk;
             let atkMsg = "";
 
-            // 무기 스킬 체크
-            if (eq.weapon) {
-                const s = SkillSystem.check(eq.weapon, turn);
-                if (s) {
-                    finalAtk *= s.val;
-                    atkMsg = `<br><span style="color:#f1c40f">⚡ [${eq.weapon.name}] 발동! (x${s.val})</span>`;
-                }
-            }
-            // 벨트 스킬 체크
-            if (eq.belt) {
-                const s = SkillSystem.check(eq.belt, turn);
-                if (s && s.id === 'heal') {
-                    const heal = Math.floor(pStats.hp * s.val);
-                    data.hp = Math.min(pStats.hp, data.hp + heal);
-                    atkMsg += `<br><span style="color:#2ecc71">✨ [${eq.belt.name}] 체력 회복 +${heal}</span>`;
-                }
-            }
+            // 모든 장착 장비를 돌면서 '공격형' 또는 '회복형' 스킬 체크
+            equippedItems.forEach(item => {
+                const triggered = SkillSystem.check(item, turn);
+                triggered.forEach(s => {
+                    // 1. 공격형 핸들러가 있는지 확인 (Weapon 등)
+                    if (SkillHandlers.OFFENSIVE[item.type]) {
+                        const res = SkillHandlers.OFFENSIVE[item.type](s.val, pStats);
+                        if (res.mul) finalAtk *= res.mul;
+                        atkMsg += `<br><span style="color:#f1c40f">⚡ [${s.name}] 발동! ${res.msg}</span>`;
+                    }
+                    // 2. 회복형 핸들러가 있는지 확인 (Belt 등)
+                    else if (SkillHandlers.RECOVERY[item.type]) {
+                        const res = SkillHandlers.RECOVERY[item.type](s.val, pStats, data.hp);
+                        if (res.heal) data.hp = Math.min(pStats.hp, data.hp + res.heal);
+                        atkMsg += `<br><span style="color:#2ecc71">✨ [${s.name}] ${res.msg}</span>`;
+                    }
+                });
+            });
 
             const calcDmg = (atk, dfs) => (atk >= dfs) ? (atk * 2 - dfs) : (Math.pow(atk, 2) / dfs);
             const pDmg = Math.floor(calcDmg(finalAtk, m.def));
@@ -139,25 +163,31 @@ const CombatSystem = {
                 data.gold += m.gold;
                 data.exp += m.exp;
                 
-                // --- [여기 추가됨] 아이템 드랍 시스템 ---
+                // --- 드랍 로직 시작 ---
                 let dropMsg = "";
-                // 1. 드랍 확률 (예: 30%)
+                // 드랍 확률 30%
                 if (Math.random() * 100 < 30) {
-                    // 2. 몬스터 레벨 이하의 아이템 중 랜덤 선택
-                    const dropList = GameDatabase.EQUIPMENT.filter(e => e.lv <= m.lv);
-                    if (dropList.length > 0) {
-                        const baseItem = dropList[Math.floor(Math.random() * dropList.length)];
+                    // 조건: 몬스터 레벨(m.lv) 이하, 그리고 몬스터 레벨 -10 이상인 장비만 드랍
+                    const validItems = GameDatabase.EQUIPMENT.filter(e => e.lv <= m.lv && e.lv >= m.lv - 10);
+                    
+                    if (validItems.length > 0) {
+                        const baseItem = validItems[Math.floor(Math.random() * validItems.length)];
+                        // 새 아이템 생성
+                        let newItem = { ...baseItem, id: Date.now(), en: 0, skills: [] };
                         
-                        // 3. 새 아이템 생성 및 스킬 부여 시도
-                        let newItem = { ...baseItem, id: Date.now(), en: 0 };
-                        newItem = SkillSystem.attachSkill(newItem); // 확률적으로 스킬 붙음
+                        // 스킬 부여 확률 30%
+                        if (Math.random() * 100 < 30) {
+                            // 스킬 개수: 1개(80%) vs 2개(20%)
+                            const countRoll = Math.random() * 100;
+                            const skillCount = (countRoll < 80) ? 1 : 2;
+                            newItem = SkillSystem.attachSkill(newItem, skillCount);
+                        }
                         
-                        // 4. 인벤토리 지급
                         data.inventory.push(newItem);
                         dropMsg = `<br><span style="color:#e94560">🎁 [${newItem.name}] 획득!</span>`;
                     }
                 }
-                // ------------------------------------
+                // ---------------------
 
                 if (window.MainEngine) MainEngine.updateUI();
 
@@ -183,14 +213,18 @@ const CombatSystem = {
             let incDmg = Math.floor(calcDmg(m.atk, pStats.def));
             let defMsg = "";
 
-            // 갑옷 스킬 체크
-            if (eq.armor) {
-                const s = SkillSystem.check(eq.armor, turn);
-                if (s) {
-                    incDmg = Math.floor(incDmg * s.val);
-                    defMsg = `<br><span style="color:#3498db">🛡️ [${eq.armor.name}] 발동! 피해 감소</span>`;
-                }
-            }
+            // 모든 장착 장비를 돌면서 '방어형' 스킬 체크
+            equippedItems.forEach(item => {
+                const triggered = SkillSystem.check(item, turn);
+                triggered.forEach(s => {
+                    // 3. 방어형 핸들러가 있는지 확인 (Armor 등)
+                    if (SkillHandlers.DEFENSIVE[item.type]) {
+                        const res = SkillHandlers.DEFENSIVE[item.type](s.val);
+                        if (res.mul !== undefined) incDmg = Math.floor(incDmg * res.mul);
+                        defMsg += `<br><span style="color:#3498db">🛡️ [${s.name}] 발동! ${res.msg}</span>`;
+                    }
+                });
+            });
 
             data.hp -= incDmg;
             CombatSystem.tryAutoPotion(pStats);
@@ -211,8 +245,7 @@ const CombatSystem = {
 
         }, GameDatabase.SYSTEM.COMBAT_SPEED);
     },
-    
-    // [수정] UI 리셋 시 비용 표시
+
     resetBattleUI: () => {
         if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
         CombatSystem.isEncounter = false;
@@ -233,55 +266,44 @@ const CombatSystem = {
         const log = document.getElementById('battle-log');
         if (log) log.innerHTML = "전투 대기 중...";
     },
-    
-    // ... (getMonsterData, setMonsterIdentity, tryAutoPotion 등은 기존 유지) ...
-    getMonsterData: (lv) => { /* 기존 코드 유지 */ 
+
+    getMonsterData: (lv) => {
         const table = GameDatabase.MONSTER_TABLE;
         let idx = lv - 1; if(idx < 0) idx=0; if(idx >= table.length) idx=table.length-1;
         return { ...table[idx] };
     },
-    // [여기만 덮어쓰세요] 몬스터 종류 결정 로직
+
     setMonsterIdentity: (m) => {
-        // 1. DB에 이미 이름/이미지가 있다면 유지
         if (m.name && m.img) return m;
 
-        // 2. 현재 사냥터 ID 확인
         const zoneId = CombatSystem.currentZone ? CombatSystem.currentZone.id : 0;
-        
         let targetMonsters = [];
 
-        // 3. 사냥터별 몬스터 명단 작성
         if (zoneId === 0) {
-            // [집 앞마당] (id: 0) -> 슬라임, 쥐
             targetMonsters = [
                 { name: '슬라임', img: 'slime.png' },
                 { name: '앞마당 쥐', img: 'rat.png' } 
             ];
         } 
         else if (zoneId === 1) {
-            // [뒷산] (id: 1) -> 산적, 늑대 (예시)
             targetMonsters = [
                 { name: '화가난 등산객', img: 'hiker.png' },
                 { name: '고라니', img: 'Elk.png' }
             ];
         }
         else {
-            // [나머지 구역] (임시)
             targetMonsters = [
                 { name: '알 수 없는 적', img: 'unknown.png' }
             ];
         }
 
-        // 4. 명단에서 랜덤 1마리 뽑기
         const pick = targetMonsters[Math.floor(Math.random() * targetMonsters.length)];
-
-        // 5. 몬스터 정보 적용
         m.name = pick.name;
         m.img = pick.img;
-
         return m;
     },
-    tryAutoPotion: (pStats) => { /* 기존 코드 유지 */
+
+    tryAutoPotion: (pStats) => {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
         const missingHp = pStats.hp - data.hp;
         if (missingHp <= 0) return; 
@@ -307,7 +329,3 @@ const CombatSystem = {
         if (window.MainEngine) MainEngine.updateUI();
     }
 };
-
-
-
-
