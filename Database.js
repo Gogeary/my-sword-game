@@ -1,17 +1,17 @@
 /* ==========================================
    [Database.js]
    게임 내 모든 상수, 아이템, 몬스터, 광산 데이터 관리
-   (물약 시스템 개편 및 밸런스 조정 반영)
    ========================================== */
 
 const GameDatabase = {
     SYSTEM: {
-        TITLE: "강화하기 v1.7",
+        TITLE: "강화하기 v1.5",
         START_GOLD: 100000,
-        MAX_ENHANCE: 20, // 최대 강화 20강
+        MAX_ENHANCE: 20,
         COMBAT_SPEED: 100,
-        MAX_POTION_CAPACITY: 10, // 물약 최대 소지 개수
-        IMAGE_PATH: "image/"
+        MAX_POTION_CAPACITY: 10,
+        IMAGE_PATH: "image/",
+        SCAN_COST: 20000 // 탐색 비용
     },
 
     USER_STATS: {
@@ -67,7 +67,6 @@ const GameDatabase = {
     },
 
     CONSUMABLES: {
-        // [중요] 상점 시스템은 name, val, p, type을 찾습니다. 이 변수명이 정확해야 합니다.
         potions: [
             { id: 1, name: '최하급 포션', val: 100, p: 5000, type: 'potion', img: 'health_potion_1.png' },
             { id: 2, name: '하급 포션', val: 400, p: 20000, type: 'potion', img: 'health_potion_2.png' },
@@ -82,7 +81,7 @@ const GameDatabase = {
         ]
     },
 
-    // [몬스터 골드 수정] 100 ~ 1,000,000 G 까지 급격히 증가
+    // [몬스터 골드 수정]
     MONSTER_STAGES: [
         { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,      exp: 10 },
         { lv: 5,  hp: 380,  atk: 35,  def: 8,   gold: 1000,     exp: 50 },
@@ -91,6 +90,16 @@ const GameDatabase = {
         { lv: 20, hp: 2200, atk: 160, def: 55,  gold: 100000,   exp: 200 },
         { lv: 25, hp: 4200, atk: 300, def: 100, gold: 400000,   exp: 300 },
         { lv: 30, hp: 7500, atk: 550, def: 180, gold: 1000000,  exp: 500 }
+    ],
+    
+    // [사냥터 목록]
+    HUNTING_ZONES: [
+        { id: 0, name: "초심자의 숲", minLv: 1, maxLv: 5 },
+        { id: 1, name: "바위 산맥", minLv: 6, maxLv: 10 },
+        { id: 2, name: "어둠의 동굴", minLv: 11, maxLv: 15 },
+        { id: 3, name: "버려진 신전", minLv: 16, maxLv: 20 },
+        { id: 4, name: "용암 지대", minLv: 21, maxLv: 25 },
+        { id: 5, name: "절망의 탑", minLv: 26, maxLv: 30 }
     ],
 
     MINES: [
@@ -111,12 +120,14 @@ const GameDatabase = {
 };
 
 /* ============================================================
-   [몬스터 데이터 보간 로직]
-   MONSTER_STAGES를 바탕으로 1~30레벨 전체 데이터를 생성합니다.
+   [몬스터 데이터 자동 생성 로직 (수정됨)]
+   - 중복된 코드를 제거하고 하나로 통합했습니다.
    ============================================================ */
 (function generateFullMonsterData() {
     const fullStages = [];
     const stages = GameDatabase.MONSTER_STAGES;
+
+    if(!stages) return;
 
     for (let i = 0; i < stages.length - 1; i++) {
         const start = stages[i];
@@ -145,5 +156,3 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
-
-
