@@ -214,7 +214,7 @@ const ShopSystem = {
         }
 
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
-    },
+    };
 /* ==========================================
    [추가] 강화권 합성 시스템
    ========================================== */
@@ -228,7 +228,6 @@ const SynthesisSystem = {
         { src: 13, dst: 14 },
         { src: 14, dst: 15 }
     ],
-},
     open: () => {
         showPage('page-synthesis');
         SynthesisSystem.render();
@@ -316,5 +315,6 @@ const SynthesisSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
 };
+
 
 
