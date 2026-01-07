@@ -92,14 +92,14 @@ const GameDatabase = {
         { lv: 30, hp: 7500, atk: 550, def: 180, gold: 1000000,  exp: 500 }
     ],
     
-    // [사냥터 목록]
+   // [사냥터 목록: cost(탐색 비용) 추가]
     HUNTING_ZONES: [
-        { id: 0, name: "집 앞마당", minLv: 1, maxLv: 5 },
-        { id: 1, name: "뒷산", minLv: 6, maxLv: 10 },
-        { id: 2, name: "뒷산 동굴", minLv: 11, maxLv: 15 },
-        { id: 3, name: "우리동네 폐허", minLv: 16, maxLv: 20 },
-        { id: 4, name: "회사 근처", minLv: 21, maxLv: 25 },
-        { id: 5, name: "회사", minLv: 26, maxLv: 30 }
+        { id: 0, name: "집 앞마당", minLv: 1, maxLv: 5, cost: 1000 },
+        { id: 1, name: "뒷산", minLv: 6, maxLv: 10, cost: 5000 },
+        { id: 2, name: "뒷산 동굴", minLv: 11, maxLv: 15, cost: 15000 },
+        { id: 3, name: "우리동네 폐허", minLv: 16, maxLv: 20, cost: 30000 },
+        { id: 4, name: "회사 근처", minLv: 21, maxLv: 25, cost: 50000 },
+        { id: 5, name: "회사", minLv: 26, maxLv: 30, cost: 100000 }
     ],
 
     MINES: [
@@ -156,4 +156,5 @@ const GameDatabase = {
     // 생성된 데이터를 GameDatabase에 'MONSTER_TABLE'로 저장
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
