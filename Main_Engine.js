@@ -222,28 +222,83 @@ const MainEngine = {
         if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
         return { atk: fAtk, def: fDef, hp: fHP };
     },
+    // [수정] 인벤토리 렌더링 (장착/미장착 분리 표시)
     renderInventory: () => {
-        const list = document.getElementById('inventory-list');
-        if(!list) return;
-        list.innerHTML = '';
+        const eqList = document.getElementById('equipped-list');
+        const invList = document.getElementById('inventory-list');
+        
+        if(!eqList || !invList) return;
+        
+        // 목록 초기화
+        eqList.innerHTML = '';
+        invList.innerHTML = '';
+        
+        // 아이템이 하나도 없을 때 안내 문구
+        if (data.inventory.length === 0) {
+            invList.innerHTML = '<div style="color:#666; padding:20px;">가방이 비어있습니다.</div>';
+            eqList.innerHTML = '<div style="color:#666; padding:10px;">장착된 장비가 없습니다.</div>';
+            return;
+        }
+
+        let equippedCount = 0;
+
         data.inventory.forEach((it, idx) => {
+            // 장착 여부 확인
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-            const div = document.createElement('div'); div.className = 'item-card';
+            
+            // 카드 생성
+            const div = document.createElement('div'); 
+            div.className = 'item-card';
+            
+            // 장착된 아이템은 테두리 색상 강조
+            if (isEquipped) {
+                div.style.border = '2px solid var(--mine)'; 
+                div.style.background = 'rgba(46, 204, 113, 0.1)';
+                equippedCount++;
+            }
+
             const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
             
+            // 강화권/보호권 등 소모품인지 확인 (강화 버튼 숨김 처리 등을 위함)
+            const isConsumable = (it.type === 'ticket' || it.type === 'scroll' || it.type === 'potion');
+
+            // 버튼 구성
+            let actionButtons = '';
+            
+            if (isConsumable) {
+                // 소모품일 경우 (판매만 가능)
+                actionButtons = `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+            } else {
+                // 장비일 경우 (강화, 장착/해제, 판매)
+                actionButtons = `
+                    <button class="item-btn" style="background:var(--money); color:#000;" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+                    <button class="item-btn" style="background:${isEquipped ? '#e74c3c' : 'var(--hunt)'}; color:#fff;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                    ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
+                `;
+            }
+
             div.innerHTML = `
                 ${imgTag}
                 <div class="item-info">
                     <strong>${it.name} +${it.en}</strong><br>
-                    ${isEquipped ? '<span style="color:var(--mine)">[장착중]</span>' : `<span style="color:#888; font-size:0.9em;">티어 ${Math.floor(it.p/1000)}</span>`}
+                    ${isEquipped ? '<span style="color:var(--mine); font-weight:bold;">[장착중]</span>' : (it.p ? `<span style="color:#888; font-size:0.9em;">티어 ${Math.floor(it.p/1000)}</span>` : '')}
                 </div>
                 <div class="item-actions">
-                    <button class="item-btn" style="background:var(--money); color:#000;" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
-                    <button class="item-btn" style="background:var(--hunt); color:#fff;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
-                    <button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>
+                    ${actionButtons}
                 </div>`;
-            list.appendChild(div);
+            
+            // [핵심] 장착 여부에 따라 다른 곳에 추가
+            if (isEquipped) {
+                eqList.appendChild(div);
+            } else {
+                invList.appendChild(div);
+            }
         });
+
+        // 장착된 게 하나도 없을 때 빈 메시지 표시
+        if (equippedCount === 0) {
+            eqList.innerHTML = '<div style="color:#555; font-size:0.9em; padding:10px;">장착된 장비가 없습니다.</div>';
+        }
     },
     toggleEquip: (idx) => {
         const it = data.inventory[idx];
@@ -422,4 +477,5 @@ document.addEventListener('keydown', function(e) {
 function addLog(m, c) { const l = document.getElementById('log-container'); if(l) l.innerHTML=`<div style="color:${c}; margin-bottom:4px;">> ${m}</div>`+l.innerHTML; }
 
 window.onload = MainEngine.init;
+
 
