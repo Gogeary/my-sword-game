@@ -199,7 +199,7 @@ const CombatSystem = {
             // [뒷산] (id: 1) -> 산적, 늑대 (예시)
             targetMonsters = [
                 { name: '화가난 등산객', img: 'hiker.png' },
-                { name: '고라니', img: 'wolf.png' }
+                { name: '고라니', img: 'Elk.png' }
             ];
         }
         else {
@@ -244,5 +244,6 @@ const CombatSystem = {
         if (window.MainEngine) MainEngine.updateUI();
     }
 };
+
 
 
