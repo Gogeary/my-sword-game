@@ -4,7 +4,7 @@
 
 // ▼▼▼ [매우 중요] 이 줄이 빠져서 에러가 난 거야! 복사해서 맨 위에 붙여넣어 줘! ▼▼▼
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
-const SECRET_KEY = "my_super_secret_game_key_v1.8";
+const SECRET_KEY = "my_super_secret_game_key_v1";
 
 
 const MainEngine = {
@@ -787,5 +787,6 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
