@@ -192,7 +192,7 @@ const MainEngine = {
 
     updateUI: () => {
         if(!data) return;
-        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv);
+        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
         if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
         const stats = MainEngine.getFinalStats();
@@ -231,7 +231,7 @@ const MainEngine = {
         // 경험치 텍스트
         const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
         document.getElementById('exp-fill').style.width = Math.min(100, expPer) + '%';
-        document.getElementById('user-lv').innerText = data.lv;
+        document.getElementById('user-lv').innerText = data.level;
         document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
 
         // 포션 개수 계산
@@ -249,9 +249,9 @@ const MainEngine = {
 
     getFinalStats: () => {
         if(typeof GameDatabase === 'undefined') return { atk:10, def:2, hp:100 };
-        let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.lv);
-        let bDef = GameDatabase.USER_STATS.CALC_DEF(data.lv);
-        let bHP = GameDatabase.USER_STATS.CALC_HP(data.lv);
+        let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
+        let bDef = GameDatabase.USER_STATS.CALC_DEF(data.level);
+        let bHP = GameDatabase.USER_STATS.CALC_HP(data.level);
         let fAtk = bAtk, fDef = bDef, fHP = bHP;
         const eq = data.equipment;
         if(eq.weapon) fAtk = GameDatabase.ENHANCE_FORMULA.weapon(bAtk, eq.weapon.k, eq.weapon.en);
@@ -493,17 +493,17 @@ renderInventory: () => {
 
     checkLevelUp: () => {
     let leveledUp = false;
-    let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv);
+    let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
 
     while (data.exp >= next) {
         data.exp -= next;
-        data.lv++;
+        data.level++;
         leveledUp = true;
-        next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv);
+        next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
     }
 
    if (leveledUp) {
-    // 1. [삭제] alert(`🎉 레벨업! Lv.${data.lv}`); 
+    // 1. [삭제] alert(`🎉 레벨업! Lv.${data.level}`); 
     // alert는 지우고 아래 코드로 대체합니다.
 
    // 전투 로그에 강조 메시지 출력
@@ -521,7 +521,7 @@ renderInventory: () => {
                         border-top: 1px solid #ffd700;
                         border-bottom: 1px solid #ffd700;
                         text-shadow: 0 0 5px #ff0000;">
-                        🎉 LEVEL UP! — Lv.${data.lv} 달성! 🎉
+                        🎉 LEVEL UP! — Lv.${data.level} 달성! 🎉
                     </div>
                 `;
                 log.innerHTML = levelUpMsg + log.innerHTML;
@@ -687,6 +687,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
