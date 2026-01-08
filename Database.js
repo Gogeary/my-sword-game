@@ -513,6 +513,15 @@ const GameDatabase = {
             ]
         }
     }
+   // [추가] 아이템 등급별 테두리 색상 반환 함수
+    getItemRarityColor: (item) => {
+        if (!item) return '#fff'; // 기본 흰색
+        if (item.tier >= 19) return '#a29bfe'; // 19티어 이상 (보라/신화)
+        if (item.tier >= 15) return '#e74c3c'; // 15티어 이상 (빨강/전설)
+        if (item.tier >= 10) return '#f1c40f'; // 10티어 이상 (노랑/유니크)
+        if (item.tier >= 5) return '#3498db';  // 5티어 이상 (파랑/희귀)
+        return '#fff'; // 그 외 (흰색/일반)
+    }
 };
 
 /* 몬스터 자동 생성 */
@@ -540,6 +549,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
