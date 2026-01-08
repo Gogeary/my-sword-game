@@ -186,19 +186,6 @@ const MainEngine = {
         if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
         return { atk: fAtk, def: fDef, hp: fHP };
     },
-    
-    보내주신 createItemHTML 함수 코드는 로직상 완벽합니다. return div;도 잘 포함되어 있네요.
-
-그렇다면 문제는 **"인벤토리를 그릴 때 이 함수를 사용하는 renderInventory 함수 내부의 필터링 조건"**이나 **"데이터베이스의 type 값과 코드상의 type 값이 일치하지 않는 문제"**일 가능성이 매우 높습니다.
-
-가장 의심되는 부분들을 하나씩 해결해 보죠.
-
-1. renderInventory의 카테고리 판정 로직 확인
-현재 인벤토리는 MainEngine.invCurrentTab 값에 따라 아이템을 보여줍니다. 만약 데이터베이스의 type이 소문자가 아니거나, 분류가 잘못되어 있다면 아이템이 필터링되어 보이지 않습니다.
-
-Main_Engine.js의 renderInventory 함수를 아래 코드로 완전히 교체해서 테스트해 보세요. (디버깅용 로그를 추가했습니다.)
-
-JavaScript
 
 renderInventory: () => {
     const invList = document.getElementById('inventory-list');
@@ -419,6 +406,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
