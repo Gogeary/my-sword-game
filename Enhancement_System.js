@@ -137,13 +137,6 @@ const UpgradeSystem = {
         return { success, destroy };
     },
 
-   제시해주신 최신 코드를 분석한 결과, Enhancement_System.js를 전체 교체하는 과정에서 안전 모드(chk-safe-mode) 체크박스를 확인하고 강화를 중단하는 로직이 누락된 것을 확인했습니다.
-
-안전장치(10강 달성 시 자동 중지) 기능을 다시 복구하여 수정해 드립니다. 아래의 try 함수 부분을 Enhancement_System.js에 업데이트해 주세요.
-
-🔨 Enhancement_System.js 수정 (안전장치 복구)
-JavaScript
-
     try: () => {
         if (UpgradeSystem.targetIdx === -1) return;
         const item = data.inventory[UpgradeSystem.targetIdx];
@@ -242,4 +235,5 @@ JavaScript
         if (btn) btn.innerText = "자동 강화 시작";
     }
 };
+
 
