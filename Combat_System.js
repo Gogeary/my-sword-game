@@ -130,6 +130,17 @@ const CombatSystem = {
         else { alert("도망 실패! 전투 시작!"); CombatSystem.startBattle(); }
     },
 
+   진구야, 정말 미안해! 똑같은 말을 반복해서 많이 답답했지? 내가 로직을 보다가 중복된 부분이 너무 많아서 헷갈리게 했어.
+
+결론부터 말하면, 보내준 코드는 아직 "중복된 승리 판정"이 그대로 남아 있어서 실행하면 에러가 나거나 전투가 멈출 거야.
+
+이번에는 딱 한 번에 끝낼 수 있게, startBattle 함수 전체를 완벽하게 정리해서 가져왔어. 이 코드를 startBattle: () => { ... } 부분에 통째로 덮어쓰기만 하면 돼!
+
+🛠️ Combat_System.js - startBattle 함수 (이걸로 교체해!)
+중복된 if (mHP <= 0)을 하나로 합치고, 승리 즉시 전투를 종료하는 return을 정확히 넣었어.
+
+JavaScript
+
     // 4. 전투 시작
     startBattle: () => {
         const m = CombatSystem.tempMonster;
@@ -155,7 +166,7 @@ const CombatSystem = {
             const pStats = MainEngine.getFinalStats();
             const equippedItems = Object.values(data.equipment).filter(e => e !== null);
 
-            // --- [유저 턴] ---
+            // --- [1. 유저 공격 턴] ---
             let finalAtk = pStats.atk;
             let atkMsg = "";
 
@@ -181,14 +192,13 @@ const CombatSystem = {
 
             log.innerHTML = `[Turn ${turn}] 유저 공격: ${pDmg} ${atkMsg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
 
-            // [승리]
+            // --- [2. 유저 승리 판정 (여기서 끝내야 함)] ---
             if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
                 data.gold += m.gold;
                 data.exp += m.exp;
                 
-                // --- 드랍 로직 ---
                 let dropMsg = "";
                 if (Math.random() * 100 < 30) {
                     const validItems = GameDatabase.EQUIPMENT.filter(e => e.lv <= m.lv && e.lv >= m.lv - 10);
@@ -205,28 +215,38 @@ const CombatSystem = {
                     }
                 }
 
-                // [수정] 승리 시 UI 즉시 갱신 (window. 제거)
                 if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
-
                 log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span>${dropMsg}<br>` + log.innerHTML;
                 
                 CombatSystem.isEncounter = false;
                 CombatSystem.tempMonster = null;
                 
-                const cost = CombatSystem.currentZone.cost;
-                if(grid) grid.innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <h3>승리했습니다!</h3>
-                        <p style="font-size:0.9em; margin-bottom:10px;">${dropMsg ? dropMsg : "아이템을 발견하지 못했습니다."}</p>
-                        <button class="main-menu-btn" style="background:var(--hunt);" onclick="CombatSystem.scanHunt()">🔍 다시 탐색 (${cost.toLocaleString()}G)</button>
-                        <button class="btn-nav" onclick="showPage('page-hunt-select')">🔙 사냥터 목록</button>
-                    </div>`;
-                
+                // [무한 자동 사냥 체크]
+                if (MainEngine.isAutoHunting) {
+                    if (data.hp > (MainEngine.getFinalStats().hp * 0.1)) { 
+                        setTimeout(() => {
+                            if (MainEngine.isAutoHunting) CombatSystem.scanHunt();
+                        }, 1000); 
+                    } else {
+                        MainEngine.toggleAutoHunt();
+                        alert("체력이 부족하여 자동 사냥을 중단합니다!");
+                    }
+                } else {
+                    const cost = CombatSystem.currentZone.cost;
+                    if(grid) grid.innerHTML = `
+                        <div style="text-align:center; padding:20px;">
+                            <h3>승리했습니다!</h3>
+                            <p style="font-size:0.9em; margin-bottom:10px;">${dropMsg ? dropMsg : "아이템을 발견하지 못했습니다."}</p>
+                            <button class="main-menu-btn" style="background:var(--hunt);" onclick="CombatSystem.scanHunt()">🔍 다시 탐색 (${cost.toLocaleString()}G)</button>
+                            <button class="btn-nav" onclick="showPage('page-hunt-select')">🔙 사냥터 목록</button>
+                        </div>`;
+                }
+
                 if (typeof MainEngine !== 'undefined') MainEngine.checkLevelUp();
-                return;
+                return; // 승리했으니 아래쪽 몬스터 공격 코드는 실행 안 함!
             }
 
-            // --- [몬스터 턴] ---
+            // --- [3. 몬스터 공격 턴 (유저가 승리 못했을 때만 실행)] ---
             let incDmg = Math.floor(calcDmg(m.atk, pStats.def));
             let defMsg = "";
 
@@ -240,10 +260,9 @@ const CombatSystem = {
                     }
                 });
             });
-
+            
             data.hp -= incDmg;
 
-            // [수정] 포션 로직 후 UI 갱신 (window. 제거)
             const potionResult = CombatSystem.tryAutoPotion(pStats);
             let potionMsg = "";
             if (potionResult.healed > 0) {
@@ -252,13 +271,13 @@ const CombatSystem = {
 
             log.innerHTML = `피격: ${incDmg} ${defMsg} (내 HP: ${Math.max(0, Math.floor(data.hp))})${potionMsg}<br>` + log.innerHTML;
             
-            // [수정] 몬스터 피격/회복 후 UI 즉시 갱신
             if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-            // [패배]
+            // --- [4. 유저 패배 판정] ---
             if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
+                if (MainEngine.isAutoHunting) MainEngine.toggleAutoHunt();
                 data.hp = 1;
                 alert("패배했습니다... 마을로 귀환합니다.");
                 CombatSystem.resetBattleUI();
@@ -343,6 +362,7 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
 
 
 
