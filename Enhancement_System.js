@@ -137,14 +137,24 @@ const UpgradeSystem = {
         return { success, destroy };
     },
 
+   제시해주신 최신 코드를 분석한 결과, Enhancement_System.js를 전체 교체하는 과정에서 안전 모드(chk-safe-mode) 체크박스를 확인하고 강화를 중단하는 로직이 누락된 것을 확인했습니다.
+
+안전장치(10강 달성 시 자동 중지) 기능을 다시 복구하여 수정해 드립니다. 아래의 try 함수 부분을 Enhancement_System.js에 업데이트해 주세요.
+
+🔨 Enhancement_System.js 수정 (안전장치 복구)
+JavaScript
+
     try: () => {
         if (UpgradeSystem.targetIdx === -1) return;
         const item = data.inventory[UpgradeSystem.targetIdx];
         const log = document.getElementById('log-container');
         
-        if (item.en >= 20) { UpgradeSystem.stopAuto(); return alert("이미 최대 강화 수치(+20)에 도달했습니다!"); }
+        if (item.en >= 20) { 
+            UpgradeSystem.stopAuto(); 
+            return alert("이미 최대 강화 수치(+20)에 도달했습니다!"); 
+        }
 
-        // [A] 강화권 사용
+        // [A] 강화권 사용 로직 (기존과 동일)
         if (UpgradeSystem.selectedTicket !== -1) {
             const ticket = data.inventory[UpgradeSystem.selectedTicket];
             if (!ticket || ticket.val <= item.en || (ticket.limitLv && item.lv > ticket.limitLv)) return alert("사용 불가");
@@ -161,9 +171,12 @@ const UpgradeSystem = {
             return;
         }
 
-        // [B] 일반 강화
+        // [B] 일반 강화 로직
         const cost = UpgradeSystem.calcCost(item);
-        if (data.gold < cost) { UpgradeSystem.stopAuto(); return alert("골드가 부족합니다."); }
+        if (data.gold < cost) { 
+            UpgradeSystem.stopAuto(); 
+            return alert("골드가 부족합니다."); 
+        }
         
         const scroll = UpgradeSystem.selectedScroll !== -1 ? data.inventory[UpgradeSystem.selectedScroll] : null;
         const isProtected = scroll && (!scroll.maxLimit || item.en <= scroll.maxLimit) && (!scroll.limitLv || item.lv <= scroll.limitLv);
@@ -175,8 +188,20 @@ const UpgradeSystem = {
         if (rand < rates.success) {
             item.en++;
             if(log) log.innerHTML = `<div style="color:#2ecc71">성공! (+${item.en}) / -${MainEngine.formatNumber(cost)}G</div>` + log.innerHTML;
-            if (item.en >= 20) { UpgradeSystem.stopAuto(); alert("🎉 최대 강화 도달!"); }
+            
+            // ★ [안전장치 복구] 안전 모드 체크박스가 켜져 있고 10강에 도달하면 중지
+            const safeMode = document.getElementById('chk-safe-mode');
+            if (UpgradeSystem.isAuto && safeMode && safeMode.checked && item.en >= 10) {
+                 UpgradeSystem.stopAuto();
+                 alert("🎉 안전 모드: +10강을 달성하여 자동 강화를 중단합니다.");
+            }
+
+            if (item.en >= 20) { 
+                UpgradeSystem.stopAuto(); 
+                alert("🎉 최대 강화 도달!"); 
+            }
         } else {
+            // 실패 및 파괴 로직 (기존과 동일)
             if (Math.random() * 100 < rates.destroy) {
                 if (isProtected) {
                     data.inventory.splice(UpgradeSystem.selectedScroll, 1);
@@ -217,3 +242,4 @@ const UpgradeSystem = {
         if (btn) btn.innerText = "자동 강화 시작";
     }
 };
+
