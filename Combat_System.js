@@ -1,4 +1,4 @@
-/* Combat_System.js - UI 실시간 갱신 버그 수정판 */
+/* Combat_System.js - 최종 완성본 (티어 장비/보석 드랍 + UI 버그 수정) */
 
 // [핵심] 장비 타입별 스킬 효과 정의
 const SkillHandlers = {
@@ -70,7 +70,7 @@ const CombatSystem = {
 
         if (isBoss && bossInfo) {
             monster.name = bossInfo.name;
-            monster.img = bossInfo.img; // [추가] 보스 전용 이미지로 교체
+            monster.img = bossInfo.img; 
             monster.hp = Math.floor(monster.hp * bossInfo.hpMult);
             monster.maxHp = monster.hp;
             monster.atk = Math.floor(monster.atk * bossInfo.atkMult);
@@ -84,19 +84,17 @@ const CombatSystem = {
         CombatSystem.isEncounter = true;
         CombatSystem.renderEncounterUI(monster);
     },
-// 3. 조우 UI 렌더링 (보스 크기 및 시각 효과 완성판)
+
+    // 3. 조우 UI 렌더링
     renderEncounterUI: (m) => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
         
         const imgPath = `image/${m.img}`;
         
-        // 보스 여부에 따른 설정값들
         const nameColor = m.isBoss ? '#f1c40f' : '#ffffff'; 
         const borderColor = m.isBoss ? 'border:3px solid #f1c40f;' : 'border:2px solid var(--hunt);';
         const bossTag = m.isBoss ? '<span style="font-size:0.8em; display:block; color:#f1c40f;">[STAGE BOSS]</span>' : '';
-        
-        // [수정] 보스일 때 이미지 크기를 250px로 확대
         const imgSize = m.isBoss ? "250px" : "200px"; 
 
         grid.innerHTML = `
@@ -181,7 +179,7 @@ const CombatSystem = {
 
             log.innerHTML = `[Turn ${turn}] 유저 공격: ${pDmg} ${atkMsg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
 
-           // --- [2. 유저 승리 판정] ---
+            // --- [2. 유저 승리 판정] ---
             if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
@@ -191,13 +189,12 @@ const CombatSystem = {
                 let dropMsg = "";
 
                 // ────────────────────────────────────────────────
-                // ★ [장비 드랍] (확률 10%, 티어 기반)
+                // ★ [장비 드랍] (확률 10%, 티어 기반, 스킬 확률 적용)
                 // ────────────────────────────────────────────────
                 const targetTier = Math.ceil(m.lv / 5);
 
                 if (Math.random() * 100 < 10) { // 10% 확률
-                    // 해당 티어의 아이템만 필터링
-                    // (item.tier가 없으면 안전하게 0으로 취급)
+                    // 해당 티어의 아이템만 필터링 (item.tier가 없으면 0 처리)
                     const validItems = GameDatabase.EQUIPMENT.filter(e => (e.tier || 0) === targetTier);
                     
                     if (validItems.length > 0) {
@@ -206,71 +203,52 @@ const CombatSystem = {
                         // 아이템 복제 및 초기화
                         let newItem = { ...baseItem, id: Date.now(), en: 0, skills: [] };
                         
-                        // 스킬 부여 확률 (1개 70%, 2개 20%, 3개 10%)
-                        // *전제: 장비 드랍 시 최소 1개는 붙는다고 가정 (SkillSystem에서 count만큼 붙임)
+                        // 스킬 개수 결정 (1개 70%, 2개 20%, 3개 10%)
                         const countRoll = Math.random() * 100;
                         let skillCount = 1; 
                         if (countRoll < 70) skillCount = 1;
                         else if (countRoll < 90) skillCount = 2;
                         else skillCount = 3;
 
-                        // 스킬 부착 (SkillSystem.attachSkill 사용)
+                        // 스킬 부착
                         if (typeof SkillSystem !== 'undefined') {
                             newItem = SkillSystem.attachSkill(newItem, skillCount);
                         }
                         
                         data.inventory.push(newItem);
-                        dropMsg = `<br><span style="color:#e94560">🎁 [T${targetTier}] ${newItem.name} 획득!</span>`;
+                        dropMsg += `<br><span style="color:#e94560">🎁 [T${targetTier}] ${newItem.name} 획득!</span>`;
                     }
                 }
 
-    // ────────────────────────────────────────────────
-    // ★ [보석 드랍 로직] (5% 확률)
-    // 데이터 구조: GameDatabase.GEM_DROPS.TIER_X
-    // ────────────────────────────────────────────────
-    if (Math.random() * 100 < 5) {
-        
-        // 1. 몬스터 레벨로 티어 키(Key) 생성
-        // 예: Lv.1~5 -> 1 -> 'TIER_1'
-        // 예: Lv.6~10 -> 2 -> 'TIER_2'
-        const tierNum = Math.ceil(m.lv / 5);
-        const tierKey = `TIER_${tierNum}`;
+                // ────────────────────────────────────────────────
+                // ★ [보석 드랍] (확률 5%, 티어 기반)
+                // ────────────────────────────────────────────────
+                if (Math.random() * 100 < 5) {
+                    const tierKey = `TIER_${targetTier}`;
+                    const gemList = (GameDatabase.GEM_DROPS && GameDatabase.GEM_DROPS[tierKey]) 
+                                    ? GameDatabase.GEM_DROPS[tierKey] 
+                                    : null;
 
-        // 2. 해당 티어의 보석 목록 가져오기
-        // (데이터베이스에 해당 티어가 없으면 드랍 안 함)
-        const gemList = (GameDatabase.GEM_DROPS && GameDatabase.GEM_DROPS[tierKey]) 
-                        ? GameDatabase.GEM_DROPS[tierKey] 
-                        : null;
+                    if (gemList && gemList.length > 0) {
+                        // 등급 결정 (70% 일반 / 30% 희귀)
+                        const isRare = (Math.random() * 100) >= 70; 
+                        const gemIndex = (isRare && gemList.length > 1) ? 1 : 0;
+                        const dropGem = gemList[gemIndex];
 
-        if (gemList && gemList.length > 0) {
-            
-            // 3. 등급 결정 (70% 일반 / 30% 희귀)
-            // gemList[0]: 일반(싼거), gemList[1]: 희귀(비싼거) 라고 가정
-            const isRare = (Math.random() * 100) >= 70; // 30% 확률로 true
-            
-            // 희귀 당첨됐는데 목록에 2번째 아이템이 없으면 그냥 0번째(일반) 줌
-            const gemIndex = (isRare && gemList.length > 1) ? 1 : 0;
-            const dropGem = gemList[gemIndex];
+                        if (dropGem) {
+                            data.inventory.push({
+                                id: Date.now() + Math.random(),
+                                ...dropGem,
+                                type: 'gem', 
+                                count: 1
+                            });
 
-            if (dropGem) {
-                // 4. 인벤토리 지급
-                data.inventory.push({
-                    id: Date.now() + Math.random(), // 고유 ID 부여
-                    ...dropGem,
-                    // type은 DB에 이미 'etc'로 되어있지만, 필요하면 'gem'으로 덮어씌움
-                    type: 'gem', 
-                    count: 1
-                });
-
-                // 5. 로그 메시지 장식
-                // 희귀(Index 1)면 보라색, 일반(Index 0)이면 초록색
-                const color = (gemIndex === 1) ? '#9b59b6' : '#2ecc71';
-                const prefix = (gemIndex === 1) ? '[✨희귀]' : '[🔹일반]';
-
-                dropMsg += `<br><span style="color:${color}; font-weight:bold;">💎 ${prefix} ${dropGem.name} 획득!</span>`;
-            }
-        }
-    }
+                            const color = (gemIndex === 1) ? '#9b59b6' : '#2ecc71';
+                            const prefix = (gemIndex === 1) ? '[✨희귀]' : '[🔹일반]';
+                            dropMsg += `<br><span style="color:${color}; font-weight:bold;">💎 ${prefix} ${dropGem.name} 획득!</span>`;
+                        }
+                    }
+                }
 
                 if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
                 log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span>${dropMsg}<br>` + log.innerHTML;
@@ -300,10 +278,10 @@ const CombatSystem = {
                 }
 
                 if (typeof MainEngine !== 'undefined') MainEngine.checkLevelUp();
-                return; // 승리했으니 아래쪽 몬스터 공격 코드는 실행 안 함!
+                return; 
             }
 
-            // --- [3. 몬스터 공격 턴 (유저가 승리 못했을 때만 실행)] ---
+            // --- [3. 몬스터 공격 턴] ---
             let incDmg = Math.floor(calcDmg(m.atk, pStats.def));
             let defMsg = "";
 
@@ -379,6 +357,7 @@ const CombatSystem = {
         if (zoneId === 0) targetMonsters = [{ name: '슬라임', img: 'slime.png' }, { name: '앞마당 쥐', img: 'rat.png' }];
         else if (zoneId === 1) targetMonsters = [{ name: '화가난 등산객', img: 'hiker.png' }, { name: '고라니', img: 'Elk.png' }];
         else targetMonsters = [{ name: '알 수 없는 적', img: 'unknown.png' }];
+        
         const pick = targetMonsters[Math.floor(Math.random() * targetMonsters.length)];
         m.name = pick.name; m.img = pick.img;
         return m;
@@ -414,15 +393,7 @@ const CombatSystem = {
             } else break;
         }
 
-        // [수정] UI 갱신 (window. 제거)
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
         return { healed: healAmount, usedCount: usedCount };
     }
 };
-
-
-
-
-
-
-
