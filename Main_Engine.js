@@ -377,21 +377,60 @@ renderInventory: () => {
         }
     },
    
-    openInventoryModal: () => {
-        const modal = document.getElementById('inv-modal');
-        const mList = document.getElementById('modal-item-list');
-        if (!modal || !mList) return;
-        modal.style.display = 'block'; mList.innerHTML = '';
-        const upgradables = data.inventory.map((item, index) => ({ ...item, realIdx: index }))
-            .filter(item => ['weapon', 'armor', 'belt'].includes(item.type));
-        if (upgradables.length === 0) { mList.innerHTML = '<div style="padding:20px; color:#888;">강화 가능한 장비가 없습니다.</div>'; return; }
-        upgradables.forEach(item => {
-            const btn = document.createElement('button'); btn.className = 'main-menu-btn'; btn.style.padding = "10px"; btn.style.fontSize = "0.9em";
-            const isEquipped = (data.equipment[item.type] && data.equipment[item.type].id === item.id);
-            btn.innerHTML = `${isEquipped ? '[장착중] ' : ''}${item.name} (+${item.en})`;
-            btn.onclick = () => { UpgradeSystem.selectUpgrade(item.realIdx); MainEngine.closeModal(); };
-            mList.appendChild(btn);
+    // [수정] 모달 열기 함수 (mode 파라미터 추가)
+    // mode: 'normal'(기본), 'upgrade'(강화장비), 'support'(보조아이템), 'sell'(판매)
+    openInventoryModal: (mode = 'normal') => {
+        const modal = document.getElementById('modal-inventory');
+        const list = document.getElementById('modal-item-list');
+        list.innerHTML = '';
+        
+        // 인벤토리 순회
+        data.inventory.forEach((item, idx) => {
+            // [필터링 로직]
+            let show = true;
+            if (mode === 'upgrade') {
+                // 강화 대상: 장비만 표시 (ticket, scroll, potion 제외)
+                if (['weapon','armor','belt','gloves','shoes'].indexOf(item.type) === -1) show = false;
+            } 
+            else if (mode === 'support') {
+                // 보조 아이템: 주문서(scroll), 강화권(ticket)만 표시
+                if (item.type !== 'scroll' && item.type !== 'ticket') show = false;
+            }
+
+            if (show) {
+                const div = document.createElement('div');
+                div.className = 'inven-item';
+                div.style.border = `2px solid ${GameDatabase.getItemRarityColor(item)}`;
+                
+                // 아이템 정보 표시
+                let infoText = `<b>${item.name}</b>`;
+                if (item.type !== 'potion' && item.type !== 'scroll' && item.type !== 'ticket') {
+                    infoText += ` <span style="color:#f1c40f">(+${item.en})</span>`;
+                }
+                if (item.count > 1) infoText += ` x${item.count}`;
+                
+                div.innerHTML = `
+                    <img src="image/${item.img}" style="width:30px; height:30px; object-fit:contain;">
+                    <div style="flex:1;">${infoText}</div>
+                `;
+
+                // [클릭 이벤트 분기]
+                div.onclick = () => {
+                    if (mode === 'upgrade') {
+                        UpgradeSystem.selectUpgrade(idx);
+                        MainEngine.closeModal();
+                    } 
+                    else if (mode === 'support') {
+                        UpgradeSystem.selectSupport(idx); // 보조 아이템 선택 함수 호출
+                        MainEngine.closeModal();
+                    }
+                    // ... 기존 판매/장착 로직 등은 mode === 'normal' 일 때 처리
+                };
+                list.appendChild(div);
+            }
         });
+
+        modal.style.display = 'flex';
     },
 
     closeModal: () => document.getElementById('inv-modal').style.display='none',
@@ -547,23 +586,3 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
