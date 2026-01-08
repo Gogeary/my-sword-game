@@ -197,36 +197,54 @@ const MainEngine = {
 
     /* Main_Engine.js 내 createItemHTML 함수 수정 */
     createItemHTML: (it, idx, isEquipped) => {
-    const div = document.createElement('div');
-    div.className = 'item-card';
-    if (isEquipped) div.style.border = '2px solid #2ecc71';
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        if (isEquipped) div.style.border = '2px solid #2ecc71';
 
-    // 이미지가 없을 때 📦 아이콘을 보여주는 태그 생성
-    const imgTag = it.img ? 
-        `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
-        : '<div class="item-icon">📦</div>';
+        // 이미지 로드 실패 시 📦 아이콘으로 대체
+        const imgTag = it.img ? 
+            `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
+            : '<div class="item-icon">📦</div>';
 
-    let subText = it.info || "";
-    if (['weapon','armor','belt','gloves','shoes'].includes(it.type)) {
-        subText = `<span style="color:#f1c40f;">능력치 배율: x${it.k.toFixed(2)}</span>`;
-    }
+        const type = (it.type || "").toLowerCase();
+        const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
+        const isConsumable = ['potion', 'scroll', 'ticket'].includes(type);
+        const isGem = (type === 'etc'); // 보석(재료) 타입
 
-    div.innerHTML = `
-        <div class="item-icon-container" style="width:50px; height:50px; flex-shrink:0;">
-            ${imgTag}
-        </div>
-        <div class="item-info">
-            <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong>${it.count > 1 ? ` (x${it.count})` : ""}<br>
-            <small>${subText}</small>
-        </div>
-        <div class="item-actions">
-            ${!['potion','scroll','ticket','etc'].includes(it.type) ? `<button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>` : ""}
-            <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
-            <button class="item-btn" style="background:#c0392b;" onclick="MainEngine.confirmSell(${idx})">판매</button>
-        </div>
-    `;
-    return div;
-},
+        let subText = it.info || "";
+        if (isGear) {
+            subText = `<span style="color:#f1c40f;">능력치 배율: x${it.k.toFixed(2)}</span>`;
+        }
+
+        // [버튼 로직 수정]
+        let actionButtons = '';
+        
+        if (isGem || isConsumable) {
+            // 보석이나 소비 아이템은 '판매' 버튼만 표시
+            actionButtons = `<button class="item-btn" style="background:#c0392b;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+        } else if (isGear) {
+            // 장비류만 '강화', '장착/해제', '판매' 버튼 표시
+            actionButtons = `
+                <button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+                <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                ${!isEquipped ? `<button class="item-btn" style="background:#c0392b;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
+            `;
+        }
+
+        div.innerHTML = `
+            <div class="item-icon-container" style="width:50px; height:50px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                ${imgTag}
+            </div>
+            <div class="item-info">
+                <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong>${it.count > 1 ? ` (x${it.count})` : ""}<br>
+                <small>${subText}</small>
+            </div>
+            <div class="item-actions">
+                ${actionButtons}
+            </div>
+        `;
+        return div;
+    },
 
     toggleEquip: (idx) => {
         const it = data.inventory[idx];
@@ -484,6 +502,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
