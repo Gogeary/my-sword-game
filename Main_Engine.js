@@ -458,8 +458,15 @@ function showPage(id) {
     
     MainEngine.updateUI();
 }
-
+// MainEngine 객체 밖, 파일 맨 하단에 위치해야 함
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
 window.onload = MainEngine.init;
+
 
 
 
