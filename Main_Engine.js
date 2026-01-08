@@ -240,35 +240,46 @@ const MainEngine = {
         MainEngine.updateUI();
     },
 
+    /* Main_Engine.js 내 openInventoryModal 함수 내부 수정 */
     openInventoryModal: (mode = 'normal') => {
-        const modal = document.getElementById('modal-inventory');
-        const list = document.getElementById('modal-item-list');
-        if (!modal || !list) return;
+    const modal = document.getElementById('modal-inventory');
+    const list = document.getElementById('modal-item-list');
+    if (!modal || !list) return;
 
-        list.innerHTML = '';
-        data.inventory.forEach((item, idx) => {
-            let show = true;
-            if (mode === 'upgrade') {
-                if (['weapon','armor','belt','gloves','shoes'].indexOf(item.type) === -1) show = false;
-            } else if (mode === 'support') {
-                if (item.type !== 'scroll' && item.type !== 'ticket') show = false;
-            }
+    list.innerHTML = '';
+    data.inventory.forEach((item, idx) => {
+        let show = true;
+        if (mode === 'upgrade') {
+            if (['weapon','armor','belt','gloves','shoes'].indexOf(item.type) === -1) show = false;
+        } else if (mode === 'support') {
+            if (item.type !== 'scroll' && item.type !== 'ticket') show = false;
+        }
 
-            if (show) {
-                const div = document.createElement('div');
-                div.className = 'inven-item';
-                div.style.border = `2px solid ${GameDatabase.getItemRarityColor(item)}`;
-                div.innerHTML = `<div style="flex:1;"><b>${item.name}</b> (+${item.en || 0})${item.count > 1 ? ' x'+item.count : ''}</div>`;
-                div.onclick = () => {
-                    if (mode === 'upgrade') UpgradeSystem.selectUpgrade(idx);
-                    else if (mode === 'support') UpgradeSystem.selectSupport(idx);
-                    MainEngine.closeModal();
-                };
-                list.appendChild(div);
-            }
-        });
-        modal.style.display = 'flex';
-    },
+        if (show) {
+            const div = document.createElement('div');
+            div.className = 'inven-item';
+            div.style.border = `2px solid ${GameDatabase.getItemRarityColor(item)}`;
+            
+            // 이미지 로드 실패 시 아이콘 표시 (공백 방지)
+            const imgHtml = item.img ? 
+                `<img src="image/${item.img}" style="width:30px; height:30px; object-fit:contain; margin-right:8px;" onerror="this.onerror=null; this.replaceWith(document.createTextNode('📦 '));">` 
+                : '📦 ';
+
+            let infoText = `<b>${item.name}</b>`;
+            if (!['potion','scroll','ticket','etc'].includes(item.type)) infoText += ` (+${item.en || 0})`;
+            if (item.count > 1) infoText += ` x${item.count}`;
+            
+            div.innerHTML = `${imgHtml}<div style="flex:1;">${infoText}</div>`;
+            div.onclick = () => {
+                if (mode === 'upgrade') UpgradeSystem.selectUpgrade(idx);
+                else if (mode === 'support') UpgradeSystem.selectSupport(idx);
+                MainEngine.closeModal();
+            };
+            list.appendChild(div);
+        }
+    });
+    modal.style.display = 'flex';
+},
 
     openBatchSell: () => {
         const modal = document.getElementById('modal-batch-sell');
@@ -403,4 +414,5 @@ const GamblingSystem = {
 };
 
 window.onload = MainEngine.init;
+
 
