@@ -246,7 +246,8 @@ const MainEngine = {
             // ★ [추가] 화면에 실제 숫자를 넣어주는 코드
             const potionCntEl = document.getElementById('potion-cnt');
             const potionValEl = document.getElementById('potion-val');
-
+       
+            // 실시간으로 남은 개수와 총 회복량 표시
             if (potionCntEl) potionCntEl.innerText = totalCount;
             if (potionValEl) potionValEl.innerText = MainEngine.formatNumber(totalValue);
 
@@ -787,6 +788,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
