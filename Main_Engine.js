@@ -187,15 +187,6 @@ const MainEngine = {
         return { atk: fAtk, def: fDef, hp: fHP };
     },
     
-    // [추가] 현재 인벤토리 탭 상태 (기본값: 장비)
-    invCurrentTab: 'equip',
-
-    // [추가] 탭 변경 시 호출되는 함수
-    setInvTab: (tab) => {
-        MainEngine.invCurrentTab = tab;
-        MainEngine.renderInventory();
-    },
-
     renderInventory: () => {
         const eqList = document.getElementById('equipped-list');
         const invList = document.getElementById('inventory-list');
@@ -213,21 +204,23 @@ const MainEngine = {
         let equippedCount = 0;
         let visibleItemCount = 0;
 
+        // 원본 배열(data.inventory)을 돌면서 HTML을 생성합니다.
         data.inventory.forEach((it, idx) => {
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
             
-            // --- [탭 분류 로직 추가] ---
-            let category = 'etc'; // 기본값: 기타
+            // 탭 분류 로직
+            let category = 'etc'; 
             if (['weapon', 'armor', 'belt'].includes(it.type)) category = 'equip';
             else if (['potion', 'ticket', 'scroll'].includes(it.type)) category = 'consume';
 
-            // 1. 장착 중인 아이템은 탭에 상관없이 상단에 무조건 표시
+            // 1. 장착 중인 아이템 표시
             if (isEquipped) {
+                // [중요] idx를 그대로 넘겨서 나중에 판매/강화 시 해당 위치를 정확히 참조하게 합니다.
                 const div = MainEngine.createItemHTML(it, idx, true);
                 eqList.appendChild(div);
                 equippedCount++;
             } 
-            // 2. 장착 중이지 않은 아이템은 현재 선택된 탭과 일치할 때만 표시
+            // 2. 현재 선택된 탭에 맞는 아이템 표시
             else if (MainEngine.invCurrentTab === category) {
                 const div = MainEngine.createItemHTML(it, idx, false);
                 invList.appendChild(div);
@@ -409,6 +402,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
