@@ -250,15 +250,18 @@ const MainEngine = {
     },
    
     toggleEquip: (idx) => {
-        const it = data.inventory[idx];
-        if (!it) return;
-        if (!data.equipment) data.equipment = {};
-        
-        const isAlreadyEquipped = data.equipment[it.type] && data.equipment[it.type].uid === it.uid;
-        if (isAlreadyEquipped) data.equipment[it.type] = null;
-        else data.equipment[it.type] = it;
-        
-        MainEngine.updateUI();
+    const it = data.inventory[idx];
+    if (!it) return;
+
+    // 'it.id'가 아니라 'it.uid'를 비교해야 합니다!
+    const isEquipped = data.equipment[it.type] && data.equipment[it.type].uid === it.uid;
+
+    if (isEquipped) {
+        data.equipment[it.type] = null; // 해제
+    } else {
+        data.equipment[it.type] = it;   // 장착 (이 객체 하나만!)
+    }
+    MainEngine.updateUI();
     },
 
     /* Main_Engine.js 내 openInventoryModal 함수 내부 수정 */
@@ -499,6 +502,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
