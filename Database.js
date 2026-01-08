@@ -133,13 +133,13 @@ const GameDatabase = {
             { id: 'iron', name: '철벽1', turn: 3, val: 0.3, desc: '3턴마다 받는 피해 30% 감소' },
             { id: 'iron', name: '철벽2', turn: 3, val: 0.4, desc: '3턴마다 받는 피해 40% 감소' },
             { id: 'iron', name: '철벽3', turn: 3, val: 0.5, desc: '3턴마다 받는 피해 50% 감소' },
-            { id: 'evade', name: '회피1', turn: 5, val: 0.0, desc: '5턴마다 데미지 무효화' }
-            { id: 'evade', name: '회피2', turn: 4, val: 0.0, desc: '4턴마다 데미지 무효화' }
+            { id: 'evade', name: '회피1', turn: 5, val: 0.0, desc: '5턴마다 데미지 무효화' },
+            { id: 'evade', name: '회피2', turn: 4, val: 0.0, desc: '4턴마다 데미지 무효화' },
             { id: 'evade', name: '회피3', turn: 3, val: 0.0, desc: '3턴마다 데미지 무효화' }
         ],
         belt: [
-            { id: 'heal', name: '재생1', turn: 4, val: 0.1, desc: '4턴마다 최대 체력의 10% 회복' }
-            { id: 'heal', name: '재생2', turn: 4, val: 0.15, desc: '4턴마다 최대 체력의 15% 회복' }
+            { id: 'heal', name: '재생1', turn: 4, val: 0.1, desc: '4턴마다 최대 체력의 10% 회복' },
+            { id: 'heal', name: '재생2', turn: 4, val: 0.15, desc: '4턴마다 최대 체력의 15% 회복' },
             { id: 'heal', name: '재생3', turn: 4, val: 0.2, desc: '4턴마다 최대 체력의 20% 회복' }
         ]
     },
@@ -186,6 +186,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
