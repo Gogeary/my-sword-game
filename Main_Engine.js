@@ -396,12 +396,21 @@ function renderHuntingZones() {
 function showPage(id) {
     if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.stopAuto();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const t = document.getElementById(id); if(t) t.classList.add('active');
+    const t = document.getElementById(id); 
+    if(t) t.classList.add('active');
+
+    // [추가] 내 정보 페이지를 열 때 인벤토리와 UI를 새로 고침
+    if (id === 'page-info') {
+        MainEngine.renderInventory();
+    }
+    
     if (id === 'page-hunt-select') renderHuntingZones();
+    
     MainEngine.updateUI();
 }
 
 window.onload = MainEngine.init;
+
 
 
 
