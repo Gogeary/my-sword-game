@@ -541,53 +541,113 @@ renderInventory: () => {
         }
     }, // <--- ★★★ 여기에 닫는 괄호와 콤마가 꼭 있어야 합니다! ★★★
 
-    // 1. 일괄 판매 모달 열기
+    // [수정됨] 일괄 판매 모달 열기 (UI를 스크립트로 생성)
     openBatchSell: () => {
         const modal = document.getElementById('modal-batch-sell');
-        if (modal) modal.style.display = 'block';
+        if (!modal) return;
+        
+        // 모달 내부의 콘텐츠 영역 찾기 (없으면 modal 자체 사용)
+        // 주의: HTML 구조에 따라 id="modal-batch-content" 같은 div가 있을 수 있음
+        // 여기서는 안전하게 innerHTML을 재구성합니다.
+        
+        let contentDiv = modal.querySelector('.modal-content');
+        if (!contentDiv) {
+            // modal-content 클래스가 없으면 새로 만듦 (스타일은 CSS에 따름)
+            contentDiv = document.createElement('div');
+            contentDiv.className = 'modal-content';
+            modal.innerHTML = '';
+            modal.appendChild(contentDiv);
+        }
+
+        contentDiv.innerHTML = `
+            <h2>🗑️ 아이템 일괄 판매</h2>
+            <div style="text-align:left; margin:15px 20px; font-size:1.1em; line-height:1.8;">
+                <label style="cursor:pointer;">
+                    <input type="checkbox" id="sell-no-skill"> ⚔️ <b>스킬 없는</b> 장비 판매
+                </label><br>
+                <label style="cursor:pointer;">
+                    <input type="checkbox" id="sell-with-skill"> ⚔️ <b>스킬 있는</b> 장비 판매 <span style="color:#e74c3c; font-size:0.8em;">(주의!)</span>
+                </label><br>
+                <div style="border-top:1px solid #444; margin:5px 0;"></div>
+                <label style="cursor:pointer;">
+                    <input type="checkbox" id="sell-gems" checked> 💎 <b>보석(재료)</b> 전체 판매
+                </label>
+            </div>
+            <div style="margin-top:20px;">
+                <button class="main-menu-btn" style="background:#c0392b;" onclick="MainEngine.executeBatchSell()">판매 실행</button>
+                <button class="main-menu-btn" onclick="MainEngine.closeModal()">닫기</button>
+            </div>
+        `;
+
+        modal.style.display = 'flex'; // flex로 중앙 정렬 (CSS에 따라 block일수도 있음)
     },
 
-    // 2. 실제 일괄 판매 실행
+    // [수정됨] 실제 일괄 판매 실행 로직 (보석 판매 추가)
     executeBatchSell: () => {
-        const sellNoSkill = document.getElementById('sell-no-skill').checked;
-        const sellWithSkill = document.getElementById('sell-with-skill').checked;
+        // 체크박스 상태 확인
+        const sellNoSkillEl = document.getElementById('sell-no-skill');
+        const sellWithSkillEl = document.getElementById('sell-with-skill');
+        const sellGemsEl = document.getElementById('sell-gems');
+
+        const sellNoSkill = sellNoSkillEl ? sellNoSkillEl.checked : false;
+        const sellWithSkill = sellWithSkillEl ? sellWithSkillEl.checked : false;
+        const sellGems = sellGemsEl ? sellGemsEl.checked : false;
 
         // 판매 대상 필터링
         const targets = data.inventory.filter(it => {
-            const isEquip = ['weapon', 'armor', 'belt'].includes(it.type);
-            const isZeroEnchant = (it.en || 0) === 0;
-            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
+            // 1. 장착 중인 아이템 제외
+            const isEquipped = (['weapon','armor','belt','gloves','shoes'].includes(it.type)) &&
+                               (data.equipment[it.type] && data.equipment[it.type].id === it.id);
+            if (isEquipped) return false;
 
-            // 장착 중이거나 강화된 아이템은 필터링에서 즉시 제외
-            if (!isEquip || !isZeroEnchant || isEquipped) return false;
+            // 2. 보석(etc) 판매 로직
+            if (it.type === 'etc') {
+                return sellGems; // 체크되어 있으면 판매 대상 포함
+            }
 
-            // [수정 포인트] attachSkill에서 사용하는 'skills' 배열을 체크
-            const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
+            // 3. 장비 판매 로직
+            if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(it.type)) {
+                // 강화된 장비는 안전하게 제외 (0강만 판매)
+                if ((it.en || 0) > 0) return false;
 
-            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비 판매 체크됨
-            if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비 판매 체크됨
+                const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
+                if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비
+                if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비
+            }
+
             return false;
         });
 
         if (targets.length === 0) {
-            alert("판매할 대상이 없습니다.\n(장착 중이거나 강화된 아이템은 제외됩니다)");
+            alert("판매할 대상이 없습니다.\n(조건을 확인하거나 인벤토리가 비어있는지 확인하세요)");
             return;
         }
 
-        if (confirm(`${targets.length}개의 장비를 일괄 판매하시겠습니까?`)) {
-            let totalGold = 0;
-            // targets에 담긴 아이템들을 인벤토리에서 하나씩 제거
-            targets.forEach(target => {
-                totalGold += Math.floor(target.p * 0.5);
-                
-                const idx = data.inventory.findIndex(item => item.id === target.id);
-                if (idx !== -1) data.inventory.splice(idx, 1);
-            });
+        // 예상 수익 계산
+        let totalGold = 0;
+        targets.forEach(t => {
+            // 겹쳐진 아이템(count) 고려
+            const count = t.count || 1;
+            totalGold += Math.floor(t.p * 0.5) * count; 
+        });
+
+        if (confirm(`총 ${targets.length}종류의 아이템을 판매하시겠습니까?\n(획득 예상: ${MainEngine.formatNumber(totalGold)} G)`)) {
+            // 실제 삭제 로직
+            // targets에 포함된 아이템들을 인벤토리에서 제거해야 함
+            // 인덱스가 꼬이지 않도록 filter로 인벤토리 자체를 재구성하는 것이 안전함
+            
+            // 판매 대상들의 ID 목록 생성
+            const targetIds = targets.map(t => t.id);
+            
+            // 인벤토리에서 판매 대상이 아닌 것만 남김 (= 판매 대상 삭제)
+            data.inventory = data.inventory.filter(item => !targetIds.includes(item.id));
 
             data.gold += totalGold;
-            alert(`${targets.length}개의 장비를 판매하여 ${totalGold.toLocaleString()} G를 획득했습니다!`);
+            alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G를 획득했습니다.`);
             
-            closeModal('modal-batch-sell');
+            // 모달 닫기 및 UI 갱신
+            const modal = document.getElementById('modal-batch-sell');
+            if(modal) modal.style.display = 'none';
             MainEngine.updateUI();
         }
     },
@@ -692,6 +752,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
