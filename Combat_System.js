@@ -400,4 +400,4 @@ const CombatSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
         return { healed: healAmount, usedCount: usedCount };
     }
-
+};
