@@ -197,41 +197,31 @@ const MainEngine = {
         const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv || data.level);
         if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
-        // 2. 최종 스탯 계산 (이미 무기, 장갑 강화가 다 적용된 수치)
+        // 2. 최종 스탯 계산
         const stats = MainEngine.getFinalStats();
         
-        // 3. [핵심 수정] 장갑 증폭 수치 '계산'해서 보여주기
+        // 3. 장갑 증폭 수치 계산 및 표시
         let gloveDisplay = "";
-        let currentMul = 1.0; // 기본 배율
-
+        let currentMul = 1.0; 
         if (data.equipment.gloves) {
             const g = data.equipment.gloves;
-            // ★ DB에 있는 공식(k * (1 + en * 0.02))을 가져와서 현재 수치를 계산합니다.
             currentMul = GameDatabase.ENHANCE_FORMULA.gloves(g.k, g.en);
-            
-            // UI에 보여줄 텍스트 (예: x 1.44 (증폭))
             gloveDisplay = ` x <span style="color:#f1c40f; font-weight:bold;">${currentMul.toFixed(2)}</span> <span style="font-size:0.8em; color:#aaa;">(증폭)</span>`;
         }
 
-        // 4. 공격력 표시 (무기공격력 x 장갑배율 = 최종공격력 형태로 표현)
-        // 역산: 최종공격력 / 장갑배율 = 순수 무기+캐릭터 공격력
+        // 4. 공격력 표시
         const baseAtkDisplay = Math.floor(stats.atk / currentMul);
-
         const infoAtk = document.getElementById('info-atk');
         if (infoAtk) {
-            infoAtk.innerHTML = `
-                <span style="color:#ddd;">${MainEngine.formatNumber(baseAtkDisplay)}</span>
-                ${gloveDisplay}
-                <br>= <span style="color:#ff5252; font-size:1.2em; font-weight:bold;">${MainEngine.formatNumber(stats.atk)}</span>
-            `;
+            infoAtk.innerHTML = `<span style="color:#ddd;">${MainEngine.formatNumber(baseAtkDisplay)}</span>${gloveDisplay}<br>= <span style="color:#ff5252; font-size:1.2em; font-weight:bold;">${MainEngine.formatNumber(stats.atk)}</span>`;
         }
 
-        // 5. 나머지 정보 갱신
+        // 5. 기본 정보 갱신
         document.getElementById('info-def').innerText = MainEngine.formatNumber(stats.def);
         document.getElementById('info-hp').innerText = MainEngine.formatNumber(stats.hp);
         document.getElementById('gold').innerText = MainEngine.formatNumber(data.gold);
         
-        // 체력바 & 경험치바
+        // 6. 체력바 & 경험치바
         document.getElementById('hp-val').innerText = MainEngine.formatNumber(Math.max(0, data.hp));
         document.getElementById('hp-max').innerText = MainEngine.formatNumber(stats.hp);
         document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
@@ -241,12 +231,31 @@ const MainEngine = {
         document.getElementById('user-lv').innerText = data.lv || data.level;
         document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
 
-        // 포션 개수 (겹치기 반영)
-        const potions = data.inventory.filter(i => i.type === 'potion');
-        const potionTotalCount = potions.reduce((sum, p) => sum + (p.count || 1), 0);
-        document.getElementById('potion-cnt').innerText = potionTotalCount;
+        // 7. [포션 카운트 및 수치 계산]
+        // 인벤토리 아이템에 DB 상세 정보를 연결
+        const potionItems = data.inventory.map(invItem => {
+            const dbInfo = CONSUMABLES.potions.find(p => p.id === invItem.id);
+            return dbInfo ? { ...dbInfo, count: invItem.count || 0 } : null;
+        }).filter(i => i !== null && i.type === 'potion');
 
-        // 인벤토리 갱신 및 저장
+        const totalCount = potionItems.reduce((acc, cur) => acc + cur.count, 0);
+        const totalValue = potionItems.reduce((acc, cur) => acc + (cur.val * cur.count), 0);
+
+        // UI 반영
+        const pValEl = document.getElementById('potion-val');
+        const pCntEl = document.getElementById('potion-cnt');
+        
+        if (pValEl) {
+            const displayVal = Math.max(0, totalValue - (data.potionBuffer || 0));
+            pValEl.innerText = MainEngine.formatNumber(displayVal);
+        }
+        if (pCntEl) {
+            pCntEl.innerText = totalCount;
+            // 0개일 때 색상 변경
+            pCntEl.parentElement.style.color = (totalCount === 0) ? "#ff4d4d" : "var(--mine)";
+        }
+
+        // 8. 인벤토리 갱신 및 저장
         MainEngine.renderInventory();
         MainEngine.saveGame();
     },
@@ -679,42 +688,8 @@ renderInventory: () => {
         ...newItem,
         uid: Date.now() + Math.random()   // 개별 장비 식별용
     });
-},
-
-updateUI: function() {
-        // 1. 골드 업데이트
-        document.getElementById('gold').innerText = GameData.data.gold.toLocaleString();
-
-        // 2. 포션 관련 데이터 계산
-        const potionItems = GameData.data.inventory.filter(item => {
-            const dbInfo = CONSUMABLES.potions.find(p => p.id === item.id);
-            return dbInfo && dbInfo.type === 'potion';
-        });
-
-        // 총 개수 (개별 count의 합)
-        const totalCount = potionItems.reduce((acc, cur) => acc + (cur.count || 0), 0);
-        
-        // 총 회복 가능량 (각 포션 val * 개수)
-        const totalValue = potionItems.reduce((acc, cur) => {
-            const dbInfo = CONSUMABLES.potions.find(p => p.id === cur.id);
-            return acc + (dbInfo.val * cur.count);
-        }, 0);
-
-        // 3. HTML에 적용
-        // potion-val에는 남은 총 회복량에서 현재 버퍼를 뺀 '실제 남은 양'을 표시하거나, 
-        // 혹은 단순히 총량을 표시할 수 있습니다.
-        document.getElementById('potion-val').innerText = (totalValue - GameData.data.potionBuffer).toLocaleString();
-        document.getElementById('potion-cnt').innerText = totalCount;
-
-        // (선택 사항) 포션이 0개면 색상을 붉게 변경
-        const potionDisplay = document.getElementById('potion-cnt').parentElement;
-        if (totalCount === 0) {
-            potionDisplay.style.color = "#ff4d4d";
-        } else {
-            potionDisplay.style.color = "var(--mine)";
-        }
-    },
-   };   // ← 여기서 반드시 닫기
+   },
+};   // ← 여기서 반드시 닫기
 /* ==========================================
    [추가] 도박 시스템 (홀짝)
    ========================================== */
@@ -817,30 +792,3 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
