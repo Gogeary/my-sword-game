@@ -590,21 +590,8 @@ renderInventory: () => {
 
         modal.style.display = 'flex'; // flex로 중앙 정렬 (CSS에 따라 block일수도 있음)
     },
-
-    보석 데이터베이스(GEM_DROPS)를 확인했습니다. 보석들의 type이 모두 'etc'로 설정되어 있군요!
-
-보석 일괄 판매가 "판매할 대상이 없다"고 나오는 이유는 HTML의 체크박스 ID가 스크립트와 일치하지 않거나, 스크립트에서 보석의 타입(etc)을 장비 아이템으로 착각해서 걸러내고 있기 때문일 가능성이 높습니다.
-
-이 문제를 해결하기 위해 **Main_Engine.js**의 판매 로직을 보석 데이터베이스에 맞춰 완벽하게 보정하고, 확인해야 할 **index.html**의 체크박스 코드도 함께 정리해 드립니다.
-
-1. Main_Engine.js 수정 (일괄 판매 로직)
-이 코드는 보석(etc) 타입을 정확히 판별하고, 체크박스가 켜져 있을 때만 판매 대상에 포함시킵니다.
-
-JavaScript
-
-/* Main_Engine.js 내 executeBatchSell 함수 */
 executeBatchSell: () => {
-    // 1. 체크박스 상태 읽기 (ID가 정확해야 합니다)
+    // 1. 체크박스 상태 확인
     const sellNoSkill = document.getElementById('sell-no-skill')?.checked || false;
     const sellWithSkill = document.getElementById('sell-with-skill')?.checked || false;
     const sellGems = document.getElementById('sell-gems')?.checked || false;
@@ -613,31 +600,32 @@ executeBatchSell: () => {
     const targets = data.inventory.filter(it => {
         const itemType = (it.type || "").toLowerCase();
 
-        // [A] 장착 중인 아이템은 절대 판매 안 함
+        // [A] 장착 중인 아이템은 예외 없이 판매 제외
         const isEquipped = (['weapon','armor','belt','gloves','shoes'].includes(itemType)) &&
                            (data.equipment[itemType] && data.equipment[itemType].id === it.id);
         if (isEquipped) return false;
 
-        // [B] 보석 및 기타 아이템 (데이터베이스의 'etc' 타입)
+        // [B] 보석 및 기타 재료 아이템 처리 (DB의 'etc' 또는 'gem' 타입)
         if (itemType === 'etc' || itemType === 'gem') {
-            return sellGems; // '보석 판매' 체크박스가 켜져 있어야 함
+            return sellGems; // 체크박스가 켜져 있으면 true, 꺼져 있으면 false
         }
 
-        // [C] 장비 아이템 (무기, 방어구 등 0강만 대상)
+        // [C] 장비 아이템 처리 (0강만 대상)
         if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(itemType)) {
-            if ((it.en || 0) > 0) return false; // 강화된 건 보호
+            // 강화가 1강이라도 되어 있으면 보호
+            if ((it.en || 0) > 0) return false; 
 
             const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
-            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비 판매
-            if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비 판매
+            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비
+            if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비
         }
 
         return false;
     });
 
-    // 3. 결과 확인
+    // 3. 판매 대상이 없을 경우 알림
     if (targets.length === 0) {
-        alert("판매할 대상이 없습니다.\n'보석(재료) 전체 판매' 체크박스를 켰는지 확인해주세요!");
+        alert("판매할 대상이 없습니다. 카테고리 체크박스를 확인해 주세요.");
         return;
     }
 
@@ -648,18 +636,19 @@ executeBatchSell: () => {
         totalGold += Math.floor(t.p * 0.5) * count; 
     });
 
-    if (confirm(`총 ${targets.length}종의 아이템을 판매하시겠습니까?\n예상 수익: ${MainEngine.formatNumber(totalGold)} G`)) {
-        // 인벤토리에서 대상 삭제 (ID가 중복될 수 있으므로 실제 객체 비교나 고유 필터 사용)
+    // 5. 최종 확인 및 실행
+    if (confirm(`총 ${targets.length}개의 아이템을 판매하시겠습니까?\n수익: ${MainEngine.formatNumber(totalGold)} G`)) {
+        // 인벤토리에서 실제 판매 대상만 제외하고 다시 담기
         data.inventory = data.inventory.filter(item => !targets.includes(item));
 
         data.gold += totalGold;
-        alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G를 획득했습니다.`);
+        alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G가 입금되었습니다.`);
         
-        // UI 갱신
-        MainEngine.closeModal(); // 판매 후 모달 닫기
+        // UI 및 가방 실시간 갱신
+        MainEngine.closeModal();
         MainEngine.updateUI();
     }
-},
+}
    
    addItem: (newItem) => {
     const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
@@ -789,6 +778,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
