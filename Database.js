@@ -47,170 +47,166 @@ const GameDatabase = {
     },
 
     EQUIPMENT: [
-    // --- [1티어 (Lv.1)] ---
-    { lv: 1, tier: 1, name: '[1]나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png', info: '주운 나뭇가지를 깎아서 만들었다.'},
-    { lv: 1, tier: 1, name: '[1]헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png', info: '헌옷 수거함에서 주워왔다.'},
-    { lv: 1, tier: 1, name: '[1]낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png', info: '봉투를 묶던 천이다.'},
+        // =========================================================================
+        // [1티어] Lv.1 (가격: 1,000 G)
+        // =========================================================================
+        { lv: 1, tier: 1, name: '[1]나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png', info: '주운 나뭇가지를 깎아서 만들었다.'},
+        { lv: 1, tier: 1, name: '[1]헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png', info: '헌옷 수거함에서 주워왔다.'},
+        { lv: 1, tier: 1, name: '[1]낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png', info: '봉투를 묶던 천이다.'},
+        { lv: 1, tier: 1, name: '[1]목장갑', k: 1.02, p: 1000, type: 'gloves', img: 'glove_cotton.png', info: '빨간 코팅이 되어있는 작업용 장갑.' },
 
-    // --- [2티어 (Lv.5)] ---
-    { lv: 5, tier: 2, name: '[5]낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png', info: '창고에 박혀있던 녹이 슨 검이다.'},
-    { lv: 5, tier: 2, name: '[5]천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png', info: '전통시장에서 팔고있는 저렴한 천 옷이다.'},
-    { lv: 5, tier: 2, name: '[5]천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png', info: '선물 포장용 천이다.'},
+        // =========================================================================
+        // [2티어] Lv.5 (가격: 1만 G)
+        // =========================================================================
+        { lv: 5, tier: 2, name: '[5]낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png', info: '창고에 박혀있던 녹이 슨 검이다.'},
+        { lv: 5, tier: 2, name: '[5]천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png', info: '전통시장에서 팔고있는 저렴한 천 옷이다.'},
+        { lv: 5, tier: 2, name: '[5]천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png', info: '선물 포장용 천이다.'},
+        { lv: 5, tier: 2, name: '[5]가죽 장갑', k: 1.05, p: 10000, type: 'gloves', img: 'glove_leather.png', info: '질긴 가죽으로 만들어 손을 보호한다.' },
 
-    // --- [3티어 (Lv.10)] ---
-    { lv: 10, tier: 3, name: '[10]철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png', info: '평범한 철로 제작한 검이다.'},
-    { lv: 10, tier: 3, name: '[10]질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png', info: '질겨서 방어 기능이 조금 생긴 옷이다.'},
-    { lv: 10, tier: 3, name: '[10]질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png', info: '바지가 잘 안흘러내려서 좋다.'},
+        // =========================================================================
+        // [3티어] Lv.10 (가격: 5만 G)
+        // =========================================================================
+        { lv: 10, tier: 3, name: '[10]철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png', info: '평범한 철로 제작한 검이다.'},
+        { lv: 10, tier: 3, name: '[10]질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png', info: '질겨서 방어 기능이 조금 생긴 옷이다.'},
+        { lv: 10, tier: 3, name: '[10]질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png', info: '바지가 잘 안흘러내려서 좋다.'},
+        { lv: 10, tier: 3, name: '[10]징 박힌 장갑', k: 1.1, p: 50000, type: 'gloves', img: 'glove_studded.png', info: '주먹을 쥐면 쇠징이 튀어나와 위협적이다.' },
 
-    // --- [4티어 (Lv.15)] ---
-    { lv: 15, tier: 4, name: '[15]강철 검', k: 1.7, p: 250000, type: 'weapon', img: 'steel_sword.png', info: '단단한 강철로 만들어져 날이 예리하다.' },
-    { lv: 15, tier: 4, name: '[15]가죽 옷', k: 1.6, p: 250000, type: 'armor', img: 'leather_armor.png', info: '동물의 가죽을 가공해 만든 활동적인 옷이다.' },
-    { lv: 15, tier: 4, name: '[15]가죽 벨트', k: 1.9, p: 250000, type: 'belt', img: 'leather_belt.png', info: '허리를 단단하게 잡아주는 가죽 벨트다.' },
+        // =========================================================================
+        // [4티어] Lv.15 (가격: 25만 G)
+        // =========================================================================
+        { lv: 15, tier: 4, name: '[15]강철 검', k: 1.7, p: 250000, type: 'weapon', img: 'steel_sword.png', info: '단단한 강철로 만들어져 날이 예리하다.' },
+        { lv: 15, tier: 4, name: '[15]가죽 옷', k: 1.6, p: 250000, type: 'armor', img: 'leather_armor.png', info: '동물의 가죽을 가공해 만든 활동적인 옷이다.' },
+        { lv: 15, tier: 4, name: '[15]가죽 벨트', k: 1.9, p: 250000, type: 'belt', img: 'leather_belt.png', info: '허리를 단단하게 잡아주는 가죽 벨트다.' },
+        { lv: 15, tier: 4, name: '[15]청동 건틀릿', k: 1.15, p: 250000, type: 'gloves', img: 'glove_bronze.png', info: '청동으로 주조된 묵직한 건틀릿.' },
 
-    // --- [5티어 (Lv.20)] ---
-    { lv: 20, tier: 5, name: '[20]연마된 강철 검', k: 2.1, p: 1250000, type: 'weapon', img: 'polished_steel_sword.png', info: '장인의 손길로 연마되어 빛이 난다.' },
-    { lv: 20, tier: 5, name: '[20]강화 가죽 옷', k: 2.0, p: 1250000, type: 'armor', img: 'reinforced_leather_armor.png', info: '가죽을 여러 겹 덧대어 방어력을 높였다.' },
-    { lv: 20, tier: 5, name: '[20]강화 가죽 벨트', k: 2.5, p: 1250000, type: 'belt', img: 'reinforced_leather_belt.png', info: '도구 주머니가 달려 실용성이 늘어났다.' },
+        // =========================================================================
+        // [5티어] Lv.20 (가격: 125만 G)
+        // =========================================================================
+        { lv: 20, tier: 5, name: '[20]연마된 강철 검', k: 2.1, p: 1250000, type: 'weapon', img: 'polished_steel_sword.png', info: '장인의 손길로 연마되어 빛이 난다.' },
+        { lv: 20, tier: 5, name: '[20]강화 가죽 옷', k: 2.0, p: 1250000, type: 'armor', img: 'reinforced_leather_armor.png', info: '가죽을 여러 겹 덧대어 방어력을 높였다.' },
+        { lv: 20, tier: 5, name: '[20]강화 가죽 벨트', k: 2.5, p: 1250000, type: 'belt', img: 'reinforced_leather_belt.png', info: '도구 주머니가 달려 실용성이 늘어났다.' },
+        { lv: 20, tier: 5, name: '[20]강철 건틀릿', k: 1.2, p: 1250000, type: 'gloves', img: 'glove_steel.png', info: '강철을 두드려 만들어 내구성이 좋다.' },
 
-    // --- [6티어 (Lv.25)] ---
-    { lv: 25, tier: 6, name: '[25]은빛 강철 검', k: 2.7, p: 6000000, type: 'weapon', img: 'silvery_sword.png', info: '특수 합금으로 제작되어 은은한 빛을 낸다.' },
-    { lv: 25, tier: 6, name: '[25]비늘 갑옷', k: 2.5, p: 6000000, type: 'armor', img: 'scale_armor.png', info: '단단한 비늘을 엮어 만들어 충격 흡수에 탁월하다.' },
-    { lv: 25, tier: 6, name: '[25]금속 장식 벨트', k: 3.3, p: 6000000, type: 'belt', img: 'metal_deco_belt.png', info: '고가의 금속 장식이 박힌 고급 벨트.' },
+        // =========================================================================
+        // [6티어] Lv.25 (가격: 600만 G)
+        // =========================================================================
+        { lv: 25, tier: 6, name: '[25]은빛 강철 검', k: 2.7, p: 6000000, type: 'weapon', img: 'silvery_sword.png', info: '특수 합금으로 제작되어 은은한 빛을 낸다.' },
+        { lv: 25, tier: 6, name: '[25]비늘 갑옷', k: 2.5, p: 6000000, type: 'armor', img: 'scale_armor.png', info: '단단한 비늘을 엮어 만들어 충격 흡수에 탁월하다.' },
+        { lv: 25, tier: 6, name: '[25]금속 장식 벨트', k: 3.3, p: 6000000, type: 'belt', img: 'metal_deco_belt.png', info: '고가의 금속 장식이 박힌 고급 벨트.' },
+        { lv: 25, tier: 6, name: '[25]은장 건틀릿', k: 1.25, p: 6000000, type: 'gloves', img: 'glove_silver.png', info: '화려한 은 세공이 돋보이는 장갑.' },
 
-    // --- [7티어 (Lv.30)] ---
-    { lv: 30, tier: 7, name: '[30]은 검', k: 3.5, p: 30000000, type: 'weapon', img: 'silver_sword.png', info: '순은과 마력으로 제련하여 사악한 기운을 벤다.' },
-    { lv: 30, tier: 7, name: '[30]강철 갑옷', k: 3.2, p: 30000000, type: 'armor', img: 'plate_armor.png', info: '전신을 완벽하게 보호하는 육중한 갑옷이다.' },
-    { lv: 30, tier: 7, name: '[30]용병 벨트', k: 4.5, p: 30000000, type: 'belt', img: 'mercenary_belt.png', info: '수많은 전장을 누빈 용병 대장의 벨트.' },
+        // =========================================================================
+        // [7티어] Lv.30 (가격: 3,000만 G)
+        // =========================================================================
+        { lv: 30, tier: 7, name: '[30]은 검', k: 3.5, p: 30000000, type: 'weapon', img: 'silver_sword.png', info: '순은과 마력으로 제련하여 사악한 기운을 벤다.' },
+        { lv: 30, tier: 7, name: '[30]강철 갑옷', k: 3.2, p: 30000000, type: 'armor', img: 'plate_armor.png', info: '전신을 완벽하게 보호하는 육중한 갑옷이다.' },
+        { lv: 30, tier: 7, name: '[30]용병 벨트', k: 4.5, p: 30000000, type: 'belt', img: 'mercenary_belt.png', info: '수많은 전장을 누빈 용병 대장의 벨트.' },
+        { lv: 30, tier: 7, name: '[30]미스릴 글러브', k: 1.3, p: 30000000, type: 'gloves', img: 'glove_mithril.png', info: '가볍고 단단한 미스릴 실로 짜여졌다.' },
 
-    // --- [8티어 (Lv.35)] - 기사단 세트 ---
-    { lv: 35, tier: 8, name: '[35]기사단 장검', k: 4.5, p: 150000000, type: 'weapon', img: 'knight_sword.png', info: '왕실 기사단에게만 지급되는 명예로운 검.' },
-    { lv: 35, tier: 8, name: '[35]기사단 갑옷', k: 4.0, p: 150000000, type: 'armor', img: 'knight_armor.png', info: '무거운 철판을 겹쳐 만든 기사단의 제식 갑옷.' },
-    { lv: 35, tier: 8, name: '[35]기사단 벨트', k: 5.8, p: 150000000, type: 'belt', img: 'knight_belt.png', info: '기사단의 문장이 새겨진 튼튼한 벨트.' },
+        // =========================================================================
+        // [8티어] Lv.35 (가격: 1억 5,000만 G)
+        // =========================================================================
+        { lv: 35, tier: 8, name: '[35]기사단 장검', k: 4.5, p: 150000000, type: 'weapon', img: 'knight_sword.png', info: '왕실 기사단에게만 지급되는 명예로운 검.' },
+        { lv: 35, tier: 8, name: '[35]기사단 갑옷', k: 4.0, p: 150000000, type: 'armor', img: 'knight_armor.png', info: '무거운 철판을 겹쳐 만든 기사단의 제식 갑옷.' },
+        { lv: 35, tier: 8, name: '[35]기사단 벨트', k: 5.8, p: 150000000, type: 'belt', img: 'knight_belt.png', info: '기사단의 문장이 새겨진 튼튼한 벨트.' },
+        { lv: 35, tier: 8, name: '[35]기사단 건틀릿', k: 1.4, p: 150000000, type: 'gloves', img: 'glove_knight.png', info: '정식 기사 서임식 때 수여받는 건틀릿.' },
 
-    // --- [9티어 (Lv.40)] - 백금 세트 ---
-    { lv: 40, tier: 9, name: '[40]백금 대검', k: 5.8, p: 500000000, type: 'weapon', img: 'platinum_sword.png', info: '변하지 않는 백금으로 만들어진 거대한 검.' },
-    { lv: 40, tier: 9, name: '[40]백금 흉갑', k: 5.2, p: 500000000, type: 'armor', img: 'platinum_armor.png', info: '눈부시게 빛나는 백금 흉갑.' },
-    { lv: 40, tier: 9, name: '[40]백금 사슬 벨트', k: 7.5, p: 500000000, type: 'belt', img: 'platinum_belt.png', info: '백금 사슬로 엮어 끊어지지 않는다.' },
+        // =========================================================================
+        // [9티어] Lv.40 (가격: 5억 G)
+        // =========================================================================
+        { lv: 40, tier: 9, name: '[40]백금 대검', k: 5.8, p: 500000000, type: 'weapon', img: 'platinum_sword.png', info: '변하지 않는 백금으로 만들어진 거대한 검.' },
+        { lv: 40, tier: 9, name: '[40]백금 흉갑', k: 5.2, p: 500000000, type: 'armor', img: 'platinum_armor.png', info: '눈부시게 빛나는 백금 흉갑.' },
+        { lv: 40, tier: 9, name: '[40]백금 사슬 벨트', k: 7.5, p: 500000000, type: 'belt', img: 'platinum_belt.png', info: '백금 사슬로 엮어 끊어지지 않는다.' },
+        { lv: 40, tier: 9, name: '[40]백금 손 보호대', k: 1.5, p: 500000000, type: 'gloves', img: 'glove_platinum.png', info: '백금으로 만들어져 마력 전도율이 높다.' },
 
-    // --- [10티어 (Lv.45)] - 미스릴 세트 (환상의 금속) ---
-    { lv: 45, tier: 10, name: '[45]미스릴 소드', k: 7.5, p: 2000000000, type: 'weapon', img: 'mithril_sword.png', info: '깃털처럼 가볍지만 강철보다 단단한 미스릴 검.' },
-    { lv: 45, tier: 10, name: '[45]미스릴 갑옷', k: 6.8, p: 2000000000, type: 'armor', img: 'mithril_armor.png', info: '마력을 머금어 푸른 빛이 도는 미스릴 갑옷.' },
-    { lv: 45, tier: 10, name: '[45]미스릴 벨트', k: 9.5, p: 2000000000, type: 'belt', img: 'mithril_belt.png', info: '착용하지 않은 것 같은 가벼움을 선사한다.' },
+        // =========================================================================
+        // [10티어] Lv.45 (가격: 20억 G)
+        // =========================================================================
+        { lv: 45, tier: 10, name: '[45]미스릴 소드', k: 7.5, p: 2000000000, type: 'weapon', img: 'mithril_sword.png', info: '깃털처럼 가볍지만 강철보다 단단한 미스릴 검.' },
+        { lv: 45, tier: 10, name: '[45]미스릴 갑옷', k: 6.8, p: 2000000000, type: 'armor', img: 'mithril_armor.png', info: '마력을 머금어 푸른 빛이 도는 미스릴 갑옷.' },
+        { lv: 45, tier: 10, name: '[45]미스릴 벨트', k: 9.5, p: 2000000000, type: 'belt', img: 'mithril_belt.png', info: '착용하지 않은 것 같은 가벼움을 선사한다.' },
+        { lv: 45, tier: 10, name: '[45]타이탄 피스트', k: 1.7, p: 2000000000, type: 'gloves', img: 'glove_titan.png', info: '거인의 힘을 잠시 빌려 쓸 수 있다고 한다.' },
 
-    // --- [11티어 (Lv.50)] - 오리할콘 세트 ---
-    { lv: 50, tier: 11, name: '[50]오리할콘 블레이드', k: 10.0, p: 8000000000, type: 'weapon', img: 'orichalcum_blade.png', info: '전설 속의 붉은 금속 오리할콘으로 제련되었다.' },
-    { lv: 50, tier: 11, name: '[50]오리할콘 아머', k: 9.0, p: 8000000000, type: 'armor', img: 'orichalcum_armor.png', info: '용암 속에서도 녹지 않는 절대 방어의 갑옷.' },
-    { lv: 50, tier: 11, name: '[50]오리할콘 허리띠', k: 12.0, p: 8000000000, type: 'belt', img: 'orichalcum_belt.png', info: '뜨거운 열기가 느껴지는 전설의 허리띠.' },
+        // =========================================================================
+        // [11티어] Lv.50 (가격: 80억 G)
+        // =========================================================================
+        { lv: 50, tier: 11, name: '[50]오리할콘 블레이드', k: 10.0, p: 8000000000, type: 'weapon', img: 'orichalcum_blade.png', info: '전설 속의 붉은 금속 오리할콘으로 제련되었다.' },
+        { lv: 50, tier: 11, name: '[50]오리할콘 아머', k: 9.0, p: 8000000000, type: 'armor', img: 'orichalcum_armor.png', info: '용암 속에서도 녹지 않는 절대 방어의 갑옷.' },
+        { lv: 50, tier: 11, name: '[50]오리할콘 허리띠', k: 12.0, p: 8000000000, type: 'belt', img: 'orichalcum_belt.png', info: '뜨거운 열기가 느껴지는 전설의 허리띠.' },
+        { lv: 50, tier: 11, name: '[50]오리할콘 건틀릿', k: 2.0, p: 8000000000, type: 'gloves', img: 'glove_orichalcum.png', info: '전설의 금속 오리할콘으로 제작된 명품.' },
 
-    // --- [12티어 (Lv.55)] - 아다만티움 세트 ---
-    { lv: 55, tier: 12, name: '[55]아다만티움 파괴자', k: 14.0, p: 25000000000, type: 'weapon', img: 'adamantium_sword.png', info: '세상에서 가장 단단한 물질로 만들어져 무엇이든 부순다.' },
-    { lv: 55, tier: 12, name: '[55]아다만티움 판금', k: 12.5, p: 25000000000, type: 'armor', img: 'adamantium_armor.png', info: '그 어떤 무기로도 흠집조차 낼 수 없는 판금.' },
-    { lv: 55, tier: 12, name: '[55]불괴의 벨트', k: 16.0, p: 25000000000, type: 'belt', img: 'adamantium_belt.png', info: '절대 끊어지지 않는 아다만티움 실로 짰다.' },
+        // =========================================================================
+        // [12티어] Lv.55 (가격: 250억 G)
+        // =========================================================================
+        { lv: 55, tier: 12, name: '[55]아다만티움 파괴자', k: 14.0, p: 25000000000, type: 'weapon', img: 'adamantium_sword.png', info: '세상에서 가장 단단한 물질로 만들어져 무엇이든 부순다.' },
+        { lv: 55, tier: 12, name: '[55]아다만티움 판금', k: 12.5, p: 25000000000, type: 'armor', img: 'adamantium_armor.png', info: '그 어떤 무기로도 흠집조차 낼 수 없는 판금.' },
+        { lv: 55, tier: 12, name: '[55]불괴의 벨트', k: 16.0, p: 25000000000, type: 'belt', img: 'adamantium_belt.png', info: '절대 끊어지지 않는 아다만티움 실로 짰다.' },
+        { lv: 55, tier: 12, name: '[55]아다만티움 클로', k: 2.5, p: 25000000000, type: 'gloves', img: 'glove_adamantium.png', info: '무엇이든 찢어발길 수 있는 날카로운 손톱이 달렸다.' },
 
-    // --- [13티어 (Lv.60)] - 드래곤 세트 (용) ---
-    { lv: 60, tier: 13, name: '[60]드래곤 슬레이어', k: 20.0, p: 80000000000, type: 'weapon', img: 'dragon_slayer.png', info: '고룡의 뼈를 깎아 만든 용을 죽이는 검.' },
-    { lv: 60, tier: 13, name: '[60]드래곤 스케일', k: 18.0, p: 80000000000, type: 'armor', img: 'dragon_scale.png', info: '드래곤의 비늘을 하나하나 엮어 만든 갑옷.' },
-    { lv: 60, tier: 13, name: '[60]용의 숨결 벨트', k: 25.0, p: 80000000000, type: 'belt', img: 'dragon_breath_belt.png', info: '벨트 버클에 드래곤의 심장이 박혀있다.' },
+        // =========================================================================
+        // [13티어] Lv.60 (가격: 800억 G)
+        // =========================================================================
+        { lv: 60, tier: 13, name: '[60]드래곤 슬레이어', k: 20.0, p: 80000000000, type: 'weapon', img: 'dragon_slayer.png', info: '고룡의 뼈를 깎아 만든 용을 죽이는 검.' },
+        { lv: 60, tier: 13, name: '[60]드래곤 스케일', k: 18.0, p: 80000000000, type: 'armor', img: 'dragon_scale.png', info: '드래곤의 비늘을 하나하나 엮어 만든 갑옷.' },
+        { lv: 60, tier: 13, name: '[60]용의 숨결 벨트', k: 25.0, p: 80000000000, type: 'belt', img: 'dragon_breath_belt.png', info: '벨트 버클에 드래곤의 심장이 박혀있다.' },
+        { lv: 60, tier: 13, name: '[60]드래곤 핸드', k: 3.2, p: 80000000000, type: 'gloves', img: 'glove_dragon.png', info: '붉은 용의 가죽과 발톱을 통째로 가공했다.' },
 
-    // --- [14티어 (Lv.65)] - 정령 세트 ---
-    { lv: 65, tier: 14, name: '[65]정령왕의 검', k: 30.0, p: 200000000000, type: 'weapon', img: 'spirit_king_sword.png', info: '4대 정령의 힘이 깃들어 자연의 힘을 다룬다.' },
-    { lv: 65, tier: 14, name: '[65]정령의 로브', k: 27.0, p: 200000000000, type: 'armor', img: 'spirit_robe.png', info: '물리적인 타격을 영적인 힘으로 흘려보낸다.' },
-    { lv: 65, tier: 14, name: '[65]바람의 매듭', k: 38.0, p: 200000000000, type: 'belt', img: 'wind_knot.png', info: '바람의 정령 실프가 직접 묶어준 매듭.' },
+        // =========================================================================
+        // [14티어] Lv.65 (가격: 2,000억 G)
+        // =========================================================================
+        { lv: 65, tier: 14, name: '[65]정령왕의 검', k: 30.0, p: 200000000000, type: 'weapon', img: 'spirit_king_sword.png', info: '4대 정령의 힘이 깃들어 자연의 힘을 다룬다.' },
+        { lv: 65, tier: 14, name: '[65]정령의 로브', k: 27.0, p: 200000000000, type: 'armor', img: 'spirit_robe.png', info: '물리적인 타격을 영적인 힘으로 흘려보낸다.' },
+        { lv: 65, tier: 14, name: '[65]바람의 매듭', k: 38.0, p: 200000000000, type: 'belt', img: 'wind_knot.png', info: '바람의 정령 실프가 직접 묶어준 매듭.' },
+        { lv: 65, tier: 14, name: '[65]정령의 손길', k: 4.0, p: 200000000000, type: 'gloves', img: 'glove_spirit.png', info: '자연의 에너지를 손끝에 모아 방출한다.' },
 
-    // --- [15티어 (Lv.70)] - 암흑/마족 세트 ---
-    { lv: 70, tier: 15, name: '[70]데스브링어', k: 45.0, p: 600000000000, type: 'weapon', img: 'death_bringer.png', info: '휘두르는 것만으로도 생명을 앗아가는 마검.' },
-    { lv: 70, tier: 15, name: '[70]심연의 갑주', k: 40.0, p: 600000000000, type: 'armor', img: 'abyss_armor.png', info: '깊은 어둠 속에서 제련되어 빛을 흡수한다.' },
-    { lv: 70, tier: 15, name: '[70]영혼 구속 벨트', k: 55.0, p: 600000000000, type: 'belt', img: 'soul_belt.png', info: '적들의 비명소리가 들리는 듯한 섬뜩한 벨트.' },
+        // =========================================================================
+        // [15티어] Lv.70 (가격: 6,000억 G)
+        // =========================================================================
+        { lv: 70, tier: 15, name: '[70]데스브링어', k: 45.0, p: 600000000000, type: 'weapon', img: 'death_bringer.png', info: '휘두르는 것만으로도 생명을 앗아가는 마검.' },
+        { lv: 70, tier: 15, name: '[70]심연의 갑주', k: 40.0, p: 600000000000, type: 'armor', img: 'abyss_armor.png', info: '깊은 어둠 속에서 제련되어 빛을 흡수한다.' },
+        { lv: 70, tier: 15, name: '[70]영혼 구속 벨트', k: 55.0, p: 600000000000, type: 'belt', img: 'soul_belt.png', info: '적들의 비명소리가 들리는 듯한 섬뜩한 벨트.' },
+        { lv: 70, tier: 15, name: '[70]데몬 그립', k: 5.0, p: 600000000000, type: 'gloves', img: 'glove_demon.png', info: '악마의 팔을 이식한 듯한 불길한 기운이 감돈다.' },
 
-    // --- [16티어 (Lv.75)] - 신성/천사 세트 ---
-    { lv: 75, tier: 16, name: '[75]성검 엑스칼리버', k: 70.0, p: 1500000000000, type: 'weapon', img: 'excalibur.png', info: '선택받은 자만이 사용할 수 있는 전설의 성검.' },
-    { lv: 75, tier: 16, name: '[75]천상의 갑옷', k: 65.0, p: 1500000000000, type: 'armor', img: 'heavenly_armor.png', info: '천계의 금속으로 만들어져 성스러운 빛을 낸다.' },
-    { lv: 75, tier: 16, name: '[75]천사의 날개띠', k: 85.0, p: 1500000000000, type: 'belt', img: 'angel_wing_belt.png', info: '천사의 깃털로 장식되어 몸이 깃털처럼 가벼워진다.' },
+        // =========================================================================
+        // [16티어] Lv.75 (가격: 1조 5,000억 G)
+        // =========================================================================
+        { lv: 75, tier: 16, name: '[75]성검 엑스칼리버', k: 70.0, p: 1500000000000, type: 'weapon', img: 'excalibur.png', info: '선택받은 자만이 사용할 수 있는 전설의 성검.' },
+        { lv: 75, tier: 16, name: '[75]천상의 갑옷', k: 65.0, p: 1500000000000, type: 'armor', img: 'heavenly_armor.png', info: '천계의 금속으로 만들어져 성스러운 빛을 낸다.' },
+        { lv: 75, tier: 16, name: '[75]천사의 날개띠', k: 85.0, p: 1500000000000, type: 'belt', img: 'angel_wing_belt.png', info: '천사의 깃털로 장식되어 몸이 깃털처럼 가벼워진다.' },
+        { lv: 75, tier: 16, name: '[75]홀리 건틀릿', k: 7.0, p: 1500000000000, type: 'gloves', img: 'glove_holy.png', info: '성스러운 빛이 주먹을 감싸 타격 시 정화한다.' },
 
-    // --- [17티어 (Lv.80)] - 별/은하 세트 (우주적 스케일 시작) ---
-    { lv: 80, tier: 17, name: '[80]스타버스트', k: 120.0, p: 4000000000000, type: 'weapon', img: 'starburst.png', info: '별이 폭발하는 에너지를 검신에 담았다.' },
-    { lv: 80, tier: 17, name: '[80]갤럭시 슈트', k: 110.0, p: 4000000000000, type: 'armor', img: 'galaxy_suit.png', info: '은하수가 흐르는 듯한 신비로운 우주의 갑옷.' },
-    { lv: 80, tier: 17, name: '[80]오리온의 허리띠', k: 150.0, p: 4000000000000, type: 'belt', img: 'orion_belt.png', info: '밤하늘의 별자리 오리온을 형상화했다.' },
+        // =========================================================================
+        // [17티어] Lv.80 (가격: 4조 G)
+        // =========================================================================
+        { lv: 80, tier: 17, name: '[80]스타버스트', k: 120.0, p: 4000000000000, type: 'weapon', img: 'starburst.png', info: '별이 폭발하는 에너지를 검신에 담았다.' },
+        { lv: 80, tier: 17, name: '[80]갤럭시 슈트', k: 110.0, p: 4000000000000, type: 'armor', img: 'galaxy_suit.png', info: '은하수가 흐르는 듯한 신비로운 우주의 갑옷.' },
+        { lv: 80, tier: 17, name: '[80]오리온의 허리띠', k: 150.0, p: 4000000000000, type: 'belt', img: 'orion_belt.png', info: '밤하늘의 별자리 오리온을 형상화했다.' },
+        { lv: 80, tier: 17, name: '[80]스타더스트 글러브', k: 10.0, p: 4000000000000, type: 'gloves', img: 'glove_star.png', info: '별 가루를 뿌려놓은 듯 반짝이는 우주의 장갑.' },
 
-    // --- [18티어 (Lv.85)] - 공허/블랙홀 세트 ---
-    { lv: 85, tier: 18, name: '[85]보이드 슬래셔', k: 200.0, p: 10000000000000, type: 'weapon', img: 'void_slasher.png', info: '공간을 찢어버리는 공허의 검.' },
-    { lv: 85, tier: 18, name: '[85]이벤트 호라이즌', k: 180.0, p: 10000000000000, type: 'armor', img: 'event_horizon.png', info: '모든 공격을 빨아들이는 블랙홀의 힘을 가진 갑옷.' },
-    { lv: 85, tier: 18, name: '[85]무한의 고리', k: 250.0, p: 10000000000000, type: 'belt', img: 'infinity_loop.png', info: '시작과 끝을 알 수 없는 뫼비우스의 띠.' },
+        // =========================================================================
+        // [18티어] Lv.85 (가격: 10조 G)
+        // =========================================================================
+        { lv: 85, tier: 18, name: '[85]보이드 슬래셔', k: 200.0, p: 10000000000000, type: 'weapon', img: 'void_slasher.png', info: '공간을 찢어버리는 공허의 검.' },
+        { lv: 85, tier: 18, name: '[85]이벤트 호라이즌', k: 180.0, p: 10000000000000, type: 'armor', img: 'event_horizon.png', info: '모든 공격을 빨아들이는 블랙홀의 힘을 가진 갑옷.' },
+        { lv: 85, tier: 18, name: '[85]무한의 고리', k: 250.0, p: 10000000000000, type: 'belt', img: 'infinity_loop.png', info: '시작과 끝을 알 수 없는 뫼비우스의 띠.' },
+        { lv: 85, tier: 18, name: '[85]블랙홀 그리퍼', k: 15.0, p: 10000000000000, type: 'gloves', img: 'glove_blackhole.png', info: '손바닥 안에 작은 블랙홀을 제어하는 장치.' },
 
-    // --- [19티어 (Lv.90)] - 차원/시간 세트 ---
-    { lv: 90, tier: 19, name: '[90]크로노스 블레이드', k: 350.0, p: 30000000000000, type: 'weapon', img: 'chronos_blade.png', info: '시간을 베어버려 적의 존재 자체를 지운다.' },
-    { lv: 90, tier: 19, name: '[90]차원 도약자', k: 320.0, p: 30000000000000, type: 'armor', img: 'dimension_walker.png', info: '다른 차원에 존재하여 물리적인 간섭을 받지 않는다.' },
-    { lv: 90, tier: 19, name: '[90]시간 역행 벨트', k: 450.0, p: 30000000000000, type: 'belt', img: 'time_rewind.png', info: '착용자의 시간을 되돌려 상처를 없었던 일로 만든다.' },
+        // =========================================================================
+        // [19티어] Lv.90 (가격: 30조 G)
+        // =========================================================================
+        { lv: 90, tier: 19, name: '[90]크로노스 블레이드', k: 350.0, p: 30000000000000, type: 'weapon', img: 'chronos_blade.png', info: '시간을 베어버려 적의 존재 자체를 지운다.' },
+        { lv: 90, tier: 19, name: '[90]차원 도약자', k: 320.0, p: 30000000000000, type: 'armor', img: 'dimension_walker.png', info: '다른 차원에 존재하여 물리적인 간섭을 받지 않는다.' },
+        { lv: 90, tier: 19, name: '[90]시간 역행 벨트', k: 450.0, p: 30000000000000, type: 'belt', img: 'time_rewind.png', info: '착용자의 시간을 되돌려 상처를 없었던 일로 만든다.' },
+        { lv: 90, tier: 19, name: '[90]인피니티 건틀릿', k: 25.0, p: 30000000000000, type: 'gloves', img: 'glove_infinity.png', info: '무한한 힘을 다룰 수 있는 전설적인 건틀릿.' },
 
-    // --- [20티어 (Lv.95)] - 창조/신화 세트 (최종) ---
-    { lv: 95, tier: 20, name: '[95]제네시스 웨폰', k: 600.0, p: 100000000000000, type: 'weapon', img: 'genesis_weapon.png', info: '세상을 창조할 때 사용된 태초의 도구.' },
-    { lv: 95, tier: 20, name: '[95]신의 권능', k: 550.0, p: 100000000000000, type: 'armor', img: 'god_authority.png', info: '신의 권능 그 자체를 갑옷의 형태로 형상화했다.' },
-    { lv: 95, tier: 20, name: '[95]진리의 띠', k: 800.0, p: 100000000000000, type: 'belt', img: 'belt_of_truth.png', info: '우주의 모든 진리가 담겨있는 절대적인 허리띠.' },
-       
-    // =========================================================================
-    // [글러브] 공격 보조 / 손 방어구 (type: 'gloves')
-    // =========================================================================
-    
-    // --- [1티어 (Lv.1)] ---
-    { lv: 1, tier: 1, name: '목장갑', k: 1.02, p: 1000, type: 'gloves', img: 'glove_cotton.png', info: '빨간 코팅이 되어있는 작업용 장갑.' },
-
-    // --- [2티어 (Lv.5)] ---
-    { lv: 5, tier: 2, name: '가죽 장갑', k: 1.05, p: 10000, type: 'gloves', img: 'glove_leather.png', info: '질긴 가죽으로 만들어 손을 보호한다.' },
-
-    // --- [3티어 (Lv.10)] ---
-    { lv: 10, tier: 3, name: '징 박힌 장갑', k: 1.1, p: 50000, type: 'gloves', img: 'glove_studded.png', info: '주먹을 쥐면 쇠징이 튀어나와 위협적이다.' },
-
-    // --- [4티어 (Lv.15)] ---
-    { lv: 15, tier: 4, name: '청동 건틀릿', k: 1.15, p: 250000, type: 'gloves', img: 'glove_bronze.png', info: '청동으로 주조된 묵직한 건틀릿.' },
-
-    // --- [5티어 (Lv.20)] ---
-    { lv: 20, tier: 5, name: '강철 건틀릿', k: 1.2, p: 1250000, type: 'gloves', img: 'glove_steel.png', info: '강철을 두드려 만들어 내구성이 좋다.' },
-
-    // --- [6티어 (Lv.25)] ---
-    { lv: 25, tier: 6, name: '은장 건틀릿', k: 1.25, p: 6000000, type: 'gloves', img: 'glove_silver.png', info: '화려한 은 세공이 돋보이는 장갑.' },
-
-    // --- [7티어 (Lv.30)] ---
-    { lv: 30, tier: 7, name: '미스릴 글러브', k: 1.3, p: 30000000, type: 'gloves', img: 'glove_mithril.png', info: '가볍고 단단한 미스릴 실로 짜여졌다.' },
-
-    // --- [8티어 (Lv.35)] ---
-    { lv: 35, tier: 8, name: '기사단 건틀릿', k: 1.4, p: 150000000, type: 'gloves', img: 'glove_knight.png', info: '정식 기사 서임식 때 수여받는 건틀릿.' },
-
-    // --- [9티어 (Lv.40)] ---
-    { lv: 40, tier: 9, name: '백금 손 보호대', k: 1.5, p: 500000000, type: 'gloves', img: 'glove_platinum.png', info: '백금으로 만들어져 마력 전도율이 높다.' },
-
-    // --- [10티어 (Lv.45)] ---
-    { lv: 45, tier: 10, name: '타이탄 피스트', k: 1.7, p: 2000000000, type: 'gloves', img: 'glove_titan.png', info: '거인의 힘을 잠시 빌려 쓸 수 있다고 한다.' },
-
-    // --- [11티어 (Lv.50)] ---
-    { lv: 50, tier: 11, name: '오리할콘 건틀릿', k: 2.0, p: 8000000000, type: 'gloves', img: 'glove_orichalcum.png', info: '전설의 금속 오리할콘으로 제작된 명품.' },
-
-    // --- [12티어 (Lv.55)] ---
-    { lv: 55, tier: 12, name: '아다만티움 클로', k: 2.5, p: 25000000000, type: 'gloves', img: 'glove_adamantium.png', info: '무엇이든 찢어발길 수 있는 날카로운 손톱이 달렸다.' },
-
-    // --- [13티어 (Lv.60)] ---
-    { lv: 60, tier: 13, name: '드래곤 핸드', k: 3.2, p: 80000000000, type: 'gloves', img: 'glove_dragon.png', info: '붉은 용의 가죽과 발톱을 통째로 가공했다.' },
-
-    // --- [14티어 (Lv.65)] ---
-    { lv: 65, tier: 14, name: '정령의 손길', k: 4.0, p: 200000000000, type: 'gloves', img: 'glove_spirit.png', info: '자연의 에너지를 손끝에 모아 방출한다.' },
-
-    // --- [15티어 (Lv.70)] ---
-    { lv: 15, tier: 15, name: '데몬 그립', k: 5.0, p: 600000000000, type: 'gloves', img: 'glove_demon.png', info: '악마의 팔을 이식한 듯한 불길한 기운이 감돈다.' },
-
-    // --- [16티어 (Lv.75)] ---
-    { lv: 75, tier: 16, name: '홀리 건틀릿', k: 7.0, p: 1500000000000, type: 'gloves', img: 'glove_holy.png', info: '성스러운 빛이 주먹을 감싸 타격 시 정화한다.' },
-
-    // --- [17티어 (Lv.80)] ---
-    { lv: 80, tier: 17, name: '스타더스트 글러브', k: 10.0, p: 4000000000000, type: 'gloves', img: 'glove_star.png', info: '별 가루를 뿌려놓은 듯 반짝이는 우주의 장갑.' },
-
-    // --- [18티어 (Lv.85)] ---
-    { lv: 85, tier: 18, name: '블랙홀 그리퍼', k: 15.0, p: 10000000000000, type: 'gloves', img: 'glove_blackhole.png', info: '손바닥 안에 작은 블랙홀을 제어하는 장치.' },
-
-    // --- [19티어 (Lv.90)] ---
-    { lv: 90, tier: 19, name: '인피니티 건틀릿', k: 25.0, p: 30000000000000, type: 'gloves', img: 'glove_infinity.png', info: '무한한 힘을 다룰 수 있는 전설적인 건틀릿.' },
-
-    // --- [20티어 (Lv.95)] ---
-    { lv: 95, tier: 20, name: '갓 핸드', k: 40.0, p: 100000000000000, type: 'gloves', img: 'glove_god.png', info: '신의 손길 그 자체. 만지는 모든 것을 지배한다.' }
-],
+        // =========================================================================
+        // [20티어] Lv.95 (가격: 100조 G)
+        // =========================================================================
+        { lv: 95, tier: 20, name: '[95]제네시스 웨폰', k: 600.0, p: 100000000000000, type: 'weapon', img: 'genesis_weapon.png', info: '세상을 창조할 때 사용된 태초의 도구.' },
+        { lv: 95, tier: 20, name: '[95]신의 권능', k: 550.0, p: 100000000000000, type: 'armor', img: 'god_authority.png', info: '신의 권능 그 자체를 갑옷의 형태로 형상화했다.' },
+        { lv: 95, tier: 20, name: '[95]진리의 띠', k: 800.0, p: 100000000000000, type: 'belt', img: 'belt_of_truth.png', info: '우주의 모든 진리가 담겨있는 절대적인 허리띠.' },
+        { lv: 95, tier: 20, name: '[95]갓 핸드', k: 40.0, p: 100000000000000, type: 'gloves', img: 'glove_god.png', info: '신의 손길 그 자체. 만지는 모든 것을 지배한다.' },
+    ],
 
    
     ENHANCE_FORMULA: {
@@ -223,6 +219,9 @@ const GameDatabase = {
 },
 
     CONSUMABLES: {
+        // =========================================================================
+        // [포션] 체력 회복 아이템
+        // =========================================================================
         potions: [
             { id: 1, name: '최하급 포션', val: 100, p: 5000, type: 'potion', img: 'health_potion_1.png', info: '회복력이 미미하다.'},
             { id: 2, name: '하급 포션', val: 1000, p: 50000, type: 'potion', img: 'health_potion_2.png', info: '좀 더 농축된 회복력을 느낄 수 있다.'},
@@ -231,12 +230,18 @@ const GameDatabase = {
             { id: 5, name: '최상급 포션', val: 1000000, p: 50000000, type: 'potion', img: 'health_potion_5.png', info: '돈만있으면 안되는게 없는데, 돈이 없어서 문제다.'}
         ],
         
-            /* Database.js 내부의 CONSUMABLES - scrolls 부분 교체 */
-      scrolls: [
+        // =========================================================================
+        // [주문서] 강화 실패 시 파괴 방지 (maxLimit: 사용 가능한 최대 강화 수치)
+        // =========================================================================
+        scrolls: [
             { id: 1, name: '하급 방지권', p: 50000, type: 'scroll', maxLimit: 13, img: 'scroll_1.png', info: '장비의 파괴를 막아준다. (단, +13강 장비까지만 사용 가능)'},
             { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', maxLimit: 15, img: 'scroll_2.png', info: '장비 파괴 한계를 늘린 개선품. (+15강 장비까지만 사용 가능)'},
             { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', maxLimit: 17, img: 'scroll_3.png', info: '품질을 극한으로 끌어올렸다. (+17강 장비까지만 사용 가능)'}
         ],
+
+        // =========================================================================
+        // [강화권] 즉시 해당 레벨로 강화 (확률 100%)
+        // =========================================================================
         tickets: [
             { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 20000, img: 'ticket5.png', info: '이건 왜 있는거야?'},
             { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 50000, img: 'ticket7.png', info: '그래도 좀 쓸만한 것 같다.'},
@@ -251,103 +256,103 @@ const GameDatabase = {
    GEM_DROPS: {
         // [1티어] Lv.1~5 (1,000 G ~ 5,000 G)
         TIER_1: [
-            { id: 101, name: '재스퍼', p: 1000, type: 'etc', img: 'gem_jasper.png', info: '알록달록한 무늬가 있는 흔한 돌.' },
-            { id: 102, name: '아게이트', p: 5000, type: 'etc', img: 'gem_agate.png', info: '나이테 같은 띠무늬가 매력적인 마노.' }
+            { id: 101, name: '[T1] 재스퍼', p: 1000, type: 'etc', img: 'gem_jasper.png', info: '알록달록한 무늬가 있는 흔한 돌.' },
+            { id: 102, name: '[T1] 아게이트', p: 5000, type: 'etc', img: 'gem_agate.png', info: '나이테 같은 띠무늬가 매력적인 마노.' }
         ],
         // [2티어] Lv.6~10 (10,000 G ~ 30,000 G)
         TIER_2: [
-            { id: 103, name: '쿼츠', p: 10000, type: 'etc', img: 'gem_quartz.png', info: '투명하고 깨끗한 수정 조각.' },
-            { id: 104, name: '시트린', p: 30000, type: 'etc', img: 'gem_citrine.png', info: '상큼한 노란 빛을 띠는 황수정.' }
+            { id: 103, name: '[T2] 쿼츠', p: 10000, type: 'etc', img: 'gem_quartz.png', info: '투명하고 깨끗한 수정 조각.' },
+            { id: 104, name: '[T2] 시트린', p: 30000, type: 'etc', img: 'gem_citrine.png', info: '상큼한 노란 빛을 띠는 황수정.' }
         ],
         // [3티어] Lv.11~15 (50,000 G ~ 100,000 G)
         TIER_3: [
-            { id: 105, name: '터키석', p: 50000, type: 'etc', img: 'gem_turquoise.png', info: '행운을 상징하는 불투명한 하늘색 보석.' },
-            { id: 106, name: '자수정', p: 100000, type: 'etc', img: 'gem_amethyst.png', info: '신비로운 보라색이 감도는 수정.' }
+            { id: 105, name: '[T3] 터키석', p: 50000, type: 'etc', img: 'gem_turquoise.png', info: '행운을 상징하는 불투명한 하늘색 보석.' },
+            { id: 106, name: '[T3] 자수정', p: 100000, type: 'etc', img: 'gem_amethyst.png', info: '신비로운 보라색이 감도는 수정.' }
         ],
         // [4티어] Lv.16~20 (200,000 G ~ 400,000 G)
         TIER_4: [
-            { id: 107, name: '라피스 라줄리', p: 200000, type: 'etc', img: 'gem_lapis.png', info: '밤하늘 같은 짙은 푸른색에 금빛 점이 박혀있다.' },
-            { id: 108, name: '호박', p: 400000, type: 'etc', img: 'gem_amber.png', info: '고대의 송진이 굳어 만들어진 황금빛 보석.' }
+            { id: 107, name: '[T4] 라피스 라줄리', p: 200000, type: 'etc', img: 'gem_lapis.png', info: '밤하늘 같은 짙은 푸른색에 금빛 점이 박혀있다.' },
+            { id: 108, name: '[T4] 호박', p: 400000, type: 'etc', img: 'gem_amber.png', info: '고대의 송진이 굳어 만들어진 황금빛 보석.' }
         ],
         // [5티어] Lv.21~25 (80만 G ~ 150만 G)
         TIER_5: [
-            { id: 109, name: '페리도트', p: 800000, type: 'etc', img: 'gem_peridot.png', info: '싱그러운 올리브 녹색을 띠는 감람석.' },
-            { id: 110, name: '토파즈', p: 1500000, type: 'etc', img: 'gem_topaz.png', info: '청명하고 시원한 파란색이 일품이다.' }
+            { id: 109, name: '[T5] 페리도트', p: 800000, type: 'etc', img: 'gem_peridot.png', info: '싱그러운 올리브 녹색을 띠는 감람석.' },
+            { id: 110, name: '[T5] 토파즈', p: 1500000, type: 'etc', img: 'gem_topaz.png', info: '청명하고 시원한 파란색이 일품이다.' }
         ],
         // [6티어] Lv.26~30 (300만 G ~ 500만 G)
         TIER_6: [
-            { id: 111, name: '오팔', p: 3000000, type: 'etc', img: 'gem_opal.png', info: '보는 각도에 따라 무지개색으로 변한다.' },
-            { id: 112, name: '아쿠아마린', p: 5000000, type: 'etc', img: 'gem_aquamarine.png', info: '바다의 푸른 빛을 그대로 담은 듯하다.' }
+            { id: 111, name: '[T6] 오팔', p: 3000000, type: 'etc', img: 'gem_opal.png', info: '보는 각도에 따라 무지개색으로 변한다.' },
+            { id: 112, name: '[T6] 아쿠아마린', p: 5000000, type: 'etc', img: 'gem_aquamarine.png', info: '바다의 푸른 빛을 그대로 담은 듯하다.' }
         ],
         // [7티어] Lv.31~35 (750만 G ~ 1000만 G)
         TIER_7: [
-            { id: 113, name: '스피넬', p: 7500000, type: 'etc', img: 'gem_spinel.png', info: '루비와 비슷해 보이지만 다른 매력을 가진 붉은 보석.' },
-            { id: 114, name: '탄자나이트', p: 10000000, type: 'etc', img: 'gem_tanzanite.png', info: '아프리카의 푸른 밤하늘을 닮은 희귀한 보석.' }
+            { id: 113, name: '[T7] 스피넬', p: 7500000, type: 'etc', img: 'gem_spinel.png', info: '루비와 비슷해 보이지만 다른 매력을 가진 붉은 보석.' },
+            { id: 114, name: '[T7] 탄자나이트', p: 10000000, type: 'etc', img: 'gem_tanzanite.png', info: '아프리카의 푸른 밤하늘을 닮은 희귀한 보석.' }
         ],
         // [8티어] Lv.36~40 (1500만 G ~ 2000만 G)
         TIER_8: [
-            { id: 115, name: '사파이어', p: 15000000, type: 'etc', img: 'gem_sapphire.png', info: '깊고 푸른색이 매혹적인 귀보석.' },
-            { id: 116, name: '에메랄드', p: 20000000, type: 'etc', img: 'gem_emerald.png', info: '생명력이 느껴지는 짙은 녹색의 귀보석.' }
+            { id: 115, name: '[T8] 사파이어', p: 15000000, type: 'etc', img: 'gem_sapphire.png', info: '깊고 푸른색이 매혹적인 귀보석.' },
+            { id: 116, name: '[T8] 에메랄드', p: 20000000, type: 'etc', img: 'gem_emerald.png', info: '생명력이 느껴지는 짙은 녹색의 귀보석.' }
         ],
         // [9티어] Lv.41~45 (2500만 G ~ 5000만 G)
         TIER_9: [
-            { id: 117, name: '루비', p: 25000000, type: 'etc', img: 'gem_ruby.png', info: '불타오르는 듯한 강렬한 붉은색의 보석의 왕.' },
-            { id: 118, name: '다이아몬드', p: 50000000, type: 'etc', img: 'gem_diamond.png', info: '가장 단단하고 영원히 빛나는 보석.' }
+            { id: 117, name: '[T9] 루비', p: 25000000, type: 'etc', img: 'gem_ruby.png', info: '불타오르는 듯한 강렬한 붉은색의 보석의 왕.' },
+            { id: 118, name: '[T9] 다이아몬드', p: 50000000, type: 'etc', img: 'gem_diamond.png', info: '가장 단단하고 영원히 빛나는 보석.' }
         ],
         // [10티어] Lv.46~50 (7500만 G ~ 1억 G)
         TIER_10: [
-            { id: 119, name: '핑크 다이아몬드', p: 75000000, type: 'etc', img: 'gem_pink_dia.png', info: '기적적인 확률로 발견되는 천연 분홍빛 다이아몬드.' },
-            { id: 120, name: '레드 다이아몬드', p: 100000000, type: 'etc', img: 'gem_red_dia.png', info: '전 세계에 몇 개 없는 전설적인 붉은 다이아몬드.' }
+            { id: 119, name: '[T10] 핑크 다이아몬드', p: 75000000, type: 'etc', img: 'gem_pink_dia.png', info: '기적적인 확률로 발견되는 천연 분홍빛 다이아몬드.' },
+            { id: 120, name: '[T10] 레드 다이아몬드', p: 100000000, type: 'etc', img: 'gem_red_dia.png', info: '전 세계에 몇 개 없는 전설적인 붉은 다이아몬드.' }
         ],
         // [11티어] Lv.51~55 (2억 G ~ 3억 G)
         TIER_11: [
-            { id: 121, name: '문스톤', p: 200000000, type: 'etc', img: 'gem_moonstone.png', info: '달빛을 머금어 은은하게 빛나는 신비한 돌.' },
-            { id: 122, name: '썬스톤', p: 300000000, type: 'etc', img: 'gem_sunstone.png', info: '태양의 열기를 품고 있어 만지면 따뜻하다.' }
+            { id: 121, name: '[T11] 문스톤', p: 200000000, type: 'etc', img: 'gem_moonstone.png', info: '달빛을 머금어 은은하게 빛나는 신비한 돌.' },
+            { id: 122, name: '[T11] 썬스톤', p: 300000000, type: 'etc', img: 'gem_sunstone.png', info: '태양의 열기를 품고 있어 만지면 따뜻하다.' }
         ],
         // [12티어] Lv.56~60 (5억 G ~ 7억 G)
         TIER_12: [
-            { id: 123, name: '스타더스트', p: 500000000, type: 'etc', img: 'gem_stardust.png', info: '떨어진 별똥별의 파편을 가공한 보석.' },
-            { id: 124, name: '보이드 오팔', p: 700000000, type: 'etc', img: 'gem_void_opal.png', info: '공허의 기운이 감도는 검은 빛의 오팔.' }
+            { id: 123, name: '[T12] 스타더스트', p: 500000000, type: 'etc', img: 'gem_stardust.png', info: '떨어진 별똥별의 파편을 가공한 보석.' },
+            { id: 124, name: '[T12] 보이드 오팔', p: 700000000, type: 'etc', img: 'gem_void_opal.png', info: '공허의 기운이 감도는 검은 빛의 오팔.' }
         ],
         // [13티어] Lv.61~65 (10억 G ~ 15억 G)
         TIER_13: [
-            { id: 125, name: '드래곤 아이', p: 1000000000, type: 'etc', img: 'gem_dragon_eye.png', info: '고룡의 눈동자를 닮은 맹렬한 붉은 보석.' },
-            { id: 126, name: '피닉스 엠버', p: 1500000000, type: 'etc', img: 'gem_phoenix.png', info: '불사조의 깃털이 화석화되어 만들어진 호박.' }
+            { id: 125, name: '[T13] 드래곤 아이', p: 1000000000, type: 'etc', img: 'gem_dragon_eye.png', info: '고룡의 눈동자를 닮은 맹렬한 붉은 보석.' },
+            { id: 126, name: '[T13] 피닉스 엠버', p: 1500000000, type: 'etc', img: 'gem_phoenix.png', info: '불사조의 깃털이 화석화되어 만들어진 호박.' }
         ],
         // [14티어] Lv.66~70 (25억 G ~ 40억 G)
         TIER_14: [
-            { id: 127, name: '엔젤릭 쿼츠', p: 2500000000, type: 'etc', img: 'gem_angelic.png', info: '천사의 날개처럼 투명하고 성스러운 기운이 느껴진다.' },
-            { id: 128, name: '데모닉 루비', p: 4000000000, type: 'etc', img: 'gem_demonic.png', info: '마계의 붉은 달빛을 받아 핏빛으로 빛난다.' }
+            { id: 127, name: '[T14] 엔젤릭 쿼츠', p: 2500000000, type: 'etc', img: 'gem_angelic.png', info: '천사의 날개처럼 투명하고 성스러운 기운이 느껴진다.' },
+            { id: 128, name: '[T14] 데모닉 루비', p: 4000000000, type: 'etc', img: 'gem_demonic.png', info: '마계의 붉은 달빛을 받아 핏빛으로 빛난다.' }
         ],
         // [15티어] Lv.71~75 (60억 G ~ 90억 G)
         TIER_15: [
-            { id: 129, name: '크로노스 젬', p: 6000000000, type: 'etc', img: 'gem_chronos.png', info: '시간의 흐름을 왜곡시킨다는 전설의 보석.' },
-            { id: 130, name: '아이테르 결정', p: 9000000000, type: 'etc', img: 'gem_aether.png', info: '대기의 정수가 응축되어 공중에 살짝 떠 있다.' }
+            { id: 129, name: '[T15] 크로노스 젬', p: 6000000000, type: 'etc', img: 'gem_chronos.png', info: '시간의 흐름을 왜곡시킨다는 전설의 보석.' },
+            { id: 130, name: '[T15] 아이테르 결정', p: 9000000000, type: 'etc', img: 'gem_aether.png', info: '대기의 정수가 응축되어 공중에 살짝 떠 있다.' }
         ],
         // [16티어] Lv.76~80 (150억 G ~ 200억 G)
         TIER_16: [
-            { id: 131, name: '카오스 에메랄드', p: 15000000000, type: 'etc', img: 'gem_chaos.png', info: '혼돈의 에너지가 소용돌이치는 녹색 보석.' },
-            { id: 132, name: '코스믹 사파이어', p: 20000000000, type: 'etc', img: 'gem_cosmic.png', info: '우주의 성운이 보석 안에 들어있는 것 같다.' }
+            { id: 131, name: '[T16] 카오스 에메랄드', p: 15000000000, type: 'etc', img: 'gem_chaos.png', info: '혼돈의 에너지가 소용돌이치는 녹색 보석.' },
+            { id: 132, name: '[T16] 코스믹 사파이어', p: 20000000000, type: 'etc', img: 'gem_cosmic.png', info: '우주의 성운이 보석 안에 들어있는 것 같다.' }
         ],
         // [17티어] Lv.81~85 (350억 G ~ 500억 G)
         TIER_17: [
-            { id: 133, name: '갤럭시 펄', p: 35000000000, type: 'etc', img: 'gem_galaxy.png', info: '은하수 전체를 담고 있는 영롱한 진주.' },
-            { id: 134, name: '네뷸라 스톤', p: 50000000000, type: 'etc', img: 'gem_nebula.png', info: '성운의 가스와 먼지가 압축되어 만들어진 보석.' }
+            { id: 133, name: '[T17] 갤럭시 펄', p: 35000000000, type: 'etc', img: 'gem_galaxy.png', info: '은하수 전체를 담고 있는 영롱한 진주.' },
+            { id: 134, name: '[T17] 네뷸라 스톤', p: 50000000000, type: 'etc', img: 'gem_nebula.png', info: '성운의 가스와 먼지가 압축되어 만들어진 보석.' }
         ],
         // [18티어] Lv.86~90 (800억 G ~ 1000억 G)
         TIER_18: [
-            { id: 135, name: '신의 눈물', p: 80000000000, type: 'etc', img: 'gem_god_tear.png', info: '신이 흘린 눈물이 결정화되었다는 성유물.' },
-            { id: 136, name: '심연의 심장', p: 100000000000, type: 'etc', img: 'gem_abyss.png', info: '깊은 심연 속에서만 발견되는 고동치는 보석.' }
+            { id: 135, name: '[T18] 신의 눈물', p: 80000000000, type: 'etc', img: 'gem_god_tear.png', info: '신이 흘린 눈물이 결정화되었다는 성유물.' },
+            { id: 136, name: '[T18] 심연의 심장', p: 100000000000, type: 'etc', img: 'gem_abyss.png', info: '깊은 심연 속에서만 발견되는 고동치는 보석.' }
         ],
         // [19티어] Lv.91~95 (2000억 G ~ 5000억 G)
         TIER_19: [
-            { id: 137, name: '차원의 조각', p: 200000000000, type: 'etc', img: 'gem_dimension.png', info: '다른 차원으로 이동할 수 있을 것 같은 균열이 보인다.' },
-            { id: 138, name: '영혼의 보석', p: 500000000000, type: 'etc', img: 'gem_soul.png', info: '강력한 영혼의 힘이 깃들어 있어 바라보기만 해도 압도된다.' }
+            { id: 137, name: '[T19] 차원의 조각', p: 200000000000, type: 'etc', img: 'gem_dimension.png', info: '다른 차원으로 이동할 수 있을 것 같은 균열이 보인다.' },
+            { id: 138, name: '[T19] 영혼의 보석', p: 500000000000, type: 'etc', img: 'gem_soul.png', info: '강력한 영혼의 힘이 깃들어 있어 바라보기만 해도 압도된다.' }
         ],
         // [20티어] Lv.96~100 (1조 G ~ 5조 G) - 엔드 게임 아이템
         TIER_20: [
-            { id: 139, name: '이터널 다이아몬드', p: 1000000000000, type: 'etc', img: 'gem_eternal.png', info: '영원한 시간 속에서도 절대 변하지 않는 불멸의 보석.' },
-            { id: 140, name: '창조의 근원', p: 5000000000000, type: 'etc', img: 'gem_origin.png', info: '세상이 창조될 때 생겨난 최초의 물질. 부르는 것이 값일 것이다.' }
+            { id: 139, name: '[T20] 이터널 다이아몬드', p: 1000000000000, type: 'etc', img: 'gem_eternal.png', info: '영원한 시간 속에서도 절대 변하지 않는 불멸의 보석.' },
+            { id: 140, name: '[T20] 창조의 근원', p: 5000000000000, type: 'etc', img: 'gem_origin.png', info: '세상이 창조될 때 생겨난 최초의 물질. 부르는 것이 값일 것이다.' }
         ]
     },
 
@@ -363,9 +368,9 @@ const GameDatabase = {
             4: { name: "👑 이완기의 환영 (산스장 망령)", hpMult: 8, atkMult: 2.2, goldMult: 5, expMult: 5, img: 'LWG.png' }, // 사기막골 보스
             5: { name: "👑 소부장의 환영 (기술팀 흑막)", hpMult: 10, atkMult: 2.5, goldMult: 5, expMult: 5, img: 'SSM.png' },  // 회사 보스
             // [중반] 사회의 쓴맛 & 던전 입문 (Lv.31 ~ 50)
-            6: { name: "👑 폭주한 대표이사", hpMult: 12, atkMult: 3.0, goldMult: 20, expMult: 20, img: 'ceo_berserk.png' }, // 야근하는 사무실
-            7: { name: "👑 만원 지하철의 원념", hpMult: 15, atkMult: 3.5, goldMult: 25, expMult: 25, img: 'subway_ghost.png' }, // 지옥철 2호선
-            8: { name: "👑 문지기 오우거", hpMult: 18, atkMult: 4.0, goldMult: 30, expMult: 30, img: 'gatekeeper_ogre.png' }, // 지하 던전
+            6: { name: "👑 순찰도는 소수일의 환영", hpMult: 12, atkMult: 3.0, goldMult: 20, expMult: 20, img: 'ceo_berserk.png' }, // 야근하는 사무실
+            7: { name: "👑 1호선 망령", hpMult: 15, atkMult: 3.5, goldMult: 25, expMult: 25, img: 'subway_ghost.png' }, // 지옥철 2호선
+            8: { name: "👑 이완기 사념", hpMult: 18, atkMult: 4.0, goldMult: 30, expMult: 30, img: 'gatekeeper_ogre.png' }, // 지하 던전
             9: { name: "👑 고대 골렘", hpMult: 20, atkMult: 4.5, goldMult: 35, expMult: 35, img: 'ancient_golem.png' }, // 잊혀진 광산
 
             // [후반] 하이 판타지 (Lv.51 ~ 75)
@@ -552,6 +557,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
