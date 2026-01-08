@@ -376,18 +376,20 @@ renderInventory: () => {
         const sellNoSkill = document.getElementById('sell-no-skill').checked;
         const sellWithSkill = document.getElementById('sell-with-skill').checked;
 
-        // 판매 대상 필터링: 0강화 장비 중 선택된 조건에 맞는 아이템들
+        // 판매 대상 필터링
         const targets = data.inventory.filter(it => {
-            // 장비(weapon, armor, belt)이고 강화 수치가 0인 것만 대상
             const isEquip = ['weapon', 'armor', 'belt'].includes(it.type);
             const isZeroEnchant = (it.en || 0) === 0;
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
 
+            // 장착 중이거나 강화된 아이템은 필터링에서 즉시 제외
             if (!isEquip || !isZeroEnchant || isEquipped) return false;
 
-            const hasSkill = (it.skill && it.skill.id);
-            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비 판매
-            if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비 판매
+            // [수정 포인트] attachSkill에서 사용하는 'skills' 배열을 체크
+            const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
+
+            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비 판매 체크됨
+            if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비 판매 체크됨
             return false;
         });
 
@@ -398,10 +400,10 @@ renderInventory: () => {
 
         if (confirm(`${targets.length}개의 장비를 일괄 판매하시겠습니까?`)) {
             let totalGold = 0;
+            // targets에 담긴 아이템들을 인벤토리에서 하나씩 제거
             targets.forEach(target => {
-                totalGold += Math.floor(target.p * 0.5); // 판매가는 원가의 50%
+                totalGold += Math.floor(target.p * 0.5);
                 
-                // 인벤토리에서 해당 아이템 삭제
                 const idx = data.inventory.findIndex(item => item.id === target.id);
                 if (idx !== -1) data.inventory.splice(idx, 1);
             });
@@ -409,7 +411,6 @@ renderInventory: () => {
             data.gold += totalGold;
             alert(`${targets.length}개의 장비를 판매하여 ${totalGold.toLocaleString()} G를 획득했습니다!`);
             
-            // UI 업데이트 및 모달 닫기
             closeModal('modal-batch-sell');
             MainEngine.updateUI();
         }
@@ -467,6 +468,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
