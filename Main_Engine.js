@@ -226,38 +226,37 @@ const MainEngine = {
     },
 
     /* Main_Engine.js 내 createItemHTML 함수 수정 */
-   createItemHTML: (it, idx, isEquipped) => {
+  createItemHTML: (it, idx, isEquipped) => {
     const div = document.createElement('div');
     div.className = 'item-card';
     if (isEquipped) div.style.border = '2px solid #2ecc71';
 
-    // 이미지 로드 실패 시 📦 아이콘으로 대체
     const imgTag = it.img ? 
         `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
         : '<div class="item-icon">📦</div>';
 
     const type = (it.type || "").toLowerCase();
     const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
-    const isConsumable = ['potion', 'scroll', 'ticket'].includes(type);
-    const isGem = (type === 'etc' || type === 'gem'); 
+    const formulas = GameDatabase.ENHANCE_FORMULA;
 
-    // [수정 포인트] 장비일 경우 강화 수치를 포함한 최종 배율 계산
     let subText = it.info || "";
     if (isGear) {
-        // 강화 보너스: 1 + (강화수치 * 0.1)
-        const enBonus = 1 + ((it.en || 0) * 0.1);
-        // 최종 배율: 기본 배율(k) * 강화 보너스
-        const finalK = (it.k * enBonus).toFixed(2);
-        
-        subText = `<span style="color:#f1c40f;">능력치 배율: x${finalK}</span>`;
-        if (it.en > 0) {
-            subText += ` <span style="color:#888; font-size:0.8em;">(강화 +${it.en * 10}%)</span>`;
-        }
+        let finalMult = 1;
+        const k = it.k || 1;
+        const en = it.en || 0;
+
+        // [공식 적용] 표시용 최종 배율(기본 대비 몇 배인가) 계산
+        if (type === 'weapon') finalMult = k * (1 + 0.2 * Math.pow(en, 1.1));
+        else if (type === 'armor') finalMult = k * (1 + 0.5 * en);
+        else if (type === 'belt') finalMult = k * (1 + 0.1 * Math.pow(en, 1.25));
+        else if (type === 'gloves' || type === 'shoes') finalMult = k * (1 + en * 0.02);
+
+        subText = `<span style="color:#f1c40f;">최종 배율: x${finalMult.toFixed(2)}</span>`;
     }
 
-    // [버튼 로직]
+    // 버튼 로직 (중략 - 기존과 동일)
     let actionButtons = '';
-    if (isGem || isConsumable) {
+    if (['potion', 'scroll', 'ticket', 'etc'].includes(type)) {
         actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
     } else if (isGear) {
         actionButtons = `
@@ -265,8 +264,6 @@ const MainEngine = {
             <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
             ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
         `;
-    } else {
-        actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
     }
 
     div.innerHTML = `
@@ -537,6 +534,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
