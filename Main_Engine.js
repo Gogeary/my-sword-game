@@ -231,15 +231,25 @@ const MainEngine = {
         document.getElementById('user-lv').innerText = data.lv || data.level;
         document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
 
-          // 7. [수정] 포션 카운트 및 수치 계산 부분
-        const potionItems = data.inventory.map(invItem => {
-            // [중요] GameDatabase. 를 반드시 붙여야 합니다.
-            const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
-            return dbInfo ? { ...dbInfo, count: invItem.count || 0 } : null;
-        }).filter(i => i !== null && i.type === 'potion');
+          // 7. 포션 카운트 및 수치 계산 부분
+          const potionItems = data.inventory.map(invItem => {
+              // 기존의 CONSUMABLES.potions -> GameDatabase.CONSUMABLES.potions로 수정됨
+              const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
+              return dbInfo ? { ...dbInfo, count: invItem.count || 0 } : null;
+          }).filter(i => i !== null && i.type === 'potion');
 
-        const totalCount = potionItems.reduce((acc, cur) => acc + (cur.count || 0), 0);
-        const totalValue = potionItems.reduce((acc, cur) => acc + (cur.val * (cur.count || 0)), 0);
+             // 계산된 포션 개수를 UI에 반영
+             // ... (계산 코드 아래에 추가)
+            const totalCount = potionItems.reduce((acc, cur) => acc + (cur.count || 0), 0);
+            const totalValue = potionItems.reduce((acc, cur) => acc + (cur.val * (cur.count || 0)), 0);
+
+            // ★ [추가] 화면에 실제 숫자를 넣어주는 코드
+            const potionCntEl = document.getElementById('potion-cnt');
+            const potionValEl = document.getElementById('potion-val');
+
+            if (potionCntEl) potionCntEl.innerText = totalCount;
+            if (potionValEl) potionValEl.innerText = MainEngine.formatNumber(totalValue);
+
         // 8. 인벤토리 갱신 및 저장
         MainEngine.renderInventory();
         MainEngine.saveGame();
@@ -652,23 +662,27 @@ renderInventory: () => {
    addItem: (newItem) => {
     const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
 
+    // 스택 가능 아이템
     if (stackableTypes.includes(newItem.type)) {
-        // 인벤토리에서 ID가 같은 아이템을 찾음
-        const existingItem = data.inventory.find(item => item.id === newItem.id);
+
+        const existingItem = data.inventory.find(item =>
+            item.type === newItem.type &&
+            item.id === newItem.id   // ★ 핵심: id로만 판별
+        );
 
         if (existingItem) {
             existingItem.count = (existingItem.count || 1) + (newItem.count || 1);
         } else {
-            // 새로 추가할 때도 원본 ID를 유지함
             data.inventory.push({ ...newItem, count: newItem.count || 1 });
         }
-    } else {
-        // 장비류는 고유 ID 부여
-        data.inventory.push({
-            ...newItem,
-            id: Date.now() + Math.random() 
-        });
+        return;
     }
+
+    // 장비류 (weapon, armor, belt, gloves) → 절대 스택 안 함
+    data.inventory.push({
+        ...newItem,
+        uid: Date.now() + Math.random()   // 개별 장비 식별용
+    });
    },
 };   // ← 여기서 반드시 닫기
 /* ==========================================
