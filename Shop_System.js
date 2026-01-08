@@ -1,6 +1,5 @@
 /* ==========================================
-   [Shop_System.js] 
-   상점 시스템 (장비 / 소비 / 뽑기 통합)
+   [Shop_System.js] 수정 및 통합본
    ========================================== */
 
 const ShopSystem = {
@@ -18,7 +17,6 @@ const ShopSystem = {
         
         if (tab === 'equip') {
             title.innerText = "⚔️ 장비 상점";
-            // 5티어 이하 + 글러브 제외
             const items = GameDatabase.EQUIPMENT.filter(item => {
                 const isLowTier = (item.tier || 1) <= 5;
                 const isNotGlove = item.type !== 'gloves';
@@ -28,29 +26,19 @@ const ShopSystem = {
 
         } else if (tab === 'consume') {
             title.innerText = "🧪 소비 아이템 상점";
-            
-            // --- [수정 구간] ---
-            // 1. 포션은 그대로 판매 (필요 없다면 이 줄을 지우세요)
             const potions = GameDatabase.CONSUMABLES.potions || [];
-            
-            // 2. 주문서 중에서 'limitLv'가 30인 '파괴 방지권'만 필터링
             const targetScrolls = (GameDatabase.CONSUMABLES.scrolls || []).filter(s => s.limitLv === 30);
-            
-            // 3. 강화권(tickets)은 상점에서 직접 팔지 않고 필터에서 제외 (뽑기와 합성으로만 획득)
-            
             ShopSystem.renderItems([...potions, ...targetScrolls], list);
-            // ------------------
+
         } else if (tab === 'gacha') {
             title.innerText = "🎲 행운의 뽑기 상점";
-            // ★ [중요] 뽑기 상자 전용 렌더링 함수 호출
             ShopSystem.renderGachaBoxes(list);
         }
 
-        // 페이지 이동
         if (typeof showPage === 'function') showPage('page-shop-detail');
     },
 
-    // 일반 아이템 출력 함수
+    // 2. 일반 아이템 출력 함수
     renderItems: (items, listElement) => {
         items.forEach(item => {
             const div = document.createElement('div');
@@ -74,7 +62,63 @@ const ShopSystem = {
         });
     },
 
-    // 3. 뽑기 실행 로직 (최종 수정본)
+    // 3. [추가됨] 아이템 구매 로직
+    buy: (name) => {
+        let item = GameDatabase.EQUIPMENT.find(i => i.name === name);
+        if (!item) item = GameDatabase.CONSUMABLES.potions.find(i => i.name === name);
+        if (!item) item = GameDatabase.CONSUMABLES.scrolls.find(i => i.name === name);
+
+        if (!item) return alert("아이템 정보를 찾을 수 없습니다.");
+        if (data.gold < item.p) return alert("골드가 부족합니다.");
+
+        data.gold -= item.p;
+        const newItem = { ...item, en: 0, count: 1 };
+        if (['weapon','armor','belt','gloves','shoes'].includes(item.type)) {
+            newItem.id = Date.now() + Math.random();
+        } 
+        MainEngine.addItem(newItem);
+        alert(`${item.name} 구매 완료!`);
+        MainEngine.updateUI();
+    },
+
+    // 4. [추가됨] 뽑기 상자 전용 렌더링 함수
+    renderGachaBoxes: (listElement) => {
+        const boxes = GameDatabase.GACHA;
+        if (!boxes) return console.error("뽑기 데이터가 없습니다.");
+
+        for (const key in boxes) {
+            const box = boxes[key];
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.style.border = '1px solid #f1c40f'; 
+
+            div.innerHTML = `
+                <div class="item-icon" style="font-size:2em;">🎁</div>
+                <div class="item-info">
+                    <strong style="color:#f1c40f;">${box.name}</strong><br>
+                    <span style="color:#aaa; font-size:0.85em;">${box.info}</span><br>
+                    <span style="color:var(--money); font-weight:bold;">${MainEngine.formatNumber(box.cost)} G</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <button class="item-btn" style="background:#3498db; width:70px;" onclick="ShopSystem.playGacha('${key}', 1)">1회</button>
+                    <button class="item-btn" style="background:#9b59b6; width:70px;" onclick="ShopSystem.playGacha('${key}', 10)">10회</button>
+                </div>
+            `;
+            listElement.appendChild(div);
+        }
+
+        // 로그창 추가
+        let logDiv = document.getElementById('gacha-log');
+        if (!logDiv) {
+            logDiv = document.createElement('div');
+            logDiv.id = "gacha-log";
+            logDiv.style = "height:150px; overflow-y:auto; background:#111; padding:10px; border-radius:8px; border:1px solid #333; font-size:0.85em; text-align:left; margin-top:15px; color:#fff;";
+            logDiv.innerHTML = '<div style="text-align:center; color:#555; margin-top:60px;">상자를 선택해 뽑기를 시작하세요.</div>';
+            listElement.appendChild(logDiv);
+        }
+    },
+
+    // 5. 뽑기 실행 로직
     playGacha: (boxKey, count) => {
         const boxData = GameDatabase.GACHA[boxKey];
         if (!boxData) return alert("존재하지 않는 뽑기 상자입니다.");
@@ -86,13 +130,8 @@ const ShopSystem = {
         if(!confirm(`[${boxData.name}]\n${MainEngine.formatNumber(cost)} G를 사용하여 ${count}회 뽑으시겠습니까?`)) return;
 
         data.gold -= cost;
-        
-        // 로그 박스 찾기 (ShopSystem.renderGachaBoxes에서 생성된 id="gacha-log")
         const logBox = document.getElementById('gacha-log');
-        if(logBox) {
-            logBox.innerHTML = ''; // 이전 로그 초기화
-            logBox.style.color = "#fff";
-        }
+        if(logBox) logBox.innerHTML = ''; 
 
         let results = [];
 
@@ -111,46 +150,32 @@ const ShopSystem = {
             if (!selectedOption) selectedOption = boxData.rates[boxData.rates.length - 1];
 
             let pick = null;
-            
-            // A. 강화권(ticket) 처리
             if (selectedOption.type === 'ticket') {
-                // [개선] 문자열에서 숫자만 추출 (BOX_30 -> 30, BOX100 -> 100 모두 대응)
                 const targetLimitLv = parseInt(boxKey.replace(/[^0-9]/g, ''));
-                
-                pick = GameDatabase.CONSUMABLES.tickets.find(t => 
-                    t.val === selectedOption.val && t.limitLv === targetLimitLv
-                );
-            } 
-            // B. 주문서(scroll) 처리
-            else if (selectedOption.type === 'scroll') {
+                pick = GameDatabase.CONSUMABLES.tickets.find(t => t.val === selectedOption.val && t.limitLv === targetLimitLv);
+            } else if (selectedOption.type === 'scroll') {
                 pick = GameDatabase.CONSUMABLES.scrolls.find(s => s.id === selectedOption.id);
             }
 
             if (pick) {
-                const newItem = { ...pick, count: 1 };
-                MainEngine.addItem(newItem);
+                MainEngine.addItem({ ...pick, count: 1 });
                 results.push({ name: pick.name, color: selectedOption.color || '#fff' });
-            } else {
-                results.push({ name: "데이터 오류 (매칭 실패)", color: "#555" });
             }
         }
 
-        // 결과 출력
         if(logBox) {
             results.forEach((res, idx) => {
                 const div = document.createElement('div');
-                div.style.padding = "3px 0";
-                div.style.borderBottom = "1px solid #222";
+                div.style.padding = "3px 0"; div.style.borderBottom = "1px solid #222";
                 div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.color}; font-weight:bold;">${res.name}</span> 획득!`;
                 logBox.appendChild(div);
             });
             logBox.scrollTop = logBox.scrollHeight;
         }
-
         MainEngine.updateUI();
     },
 
-    // 4. 합성 로직
+    // 6. 합성 로직
     craft: (srcVal, dstVal, limitLv) => {
         const srcItem = data.inventory.find(i => i.type === 'ticket' && i.val === srcVal && i.limitLv === limitLv);
         if (!srcItem || (srcItem.count || 0) < 3) return alert("재료가 부족합니다.");
@@ -200,6 +225,3 @@ const SynthesisSystem = {
         });
     }
 };
-
-
-
