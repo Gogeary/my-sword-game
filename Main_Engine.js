@@ -383,29 +383,49 @@ const MainEngine = {
         }
     }
 };
+// ... MainEngine = { ... } 객체가 여기서 끝남
 
-/* --- 시스템 함수 --- */
+/* --- 여기서부터는 MainEngine 바깥 (파일 하단) --- */
+
+// 1. 페이지 이동 함수 (수정본)
 function showPage(id) {
-    // 1. 자동화 시스템 중지
     if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.stopAuto();
-    if (id !== 'page-hunt-play' && MainEngine.isAutoHunting) {
+    if (id !== 'page-hunt-play' && typeof MainEngine !== 'undefined' && MainEngine.isAutoHunting) {
         MainEngine.toggleAutoHunt();
     }
 
-    // 2. 페이지 전환
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const target = document.getElementById(id);
     if(target) target.classList.add('active');
 
-    // ★ [핵심 추가] 사냥터 선택 페이지로 갈 때 목록을 다시 그립니다.
+    // ★ 사냥터 페이지 진입 시 목록을 그립니다.
     if (id === 'page-hunt-select') {
         renderHuntingZones();
     }
 
     if (id === 'page-info') MainEngine.renderInventory();
-    
-    // UI 업데이트
-    MainEngine.updateUI();
+    if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
+}
+
+// 2. 사냥터 목록 생성 함수 (여기에 넣으세요!)
+function renderHuntingZones() {
+    const list = document.getElementById('hunting-zone-list');
+    if (!list) return;
+
+    list.innerHTML = ''; // 초기화
+
+    if (typeof GameDatabase !== 'undefined' && GameDatabase.HUNTING_ZONES) {
+        GameDatabase.HUNTING_ZONES.forEach(zone => {
+            const btn = document.createElement('button');
+            btn.className = 'main-menu-btn';
+            btn.style.background = 'var(--hunt)';
+            btn.innerHTML = `🌲 ${zone.name} (Lv.${zone.minLv}~${zone.maxLv})<br>
+                             <span style="font-size:0.8em; color:#f1c40f;">입장료: ${MainEngine.formatNumber(zone.cost || 0)} G</span>`;
+            
+            btn.onclick = () => CombatSystem.enterZone(zone.id);
+            list.appendChild(btn);
+        });
+    }
 }
 
 const GamblingSystem = {
@@ -426,7 +446,9 @@ const GamblingSystem = {
     }
 };
 
+
 window.onload = MainEngine.init;
+
 
 
 
