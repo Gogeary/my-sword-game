@@ -1,4 +1,6 @@
-/* Combat_System.js */
+/* Combat_System.js - 중복 선언 제거 및 무한 사냥/물약 제한 적용 완료 */
+
+// 주의: 맨 위에 const SkillHandlers = ... 코드가 없어야 합니다! (Skill_System.js 것을 사용)
 
 const CombatSystem = {
     currentZone: null,
@@ -152,6 +154,7 @@ const CombatSystem = {
             equippedItems.forEach(item => {
                 const triggered = SkillSystem.check(item, turn);
                 triggered.forEach(s => {
+                    // [수정] Skill_System.js에 있는 전역 SkillHandlers 변수를 사용
                     if (typeof SkillHandlers !== 'undefined' && SkillHandlers.OFFENSIVE && SkillHandlers.OFFENSIVE[s.id]) {
                         const res = SkillHandlers.OFFENSIVE[s.id](s.val, pStats);
                         if (res.mul) finalAtk *= res.mul;
@@ -283,13 +286,17 @@ const CombatSystem = {
             
             if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-            // --- [4. 유저 패배 판정] ---
+            // --- [4. 유저 패배 판정 (죽으면 여기서 자동사냥 멈춤)] ---
             if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
+                
+                // 죽었으니까 자동 사냥 중지
                 if (MainEngine.isAutoHunting) MainEngine.toggleAutoHunt();
-                data.hp = 1;
+                
+                data.hp = 1; // 마을로 돌아가면 체력 1
                 alert("패배했습니다... (자동 사냥 종료)");
+                
                 CombatSystem.resetBattleUI();
                 if (typeof MainEngine !== 'undefined') { MainEngine.updateUI(); MainEngine.saveGame(); }
                 showPage('page-main');
@@ -339,35 +346,31 @@ const CombatSystem = {
     },
 
     // ─────────────────────────────────────────────────────────────
-    // ★ [핵심 수정] 물약 사용 로직 (10% 제한 적용)
+    // [물약 사용 로직] 10% 제한 적용
     // ─────────────────────────────────────────────────────────────
     tryAutoPotion: (pStats) => {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
         const missingHp = pStats.hp - data.hp;
         
-        // 회복할 필요 없으면 종료
         if (missingHp <= 0) return { healed: 0, usedCount: 0 };
 
         const potions = data.inventory.filter(i => i.type === 'potion').sort((a, b) => a.val - b.val);
         if (potions.length === 0) return { healed: 0, usedCount: 0 };
 
         const totalPotionsValue = potions.reduce((acc, cur) => acc + cur.val, 0);
-        // 물약 총량에서 이미 사용 예정인 버퍼를 뺀 '실제 잔여 회복량'
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
 
         if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 };
 
-        // [1] 최대 회복 제한: 전체 체력의 10%
+        // [최대 회복 제한] 전체 체력의 10%
         const limit = Math.floor(pStats.hp * 0.1);
 
-        // [2] 최종 회복량 결정 (잃은 체력, 가진 물약 총량, 10% 제한 중 가장 작은 값)
+        // 최종 회복량 결정
         const healAmount = Math.min(missingHp, realRemainingPool, limit);
 
-        // [3] 체력 및 버퍼 반영
         data.hp += healAmount;
         data.potionBuffer += healAmount;
 
-        // [4] 실제 물약 소모 처리 (버퍼에 쌓인 만큼 물약 아이템 삭제)
         let usedCount = 0;
         while (potions.length > 0) {
             const smallestPotion = potions[0];
