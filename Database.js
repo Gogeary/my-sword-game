@@ -215,7 +215,6 @@ const GameDatabase = {
         belt:   (base, k, en) => base * k * (1 + 0.1 * Math.pow(en, 1.25)),
         gloves: (k, en) => k * (1 + en * 0.02) 
     }
-},
 
     CONSUMABLES: {
         // =========================================================================
@@ -611,6 +610,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
