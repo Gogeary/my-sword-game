@@ -221,12 +221,22 @@
 
     <div id="page-upgrade" class="page">
         <h2>🔨 장비 강화</h2>
-        <div id="upgrade-target-display" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:10px;">강화할 장비를 선택하세요.</div>
         
-        <button onclick="MainEngine.openInventoryModal()" class="btn-nav" style="background:var(--hunt); margin-bottom:15px;">📦 인벤토리에서 장비 선택</button>
+        <div id="upgrade-target-display" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:5px;">
+            <span style="color:#888">강화할 장비를 선택하세요.</span>
+        </div>
+        <button onclick="MainEngine.openInventoryModal('upgrade')" class="btn-nav" style="background:var(--hunt); margin-bottom:15px;">📦 장비 선택</button>
         
-        <div id="support-item-area" style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px; margin-bottom:10px; min-height:10px;"></div>
-        
+        <hr style="border:0; border-top:1px solid #444; margin:10px 0;">
+
+        <div id="support-selected-display" style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:5px; color:#aaa; font-size:0.9em;">
+            선택된 보조 아이템 없음
+        </div>
+        <div style="display:flex; gap:5px; margin-bottom:15px;">
+            <button onclick="MainEngine.openInventoryModal('support')" class="btn-nav" style="background:#8e44ad; flex:1; margin:0;">📦 보조 아이템 선택</button>
+            <button onclick="UpgradeSystem.clearSupport()" class="btn-nav" style="background:#555; width:60px; margin:0;">❌</button>
+        </div>
+
         <div style="display:flex; justify-content:space-between; margin:10px 0; font-weight:bold; font-size:1.1em;">
             <span style="color:#4ecca3;">성공: <span id="up-chance">0</span>%</span>
             <span style="color:var(--point);">파괴: <span id="up-break">0</span>%</span>
@@ -350,6 +360,7 @@
 <link rel="shortcut icon" href="#">
 </div> </body>
 </html>
+
 
 
 
