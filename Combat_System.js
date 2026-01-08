@@ -1,25 +1,4 @@
-/* Combat_System.js - 최종 완성본 (티어 장비/보석 드랍 + UI 버그 수정) */
-
-// [핵심] 장비 타입별 스킬 효과 정의
-const SkillHandlers = {
-    OFFENSIVE: {
-        'weapon': (val, pStats) => { return { mul: val, msg: `(x${val})` }; }, 
-        'gloves': (val, pStats) => { return { mul: 1.0, msg: `(공격력+${val} 미구현)` }; }
-    },
-    RECOVERY: {
-        'belt': (val, pStats, currentHP) => {
-            const heal = Math.floor(pStats.hp * val);
-            return { heal: heal, msg: `체력 회복 +${heal}` };
-        },
-        'ring': (val, pStats, currentHP) => { 
-             return { heal: 0, msg: "마나 회복(미구현)" };
-        }
-    },
-    DEFENSIVE: {
-        'armor': (val) => { return { mul: val, msg: `피해 감소` }; },
-        'shoes': (val) => { return { mul: 0, msg: `완전 회피` }; }
-    }
-};
+/* Combat_System.js - 중복 선언 제거 및 로직 수정 완료 */
 
 const CombatSystem = {
     currentZone: null,
@@ -158,15 +137,16 @@ const CombatSystem = {
             let atkMsg = "";
 
             equippedItems.forEach(item => {
-                const triggered = SkillSystem.check(item, turn);
+                const triggered = SkillSystem.check(item, turn); // 이번 턴에 발동할 스킬 가져오기
                 triggered.forEach(s => {
-                    if (SkillHandlers.OFFENSIVE[item.type]) {
-                        const res = SkillHandlers.OFFENSIVE[item.type](s.val, pStats);
+                    // [수정] s.id(스킬 ID)로 핸들러를 찾도록 변경
+                    if (SkillHandlers.OFFENSIVE && SkillHandlers.OFFENSIVE[s.id]) {
+                        const res = SkillHandlers.OFFENSIVE[s.id](s.val, pStats);
                         if (res.mul) finalAtk *= res.mul;
                         atkMsg += `<br><span style="color:#f1c40f">⚡ [${s.name}] 발동! ${res.msg}</span>`;
                     }
-                    else if (SkillHandlers.RECOVERY[item.type]) {
-                        const res = SkillHandlers.RECOVERY[item.type](s.val, pStats, data.hp);
+                    else if (SkillHandlers.RECOVERY && SkillHandlers.RECOVERY[s.id]) {
+                        const res = SkillHandlers.RECOVERY[s.id](s.val, pStats, data.hp);
                         if (res.heal) data.hp = Math.min(pStats.hp, data.hp + res.heal);
                         atkMsg += `<br><span style="color:#2ecc71">✨ [${s.name}] ${res.msg}</span>`;
                     }
@@ -189,7 +169,7 @@ const CombatSystem = {
                 let dropMsg = "";
 
                 // ────────────────────────────────────────────────
-                // ★ [장비 드랍] (확률 10%, 티어 기반, 스킬 확률 적용)
+                // ★ [장비 드랍] (확률 10%, 티어 기반)
                 // ────────────────────────────────────────────────
                 const targetTier = Math.ceil(m.lv / 5);
 
@@ -288,8 +268,9 @@ const CombatSystem = {
             equippedItems.forEach(item => {
                 const triggered = SkillSystem.check(item, turn);
                 triggered.forEach(s => {
-                    if (SkillHandlers.DEFENSIVE[item.type]) {
-                        const res = SkillHandlers.DEFENSIVE[item.type](s.val);
+                    // [수정] s.id(스킬 ID)로 핸들러를 찾도록 변경
+                    if (SkillHandlers.DEFENSIVE && SkillHandlers.DEFENSIVE[s.id]) {
+                        const res = SkillHandlers.DEFENSIVE[s.id](s.val);
                         if (res.mul !== undefined) incDmg = Math.floor(incDmg * res.mul);
                         defMsg += `<br><span style="color:#3498db">🛡️ [${s.name}] 발동! ${res.msg}</span>`;
                     }
