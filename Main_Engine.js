@@ -358,7 +358,7 @@ const MainEngine = {
         MainEngine.closeModal();
         MainEngine.updateUI();
     }
-}
+},
 
     closeModal: () => {
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
@@ -484,6 +484,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
