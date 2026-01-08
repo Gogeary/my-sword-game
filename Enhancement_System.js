@@ -1,6 +1,11 @@
+/* ==========================================
+   [Upgrade_System.js] 
+   강화 시스템 (수정됨: 주문서 레벨 제한 기능 추가)
+   ========================================== */
+
 const UpgradeSystem = {
-    targetIdx: -1,        
-    selectedScroll: -1,   
+    targetIdx: -1,         
+    selectedScroll: -1,    
     selectedTicket: -1, 
     isAuto: false,
     autoTimer: null,
@@ -15,7 +20,7 @@ const UpgradeSystem = {
             if (i < 10) cost *= 1.2;
             else cost *= 1.8;
         }
-       return Math.floor(cost);
+        return Math.floor(cost);
     },
 
     // [1] 장비 선택
@@ -27,7 +32,7 @@ const UpgradeSystem = {
         UpgradeSystem.renderUI();
     },
 
-    // [2] 보조 아이템 선택 (New)
+    // [2] 보조 아이템 선택
     selectSupport: (idx) => {
         const item = data.inventory[idx];
         if (!item) return;
@@ -43,7 +48,7 @@ const UpgradeSystem = {
         UpgradeSystem.renderUI();
     },
 
-    // [3] 보조 아이템 해제 (New)
+    // [3] 보조 아이템 해제
     clearSupport: () => {
         UpgradeSystem.selectedScroll = -1;
         UpgradeSystem.selectedTicket = -1;
@@ -53,7 +58,7 @@ const UpgradeSystem = {
     // UI 렌더링
     renderUI: () => {
         const display = document.getElementById('upgrade-target-display');
-        const supportDisplay = document.getElementById('support-selected-display'); // 보조템 표시창
+        const supportDisplay = document.getElementById('support-selected-display');
         const btnExec = document.getElementById('btn-up-exec');
         const btnSell = document.getElementById('btn-up-sell');
         const costDisplay = document.getElementById('up-cost-display');
@@ -72,7 +77,7 @@ const UpgradeSystem = {
 
         const item = data.inventory[UpgradeSystem.targetIdx];
         const cost = UpgradeSystem.calcCost(item);
-        if(costDisplay) costDisplay.innerText = `${cost.toLocaleString()} G`;
+        if(costDisplay) costDisplay.innerText = `${MainEngine.formatNumber(cost)} G`; // 단위 적용
 
         // 2. 보조 아이템 표시 영역 처리
         let supportHtml = `<span style="color:#888">선택된 보조 아이템 없음</span>`;
@@ -82,13 +87,25 @@ const UpgradeSystem = {
         if (UpgradeSystem.selectedScroll !== -1) {
             scroll = data.inventory[UpgradeSystem.selectedScroll];
             if(scroll) {
-                // 파괴방지권 유효성 체크 시각화
-                const isUsable = !(scroll.maxLimit && item.en > scroll.maxLimit);
+                // [★수정] 파괴방지권 유효성 체크 (강화수치 + 레벨제한)
+                let isUsable = true;
+                let warning = "";
+
+                // 1) 강화 수치 체크
+                if (scroll.maxLimit && item.en > scroll.maxLimit) {
+                    isUsable = false;
+                    warning = ` (불가: +${scroll.maxLimit}강 이하만)`;
+                } 
+                // 2) [신규] 아이템 레벨 체크
+                else if (scroll.limitLv && item.lv > scroll.limitLv) {
+                    isUsable = false;
+                    warning = ` (불가: Lv.${scroll.limitLv} 이하만)`;
+                }
+
                 const color = isUsable ? '#3498db' : '#e74c3c';
-                const warning = isUsable ? '' : ` (사용불가: +${scroll.maxLimit}강 이하)`;
                 supportHtml = `<span style="color:${color}; font-weight:bold;">🛡️ ${scroll.name}${warning}</span>`;
             } else {
-                UpgradeSystem.selectedScroll = -1; // 아이템 없으면 해제
+                UpgradeSystem.selectedScroll = -1;
             }
         } else if (UpgradeSystem.selectedTicket !== -1) {
             ticket = data.inventory[UpgradeSystem.selectedTicket];
@@ -112,7 +129,6 @@ const UpgradeSystem = {
             document.getElementById('up-chance').innerText = '100';
             document.getElementById('up-break').innerText = '0';
             if(btnExec) { 
-                // 강화권은 현재 레벨보다 높아야 사용 가능
                 if (ticket.val > item.en) {
                     btnExec.disabled = false; btnExec.innerText = "강화권 사용"; 
                 } else {
@@ -127,9 +143,12 @@ const UpgradeSystem = {
             let scrollText = "";
 
             if (scroll) {
-                // 파괴방지권 조건 체크
-                if (scroll.maxLimit && item.en > scroll.maxLimit) {
-                    // 조건 안 맞으면 파괴확률 그대로
+                // 파괴방지권 조건 체크 (강화수치 OR 레벨제한)
+                const isOverEnchant = scroll.maxLimit && item.en > scroll.maxLimit;
+                const isOverLevel = scroll.limitLv && item.lv > scroll.limitLv;
+
+                if (isOverEnchant || isOverLevel) {
+                    // 조건 안 맞으면 파괴확률 그대로 (효과 미적용)
                     destroyRate = rates.destroy;
                 } else {
                     // 조건 맞으면 파괴확률 0
@@ -185,18 +204,15 @@ const UpgradeSystem = {
         // [A] 강화권 사용 실행
         if (UpgradeSystem.selectedTicket !== -1) {
             const ticket = data.inventory[UpgradeSystem.selectedTicket];
-            // 유효성 재검사
             if (!ticket || ticket.val <= item.en) return alert("사용할 수 없는 강화권입니다.");
 
             if (confirm(`${ticket.name}을 사용하여 +${ticket.val} 강으로 만드시겠습니까?`)) {
                 item.en = ticket.val;
                 if (item.en > 20) item.en = 20;
 
-                // 소모
                 const realIdx = data.inventory.findIndex(i => i === ticket);
                 if (realIdx !== -1) {
                     data.inventory.splice(realIdx, 1);
-                    // 인덱스 보정
                     if (realIdx < UpgradeSystem.targetIdx) UpgradeSystem.targetIdx--;
                 }
 
@@ -222,10 +238,17 @@ const UpgradeSystem = {
         if (UpgradeSystem.selectedScroll !== -1) {
             scrollItem = data.inventory[UpgradeSystem.selectedScroll];
             if (scrollItem) {
+                // 1. 강화 수치 제한 체크
                 if (scrollItem.maxLimit && item.en > scrollItem.maxLimit) {
                     UpgradeSystem.stopAuto();
                     return alert(`[${scrollItem.name}]은 +${scrollItem.maxLimit}강 이하만 사용 가능합니다.`);
                 }
+                // 2. [★수정] 아이템 레벨 제한 체크
+                if (scrollItem.limitLv && item.lv > scrollItem.limitLv) {
+                    UpgradeSystem.stopAuto();
+                    return alert(`[${scrollItem.name}]은 Lv.${scrollItem.limitLv} 이하의 장비에만 사용 가능합니다.\n(현재 장비: Lv.${item.lv})`);
+                }
+
                 useScroll = true;
             }
         }
@@ -239,7 +262,7 @@ const UpgradeSystem = {
         if (rand < rates.success) {
             item.en++;
             if (item.en > 20) item.en = 20;
-            if(log) log.innerHTML = `<div style="color:#2ecc71">성공! (+${item.en}) / -${cost}G</div>` + log.innerHTML;
+            if(log) log.innerHTML = `<div style="color:#2ecc71">성공! (+${item.en}) / -${MainEngine.formatNumber(cost)}G</div>` + log.innerHTML;
             
             // 안전모드 중단 체크
             const safeMode = document.getElementById('chk-safe-mode');
@@ -264,14 +287,14 @@ const UpgradeSystem = {
                         data.inventory.splice(realIdx, 1);
                         if (realIdx < UpgradeSystem.targetIdx) UpgradeSystem.targetIdx--;
                     }
-                    if(log) log.innerHTML = `<div style="color:#3498db">🛡️ 파괴 방어 성공! (${scrollItem.name} 소모) / -${cost}G</div>` + log.innerHTML;
+                    if(log) log.innerHTML = `<div style="color:#3498db">🛡️ 파괴 방어 성공! (${scrollItem.name} 소모) / -${MainEngine.formatNumber(cost)}G</div>` + log.innerHTML;
                     
                     UpgradeSystem.selectedScroll = -1; 
                     UpgradeSystem.stopAuto(); // 소모했으니 자동 중단
                 } 
                 // 장비 파괴
                 else {
-                    if(log) log.innerHTML = `<div style="color:#e74c3c">💀 장비 파괴됨... / -${cost}G</div>` + log.innerHTML;
+                    if(log) log.innerHTML = `<div style="color:#e74c3c">💀 장비 파괴됨... / -${MainEngine.formatNumber(cost)}G</div>` + log.innerHTML;
                     data.inventory.splice(UpgradeSystem.targetIdx, 1);
                     if (data.equipment[item.type] === item) data.equipment[item.type] = null;
                     UpgradeSystem.targetIdx = -1;
@@ -280,7 +303,7 @@ const UpgradeSystem = {
             } 
             // 그냥 실패 (등급 유지)
             else {
-                if(log) log.innerHTML = `<div style="color:#e67e22">실패 (등급 유지) / -${cost}G</div>` + log.innerHTML;
+                if(log) log.innerHTML = `<div style="color:#e67e22">실패 (등급 유지) / -${MainEngine.formatNumber(cost)}G</div>` + log.innerHTML;
             }
         }
         UpgradeSystem.renderUI();
