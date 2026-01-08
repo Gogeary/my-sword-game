@@ -228,57 +228,62 @@ const MainEngine = {
 
     /* Main_Engine.js 내 createItemHTML 함수 수정 */
    createItemHTML: (it, idx, isEquipped) => {
-        const div = document.createElement('div');
-        div.className = 'item-card';
-        if (isEquipped) div.style.border = '2px solid #2ecc71';
+    const div = document.createElement('div');
+    div.className = 'item-card';
+    if (isEquipped) div.style.border = '2px solid #2ecc71';
 
-        // 이미지 로드 실패 시 📦 아이콘으로 대체
-        const imgTag = it.img ? 
-            `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
-            : '<div class="item-icon">📦</div>';
+    // 이미지 로드 실패 시 📦 아이콘으로 대체
+    const imgTag = it.img ? 
+        `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
+        : '<div class="item-icon">📦</div>';
 
-        const type = (it.type || "").toLowerCase();
-        const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
-        const isConsumable = ['potion', 'scroll', 'ticket'].includes(type);
-        const isGem = (type === 'etc'); // 사용자님의 보석 데이터 타입
+    const type = (it.type || "").toLowerCase();
+    const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
+    const isConsumable = ['potion', 'scroll', 'ticket'].includes(type);
+    const isGem = (type === 'etc' || type === 'gem'); 
 
-        let subText = it.info || "";
-        if (isGear) {
-            subText = `<span style="color:#f1c40f;">능력치 배율: x${it.k.toFixed(2)}</span>`;
-        }
-
-        // [버튼 로직 최종 수정]
-        let actionButtons = '';
+    // [수정 포인트] 장비일 경우 강화 수치를 포함한 최종 배율 계산
+    let subText = it.info || "";
+    if (isGear) {
+        // 강화 보너스: 1 + (강화수치 * 0.1)
+        const enBonus = 1 + ((it.en || 0) * 0.1);
+        // 최종 배율: 기본 배율(k) * 강화 보너스
+        const finalK = (it.k * enBonus).toFixed(2);
         
-        if (isGem || isConsumable) {
-            // ★ 보석 및 소비템: 오직 '판매' 버튼만 노출
-            actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
-        } else if (isGear) {
-            // 장비류: 강화, 장착/해제, 판매 버튼 노출
-            actionButtons = `
-                <button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
-                <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
-                ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
-            `;
-        } else {
-            // 그 외 알 수 없는 타입도 일단 판매는 가능하게 처리
-            actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+        subText = `<span style="color:#f1c40f;">능력치 배율: x${finalK}</span>`;
+        if (it.en > 0) {
+            subText += ` <span style="color:#888; font-size:0.8em;">(강화 +${it.en * 10}%)</span>`;
         }
+    }
 
-        div.innerHTML = `
-            <div class="item-icon-container" style="width:50px; height:50px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-                ${imgTag}
-            </div>
-            <div class="item-info">
-                <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong>${it.count > 1 ? ` (x${it.count})` : ""}<br>
-                <small>${subText}</small>
-            </div>
-            <div class="item-actions">
-                ${actionButtons}
-            </div>
+    // [버튼 로직]
+    let actionButtons = '';
+    if (isGem || isConsumable) {
+        actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+    } else if (isGear) {
+        actionButtons = `
+            <button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+            <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
+            ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
         `;
-        return div;
-    },
+    } else {
+        actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+    }
+
+    div.innerHTML = `
+        <div class="item-icon-container" style="width:50px; height:50px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+            ${imgTag}
+        </div>
+        <div class="item-info">
+            <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong>${it.count > 1 ? ` (x${it.count})` : ""}<br>
+            <small>${subText}</small>
+        </div>
+        <div class="item-actions">
+            ${actionButtons}
+        </div>
+    `;
+    return div;
+},
    
     toggleEquip: (idx) => {
     const it = data.inventory[idx];
@@ -533,6 +538,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
