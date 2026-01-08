@@ -7,6 +7,14 @@ var currentUser = null, data = null, upIdx = -1, autoTimer = null;
 const SECRET_KEY = "my_super_secret_game_key_v1.8";
 var invCurrentTab = 'equip'; // 기본값을 '장비' 탭으로 설정
 
+// 1. 이 두 줄이 반드시 객체 최상단에 있어야 합니다!
+    invCurrentTab: 'equip', 
+
+    setInvTab: (tab) => {
+        MainEngine.invCurrentTab = tab;
+        MainEngine.renderInventory();
+    },
+
 const MainEngine = {
     encrypt: (dataObj) => {
         try {
@@ -406,6 +414,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
