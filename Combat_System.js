@@ -389,3 +389,4 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
