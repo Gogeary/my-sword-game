@@ -661,38 +661,35 @@ renderInventory: () => {
     if (stackableTypes.includes(newItem.type)) {
 
         const existingItem = data.inventory.find(item => {
-            // 공통 조건
             if (item.type !== newItem.type) return false;
             if (item.name !== newItem.name) return false;
-            if (item.p !== newItem.p) return false;
 
-            // 강화권(ticket): val 기준
+            // ticket: 강화 수치 기준
             if (newItem.type === 'ticket') {
-                return item.val === newItem.val &&
-                       item.limitLv === newItem.limitLv;
+                return item.val === newItem.val;
             }
 
-            // 방지권(scroll): maxLimit, limitLv 기준
+            // scroll: 종류(id 또는 maxLimit 기준)
             if (newItem.type === 'scroll') {
-                return item.maxLimit === newItem.maxLimit &&
-                       item.limitLv === newItem.limitLv;
+                return item.id === newItem.id;
             }
 
-            // 기타 아이템
+            // potion / etc
             return true;
         });
 
         if (existingItem) {
             existingItem.count = (existingItem.count || 1) + (newItem.count || 1);
-        } else {
-            if (!newItem.count) newItem.count = 1;
-            data.inventory.push(newItem);
+            return;
         }
 
-    } else {
-        if (!newItem.id) newItem.id = Date.now() + Math.random();
-        data.inventory.push(newItem);
+        data.inventory.push({ ...newItem, count: newItem.count || 1 });
+        return;
     }
+
+    // 장비류 (절대 겹치지 않음)
+    if (!newItem.id) newItem.id = Date.now() + Math.random();
+    data.inventory.push(newItem);
 },
 
 
@@ -770,6 +767,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
