@@ -1,11 +1,11 @@
 /* ============================================================
-   [Enhancement_System.js] - v2.1
-   기능: 강화 비용, 10강 안전 모드, 보조 아이템 UI 개선
+   [Enhancement_System.js] - v3.0
+   기능: 강화 비용, 10강 안전 모드, 등급별 파괴방지권 제한, 최대 20강 제한
    ============================================================ */
 
 const UpgradeSystem = {
-    targetIdx: -1,       
-    selectedScroll: -1,  
+    targetIdx: -1,        
+    selectedScroll: -1,   
     selectedTicket: -1, 
     isAuto: false,
     autoTimer: null,
@@ -90,18 +90,46 @@ const UpgradeSystem = {
         else {
             const rates = UpgradeSystem.getRates(item.en);
             let destroyRate = rates.destroy;
-            if (UpgradeSystem.selectedScroll !== -1) destroyRate = 0;
-
-            if(display) {
-                display.innerHTML = `
-                    <div style="font-size:1.2em; font-weight:bold; color:${item.en >= 10 ? '#e74c3c' : '#fff'}">${item.name} (+${item.en})</div>
-                    <div style="color:#aaa; font-size:0.9em;">다음 레벨: +${item.en + 1}</div>
-                    ${UpgradeSystem.selectedScroll !== -1 ? '<div style="color:#3498db; margin-top:5px;">🛡️ 파괴 방지권 적용됨</div>' : ''}
-                `;
+            
+            // 파괴방지권 적용 여부 확인
+            let scrollName = "";
+            if (UpgradeSystem.selectedScroll !== -1) {
+                const scroll = data.inventory[UpgradeSystem.selectedScroll];
+                
+                // ★ [추가] 파괴방지권 등급 제한 체크 (UI 표시용)
+                if (scroll.maxLimit && item.en > scroll.maxLimit) {
+                    // 제한 초과 시 적용 안 됨 (빨간색 경고)
+                    destroyRate = rates.destroy; 
+                    scrollName = `<div style="color:#e74c3c; margin-top:5px;">⚠️ [${scroll.name}] 사용 불가 (+${scroll.maxLimit}강 이하만 가능)</div>`;
+                } else {
+                    // 정상 적용
+                    destroyRate = 0;
+                    scrollName = `<div style="color:#3498db; margin-top:5px;">🛡️ [${scroll.name}] 적용됨</div>`;
+                }
             }
+
+            // 최대 강화 도달 시
+            if (item.en >= 20) {
+                if(display) {
+                    display.innerHTML = `
+                        <div style="font-size:1.2em; font-weight:bold; color:#e74c3c">🔥 ${item.name} (+${item.en})</div>
+                        <div style="color:#f1c40f; font-weight:bold;">MAX LEVEL (강화 불가)</div>
+                    `;
+                }
+                if(btnExec) { btnExec.disabled = true; btnExec.innerText = "최대 강화 도달"; }
+            } else {
+                if(display) {
+                    display.innerHTML = `
+                        <div style="font-size:1.2em; font-weight:bold; color:${item.en >= 10 ? '#e74c3c' : '#fff'}">${item.name} (+${item.en})</div>
+                        <div style="color:#aaa; font-size:0.9em;">다음 레벨: +${item.en + 1}</div>
+                        ${scrollName}
+                    `;
+                }
+                if(btnExec) { btnExec.disabled = false; btnExec.innerText = `강화하기`; }
+            }
+
             document.getElementById('up-chance').innerText = rates.success;
             document.getElementById('up-break').innerText = destroyRate;
-            if(btnExec) { btnExec.disabled = false; btnExec.innerText = `강화하기`; }
         }
 
         if(btnSell) btnSell.style.display = 'inline-block';
@@ -173,12 +201,18 @@ const UpgradeSystem = {
                 const btn = document.createElement('button');
                 const isSelected = (UpgradeSystem.selectedScroll === s.invIdx);
                 
+                // ★ [추가] 사용 가능 여부 시각적 표시 (회색 처리 등)
+                const isUsable = !(s.maxLimit && item.en > s.maxLimit);
+
                 btn.className = 'btn-small';
                 btn.style.width = 'auto';
-                btn.style.background = isSelected ? '#3498db' : '#333';
+                btn.style.background = isSelected ? '#3498db' : (isUsable ? '#333' : '#222'); // 불가 시 어둡게
+                btn.style.color = isUsable ? '#fff' : '#555'; // 불가 시 회색 글씨
                 btn.style.border = isSelected ? '1px solid #fff' : '1px solid #444';
                 btn.innerText = s.name;
                 
+                // 사용 불가여도 클릭은 되게 해서(안내 메시지 띄우기 위해) disabled는 안 함
+                // 또는 disabled 처리해도 됨. 여기선 클릭 시 UI 갱신으로 안내 메시지 보여줌.
                 btn.onclick = () => {
                     if (UpgradeSystem.selectedScroll === s.invIdx) UpgradeSystem.selectedScroll = -1;
                     else UpgradeSystem.selectedScroll = s.invIdx;
@@ -213,11 +247,20 @@ const UpgradeSystem = {
         const item = data.inventory[UpgradeSystem.targetIdx];
         const log = document.getElementById('log-container');
         
+        // ★ [추가] 최대 강화(20강) 제한
+        if (item.en >= 20) {
+            UpgradeSystem.stopAuto();
+            return alert("이미 최대 강화 수치(+20)에 도달했습니다!");
+        }
+
         // [A] 강화권 사용
         if (UpgradeSystem.selectedTicket !== -1) {
             const ticket = data.inventory[UpgradeSystem.selectedTicket];
             if (confirm(`${ticket.name}을 사용하여 +${ticket.val} 강으로 만드시겠습니까?`)) {
                 item.en = ticket.val;
+                // 20강 초과 방지
+                if (item.en > 20) item.en = 20;
+
                 const realTicketIdx = data.inventory.findIndex(i => i === ticket);
                 if (realTicketIdx !== -1) {
                     data.inventory.splice(realTicketIdx, 1);
@@ -240,6 +283,15 @@ const UpgradeSystem = {
             return alert("골드가 부족합니다.");
         }
 
+        // ★ [추가] 파괴방지권 유효성 검사 (사용하려고 선택했는데 조건 안 맞으면 멈춤)
+        if (UpgradeSystem.selectedScroll !== -1) {
+            const scroll = data.inventory[UpgradeSystem.selectedScroll];
+            if (scroll.maxLimit && item.en > scroll.maxLimit) {
+                UpgradeSystem.stopAuto();
+                return alert(`[${scroll.name}]은 +${scroll.maxLimit}강 이하의 장비에만 사용할 수 있습니다.`);
+            }
+        }
+
         // 골드 소모
         data.gold -= cost;
 
@@ -248,6 +300,9 @@ const UpgradeSystem = {
 
         if (rand < rates.success) {
             item.en++;
+            // 20강 초과 방지
+            if (item.en > 20) item.en = 20;
+
             if(log) log.innerHTML = `<div style="color:#2ecc71">성공! (+${item.en}) / -${cost}G</div>` + log.innerHTML;
             
             // [자동강화 안전장치] 10강 도달 시 자동 멈춤 (안전 모드 체크 시)
@@ -255,6 +310,11 @@ const UpgradeSystem = {
             if (UpgradeSystem.isAuto && safeMode && safeMode.checked && item.en >= 10) {
                  UpgradeSystem.stopAuto();
                  alert("🎉 안전 모드: +10강을 달성하여 자동 강화를 중단합니다.");
+            }
+            // 20강 도달 시 무조건 멈춤
+            if (item.en >= 20) {
+                UpgradeSystem.stopAuto();
+                alert("🎉 축하합니다! 최대 강화(+20)에 도달했습니다!");
             }
 
         } else {
@@ -314,5 +374,3 @@ const UpgradeSystem = {
         if(btn) btn.innerText = "자동 강화 시작";
     }
 };
-
-
