@@ -41,17 +41,23 @@ const ShopSystem = {
                 `<img src="${imgPath}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='💰';">` 
                 : '<div class="item-icon">💰</div>';
 
-            // 아이템 설명 텍스트 (타입별 분기)
+           // 아이템 설명 텍스트 (커스텀 info 우선 방식)
             let subText = "";
-            if (item.type === 'potion') {
-                subText = `체력 회복: <span style="color:#e74c3c">${item.val}</span>`;
+
+            if (item.info) {
+                // 1순위: Database에 직접 적은 커스텀 설명
+                subText = item.info;
+            } else if (item.type === 'potion') {
+                // 2순위: 포션일 경우 회복량
+                subText = `체력 회복: <span style="color:#e74c3c">${item.val.toLocaleString()}</span>`;
             } else if (item.type === 'scroll') {
+                // 3순위: 주문서 효과
                 subText = `효과: 강화 파괴 방지`;
             } else {
-                // 장비의 경우 티어 표시 (가격 기준 추정)
-                const tier = Math.floor(item.p / 1000); 
+                // 4순위: 아무것도 없을 때만 기존 티어 표시
+              const tier = Math.floor((item.p || 0) / 1000); 
                 subText = `등급: Tier ${tier > 0 ? tier : 1}`;
-            }
+}
 
             div.innerHTML = `
                 ${imgTag}
@@ -316,6 +322,7 @@ const SynthesisSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
 };
+
 
 
 
