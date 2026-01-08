@@ -28,10 +28,18 @@ const ShopSystem = {
 
         } else if (tab === 'consume') {
             title.innerText = "🧪 소비 아이템 상점";
+            
+            // --- [수정 구간] ---
+            // 1. 포션은 그대로 판매 (필요 없다면 이 줄을 지우세요)
             const potions = GameDatabase.CONSUMABLES.potions || [];
-            const scrolls = GameDatabase.CONSUMABLES.scrolls || [];
-            ShopSystem.renderItems([...potions, ...scrolls], list);
-
+            
+            // 2. 주문서 중에서 'limitLv'가 30인 '파괴 방지권'만 필터링
+            const targetScrolls = (GameDatabase.CONSUMABLES.scrolls || []).filter(s => s.limitLv === 30);
+            
+            // 3. 강화권(tickets)은 상점에서 직접 팔지 않고 필터에서 제외 (뽑기와 합성으로만 획득)
+            
+            ShopSystem.renderItems([...potions, ...targetScrolls], list);
+            // ------------------
         } else if (tab === 'gacha') {
             title.innerText = "🎲 행운의 뽑기 상점";
             // ★ [중요] 뽑기 상자 전용 렌더링 함수 호출
@@ -198,4 +206,5 @@ const SynthesisSystem = {
         });
     }
 };
+
 
