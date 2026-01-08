@@ -380,8 +380,13 @@ renderInventory: () => {
     // [수정] 모달 열기 함수 (mode 파라미터 추가)
     // mode: 'normal'(기본), 'upgrade'(강화장비), 'support'(보조아이템), 'sell'(판매)
     openInventoryModal: (mode = 'normal') => {
+        // 1. 모달 ID를 'modal-inventory'로 통일
         const modal = document.getElementById('modal-inventory');
         const list = document.getElementById('modal-item-list');
+        
+        // HTML에 모달이 없으면 에러 방지
+        if (!modal || !list) return console.error("인벤토리 모달 HTML이 없습니다.");
+
         list.innerHTML = '';
         
         // 인벤토리 순회
@@ -389,50 +394,56 @@ renderInventory: () => {
             // [필터링 로직]
             let show = true;
             if (mode === 'upgrade') {
-                // 강화 대상: 장비만 표시 (ticket, scroll, potion 제외)
                 if (['weapon','armor','belt','gloves','shoes'].indexOf(item.type) === -1) show = false;
             } 
             else if (mode === 'support') {
-                // 보조 아이템: 주문서(scroll), 강화권(ticket)만 표시
                 if (item.type !== 'scroll' && item.type !== 'ticket') show = false;
             }
 
             if (show) {
                 const div = document.createElement('div');
                 div.className = 'inven-item';
-                div.style.border = `2px solid ${GameDatabase.getItemRarityColor(item)}`;
                 
-                // 아이템 정보 표시
+                // 테두리 색상 (Database 함수가 있으면 사용, 없으면 회색)
+                const borderColor = (GameDatabase.getItemRarityColor) ? GameDatabase.getItemRarityColor(item) : '#ccc';
+                div.style.border = `2px solid ${borderColor}`;
+                
+                // 아이템 정보 텍스트
                 let infoText = `<b>${item.name}</b>`;
-                if (item.type !== 'potion' && item.type !== 'scroll' && item.type !== 'ticket') {
+                if (['potion','scroll','ticket','gem'].indexOf(item.type) === -1) {
                     infoText += ` <span style="color:#f1c40f">(+${item.en})</span>`;
                 }
                 if (item.count > 1) infoText += ` x${item.count}`;
                 
+                // ★ [핵심 수정] 이미지가 없으면(error) 아예 숨겨버리기 (display='none')
                 div.innerHTML = `
-                    <img src="image/${item.img}" style="width:30px; height:30px; object-fit:contain;">
+                    <img src="image/${item.img}" 
+                         style="width:30px; height:30px; object-fit:contain; margin-right:5px;" 
+                         onerror="this.style.display='none'"> 
                     <div style="flex:1;">${infoText}</div>
                 `;
 
-                // [클릭 이벤트 분기]
+                // 클릭 이벤트
                 div.onclick = () => {
                     if (mode === 'upgrade') {
                         UpgradeSystem.selectUpgrade(idx);
                         MainEngine.closeModal();
                     } 
                     else if (mode === 'support') {
-                        UpgradeSystem.selectSupport(idx); // 보조 아이템 선택 함수 호출
+                        UpgradeSystem.selectSupport(idx);
                         MainEngine.closeModal();
                     }
-                    // ... 기존 판매/장착 로직 등은 mode === 'normal' 일 때 처리
+                    else {
+                        // 일반 모드일 때 (상세정보 혹은 장착)
+                        if(MainEngine.openItemDetail) MainEngine.openItemDetail(idx);
+                    }
                 };
                 list.appendChild(div);
             }
         });
 
         modal.style.display = 'flex';
-    },
-
+    }, // <--- 콤마 확인!
     closeModal: () => document.getElementById('inv-modal').style.display='none',
 
     checkLevelUp: () => {
@@ -631,6 +642,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
