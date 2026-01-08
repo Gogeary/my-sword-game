@@ -364,8 +364,56 @@ renderInventory: () => {
         data.hp = MainEngine.getFinalStats().hp;
         MainEngine.updateUI();
     }
-}
-};
+},
+   // 1. 일괄 판매 모달 열기
+    openBatchSell: () => {
+        const modal = document.getElementById('modal-batch-sell');
+        if (modal) modal.style.display = 'block';
+    },
+
+    // 2. 실제 일괄 판매 실행
+    executeBatchSell: () => {
+        const sellNoSkill = document.getElementById('sell-no-skill').checked;
+        const sellWithSkill = document.getElementById('sell-with-skill').checked;
+
+        // 판매 대상 필터링: 0강화 장비 중 선택된 조건에 맞는 아이템들
+        const targets = data.inventory.filter(it => {
+            // 장비(weapon, armor, belt)이고 강화 수치가 0인 것만 대상
+            const isEquip = ['weapon', 'armor', 'belt'].includes(it.type);
+            const isZeroEnchant = (it.en || 0) === 0;
+            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
+
+            if (!isEquip || !isZeroEnchant || isEquipped) return false;
+
+            const hasSkill = (it.skill && it.skill.id);
+            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 장비 판매
+            if (hasSkill && sellWithSkill) return true; // 스킬 있는 장비 판매
+            return false;
+        });
+
+        if (targets.length === 0) {
+            alert("판매할 대상이 없습니다.\n(장착 중이거나 강화된 아이템은 제외됩니다)");
+            return;
+        }
+
+        if (confirm(`${targets.length}개의 장비를 일괄 판매하시겠습니까?`)) {
+            let totalGold = 0;
+            targets.forEach(target => {
+                totalGold += Math.floor(target.p * 0.5); // 판매가는 원가의 50%
+                
+                // 인벤토리에서 해당 아이템 삭제
+                const idx = data.inventory.findIndex(item => item.id === target.id);
+                if (idx !== -1) data.inventory.splice(idx, 1);
+            });
+
+            data.gold += totalGold;
+            alert(`${targets.length}개의 장비를 판매하여 ${totalGold.toLocaleString()} G를 획득했습니다!`);
+            
+            // UI 업데이트 및 모달 닫기
+            closeModal('modal-batch-sell');
+            MainEngine.updateUI();
+        }
+    },
 
 // ... 이하 GamblingSystem, renderHuntingZones, showPage 등은 기존과 동일 ...
 const GamblingSystem = {
@@ -412,6 +460,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
