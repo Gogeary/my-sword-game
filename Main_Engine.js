@@ -149,7 +149,29 @@ const MainEngine = {
         link.download = `강화하기_v2.2_Save.txt`;
         link.click();
     },
+        // ★ [신규 기능] 숫자를 '만, 억, 조' 단위로 변환하는 함수
+    formatNumber: (num) => {
+        num = Math.floor(num); // 소수점 제거
+        if (num < 10000) return num.toLocaleString(); // 1만 미만은 그냥 쉼표만 (예: 9,999)
 
+        // 1조 이상
+        if (num >= 1000000000000) {
+            const jo = Math.floor(num / 1000000000000);
+            const remain = Math.floor((num % 1000000000000) / 100000000); // 억 단위까지만 보여줌
+            return `${jo}조` + (remain > 0 ? ` ${remain}억` : '');
+        }
+        // 1억 이상
+        if (num >= 100000000) {
+            const eok = Math.floor(num / 100000000);
+            const remain = Math.floor((num % 100000000) / 10000); // 만 단위까지만 보여줌
+            return `${eok}억` + (remain > 0 ? ` ${remain}만` : '');
+        }
+        // 1만 이상
+        const man = Math.floor(num / 10000);
+        const remain = num % 10000;
+        return `${man}만` + (remain > 0 ? ` ${remain}` : '');
+    },
+   
     importSaveFile: (input) => {
         const file = input.files[0];
         if(!file) return;
@@ -170,33 +192,57 @@ const MainEngine = {
 
     updateUI: () => {
         if(!data) return;
-        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv);
         if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
         const stats = MainEngine.getFinalStats();
+        
+        // 글러브 증폭도 계산
+        let gloveMul = 1.0;
+        if (data.equipment.gloves) gloveMul = data.equipment.gloves.k;
+        const finalAtk = Math.floor(stats.atk * gloveMul);
+
+        // --- [UI 갱신: formatNumber 적용] ---
+        
+        // 1. 공격력 표시 (단위 적용)
+        const infoAtk = document.getElementById('info-atk');
+        if(infoAtk) {
+            infoAtk.innerHTML = `
+                <span style="color:#ddd;">${MainEngine.formatNumber(stats.atk)}</span> 
+                <span style="color:#aaa; font-size:0.8em;">(무기)</span>
+                x <span style="color:#f1c40f;">${gloveMul.toFixed(2)}</span> 
+                <span style="color:#aaa; font-size:0.8em;">(증폭)</span>
+                <br>= <span style="color:#ff5252; font-size:1.2em;">${MainEngine.formatNumber(finalAtk)}</span>
+            `;
+        }
+
+        // 2. 방어력, 체력, 골드 등 (단위 적용)
+        document.getElementById('info-def').innerText = MainEngine.formatNumber(stats.def);
+        document.getElementById('info-hp').innerText = MainEngine.formatNumber(stats.hp);
+        
+        // 골드 표시 (가장 중요!)
+        document.getElementById('gold').innerText = MainEngine.formatNumber(data.gold);
+
+        // 체력바 텍스트
+        document.getElementById('hp-val').innerText = MainEngine.formatNumber(Math.max(0, data.hp));
+        document.getElementById('hp-max').innerText = MainEngine.formatNumber(stats.hp);
+        document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
+        
+        // 경험치 텍스트
+        const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
+        document.getElementById('exp-fill').style.width = Math.min(100, expPer) + '%';
+        document.getElementById('user-lv').innerText = data.lv;
+        document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
+
+        // 포션 개수 계산
         const potions = data.inventory.filter(i => i.type === 'potion');
         const rawTotal = potions.reduce((sum, p) => sum + (p.val || 0), 0);
         const currentBuffer = data.potionBuffer || 0;
         const realTotal = Math.max(0, rawTotal - currentBuffer);
-
-        document.getElementById('gold').innerText = Math.floor(data.gold).toLocaleString();
-        document.getElementById('potion-val').innerText = realTotal.toLocaleString();
+        
+        document.getElementById('potion-val').innerText = MainEngine.formatNumber(realTotal); // 포션 회복량도 단위 적용
         document.getElementById('potion-cnt').innerText = potions.length;
-        document.getElementById('hp-val').innerText = Math.max(0, Math.floor(data.hp)).toLocaleString();
-        document.getElementById('hp-max').innerText = Math.floor(stats.hp).toLocaleString();
-        document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
-        
-        const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
-        document.getElementById('exp-fill').style.width = Math.min(100, expPer) + '%';
-        document.getElementById('user-lv').innerText = data.level;
-        document.getElementById('exp-text').innerText = `${Math.floor(data.exp).toLocaleString()} / ${Math.floor(nextExp).toLocaleString()} (${expPer}%)`;
-        
-        const infoAtk = document.getElementById('info-atk');
-        if(infoAtk) {
-            infoAtk.innerText = Math.floor(stats.atk).toLocaleString();
-            document.getElementById('info-def').innerText = Math.floor(stats.def).toLocaleString();
-            document.getElementById('info-hp').innerText = Math.floor(stats.hp).toLocaleString();
-        }
+
         MainEngine.renderInventory();
         MainEngine.saveGame();
     },
@@ -260,13 +306,11 @@ renderInventory: () => {
         const div = document.createElement('div'); 
         div.className = 'item-card';
         
-        // 장착 중이면 테두리 강조
         if (isEquipped) { 
             div.style.border = '2px solid var(--mine)'; 
             div.style.background = 'rgba(46, 204, 113, 0.1)'; 
         }
 
-        // 이미지 처리
         const imgTag = it.img ? 
             `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='📦';">` 
             : '<div class="item-icon">📦</div>';
@@ -285,22 +329,13 @@ renderInventory: () => {
             `; 
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // ★ [핵심] 장비 능력치 텍스트 결정 로직
-        // ─────────────────────────────────────────────────────────────
+        // 아이템 정보 텍스트 (단위 적용)
         let subText = "";
         const type = it.type;
 
-        if (it.info) {
-            // 1. 커스텀 설명이 있으면 최우선 표시 (특수 아이템 등)
-            subText = it.info;
-        } 
+        if (it.info) subText = it.info;
         else if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
-            // 2. 장비류: 타입별 능력치 표시
-            let statName = "능력";
-            let statIcon = "⭐";
-            
-            // 타입에 따른 텍스트 설정
+            let statName = "능력"; let statIcon = "⭐";
             switch(type) {
                 case 'weapon': statName = "공격력"; statIcon = "⚔️"; break;
                 case 'armor':  statName = "방어력"; statIcon = "🛡️"; break;
@@ -308,19 +343,16 @@ renderInventory: () => {
                 case 'gloves': statName = "증폭도"; statIcon = "🥊"; break;
                 case 'shoes':  statName = "민첩성"; statIcon = "👟"; break;
             }
-
-            // 수치 표시 (k값이 배율인 경우 'x' 붙임)
-            // 예: 1.5 -> "x1.5", 100 -> "+100" (상황에 따라 다름, 여기선 배율(k)로 가정)
+            // k값이 100 이상이면 +수치, 이하면 배율(x)로 가정해서 표시
+            // 만약 무조건 배율이라면: `x${it.k}`
             subText = `${statIcon} ${statName}: x${it.k}`;
         }
-        else if (type === 'potion') subText = `🧪 회복량: ${it.val.toLocaleString()}`;
+        else if (type === 'potion') subText = `🧪 회복량: ${MainEngine.formatNumber(it.val)}`;
         else if (type === 'ticket') subText = `🎫 확정 강화 +${it.val}`;
-        else if (it.p) subText = `💰 가치: Lv.${Math.floor(it.p/1000)}`;
+        else if (it.p) subText = `💰 가치: ${MainEngine.formatNumber(it.p)}`; // 티어 대신 가격 표시로 변경 (원하시면 티어로 유지 가능)
 
-        // 개수 배지
         const countBadge = (it.count && it.count > 1) ? ` <span style="color:#f1c40f; font-weight:bold;">x${it.count}</span>` : '';
 
-        // 최종 HTML 조립
         div.innerHTML = `
             ${imgTag}
             <div class="item-info">
@@ -331,6 +363,7 @@ renderInventory: () => {
         
         return div;
     },
+   
     toggleEquip: (idx) => {
         const it = data.inventory[idx];
         if(data.equipment[it.type] && data.equipment[it.type].id === it.id) data.equipment[it.type] = null;
@@ -661,6 +694,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
