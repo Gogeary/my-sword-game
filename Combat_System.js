@@ -181,7 +181,7 @@ const CombatSystem = {
 
             log.innerHTML = `[Turn ${turn}] 유저 공격: ${pDmg} ${atkMsg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
 
-            // --- [2. 유저 승리 판정 (여기서 끝내야 함)] ---
+           // --- [2. 유저 승리 판정] ---
             if (mHP <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
@@ -189,20 +189,88 @@ const CombatSystem = {
                 data.exp += m.exp;
                 
                 let dropMsg = "";
-                if (Math.random() * 100 < 30) {
-                    const validItems = GameDatabase.EQUIPMENT.filter(e => e.lv <= m.lv && e.lv >= m.lv - 10);
+
+                // ────────────────────────────────────────────────
+                // ★ [장비 드랍] (확률 10%, 티어 기반)
+                // ────────────────────────────────────────────────
+                const targetTier = Math.ceil(m.lv / 5);
+
+                if (Math.random() * 100 < 10) { // 10% 확률
+                    // 해당 티어의 아이템만 필터링
+                    // (item.tier가 없으면 안전하게 0으로 취급)
+                    const validItems = GameDatabase.EQUIPMENT.filter(e => (e.tier || 0) === targetTier);
+                    
                     if (validItems.length > 0) {
                         const baseItem = validItems[Math.floor(Math.random() * validItems.length)];
+                        
+                        // 아이템 복제 및 초기화
                         let newItem = { ...baseItem, id: Date.now(), en: 0, skills: [] };
-                        if (Math.random() * 100 < 30) {
-                            const countRoll = Math.random() * 100;
-                            const skillCount = (countRoll < 80) ? 1 : 2;
+                        
+                        // 스킬 부여 확률 (1개 70%, 2개 20%, 3개 10%)
+                        // *전제: 장비 드랍 시 최소 1개는 붙는다고 가정 (SkillSystem에서 count만큼 붙임)
+                        const countRoll = Math.random() * 100;
+                        let skillCount = 1; 
+                        if (countRoll < 70) skillCount = 1;
+                        else if (countRoll < 90) skillCount = 2;
+                        else skillCount = 3;
+
+                        // 스킬 부착 (SkillSystem.attachSkill 사용)
+                        if (typeof SkillSystem !== 'undefined') {
                             newItem = SkillSystem.attachSkill(newItem, skillCount);
                         }
+                        
                         data.inventory.push(newItem);
-                        dropMsg = `<br><span style="color:#e94560">🎁 [${newItem.name}] 획득!</span>`;
+                        dropMsg = `<br><span style="color:#e94560">🎁 [T${targetTier}] ${newItem.name} 획득!</span>`;
                     }
                 }
+
+    // ────────────────────────────────────────────────
+    // ★ [보석 드랍 로직] (5% 확률)
+    // 데이터 구조: GameDatabase.GEM_DROPS.TIER_X
+    // ────────────────────────────────────────────────
+    if (Math.random() * 100 < 5) {
+        
+        // 1. 몬스터 레벨로 티어 키(Key) 생성
+        // 예: Lv.1~5 -> 1 -> 'TIER_1'
+        // 예: Lv.6~10 -> 2 -> 'TIER_2'
+        const tierNum = Math.ceil(m.lv / 5);
+        const tierKey = `TIER_${tierNum}`;
+
+        // 2. 해당 티어의 보석 목록 가져오기
+        // (데이터베이스에 해당 티어가 없으면 드랍 안 함)
+        const gemList = (GameDatabase.GEM_DROPS && GameDatabase.GEM_DROPS[tierKey]) 
+                        ? GameDatabase.GEM_DROPS[tierKey] 
+                        : null;
+
+        if (gemList && gemList.length > 0) {
+            
+            // 3. 등급 결정 (70% 일반 / 30% 희귀)
+            // gemList[0]: 일반(싼거), gemList[1]: 희귀(비싼거) 라고 가정
+            const isRare = (Math.random() * 100) >= 70; // 30% 확률로 true
+            
+            // 희귀 당첨됐는데 목록에 2번째 아이템이 없으면 그냥 0번째(일반) 줌
+            const gemIndex = (isRare && gemList.length > 1) ? 1 : 0;
+            const dropGem = gemList[gemIndex];
+
+            if (dropGem) {
+                // 4. 인벤토리 지급
+                data.inventory.push({
+                    id: Date.now() + Math.random(), // 고유 ID 부여
+                    ...dropGem,
+                    // type은 DB에 이미 'etc'로 되어있지만, 필요하면 'gem'으로 덮어씌움
+                    type: 'gem', 
+                    count: 1
+                });
+
+                // 5. 로그 메시지 장식
+                // 희귀(Index 1)면 보라색, 일반(Index 0)이면 초록색
+                const color = (gemIndex === 1) ? '#9b59b6' : '#2ecc71';
+                const prefix = (gemIndex === 1) ? '[✨희귀]' : '[🔹일반]';
+
+                dropMsg += `<br><span style="color:${color}; font-weight:bold;">💎 ${prefix} ${dropGem.name} 획득!</span>`;
+            }
+        }
+    }
 
                 if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
                 log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span>${dropMsg}<br>` + log.innerHTML;
@@ -351,6 +419,7 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
 
 
 
