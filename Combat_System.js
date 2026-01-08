@@ -44,41 +44,67 @@ const CombatSystem = {
         if(log) log.innerHTML = `사냥터에 입장했습니다. (탐색 비용: ${zone.cost.toLocaleString()}G)`;
     },
 
-    // 2. 몬스터 탐색
+    // 2. 몬스터 탐색 (보스 조우 로직 통합)
     scanHunt: () => {
         if (CombatSystem.isEncounter) return alert("이미 몬스터와 조우 중입니다!");
 
-        const cost = CombatSystem.currentZone.cost;
+        // 현재 존 정보 가져오기
+        const z = CombatSystem.currentZone; 
+        const cost = z.cost;
+
         if (data.gold < cost) {
             return alert(`탐색 비용이 부족합니다. (${cost.toLocaleString()}G 필요)`);
         }
 
+        // 비용 차감 및 UI 갱신
         data.gold -= cost;
-        // [수정] window. 제거
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-        const z = CombatSystem.currentZone;
+        // 1. 레벨 결정 및 기초 몬스터 데이터 생성
         const range = z.maxLv - z.minLv + 1;
         const randomLv = z.minLv + Math.floor(Math.random() * range);
-        
         let monster = CombatSystem.getMonsterData(randomLv);
-        monster = CombatSystem.setMonsterIdentity(monster);
+        monster = CombatSystem.setMonsterIdentity(monster); // 이름, 아이콘 등 부여
+
+        // 2. 보스 변환 로직 적용
+        // GameDatabase.BOSS_DATA.CHANCE 확률로 보스 등장
+        const isBoss = Math.random() * 100 < GameDatabase.BOSS_DATA.CHANCE;
+        const bossInfo = GameDatabase.BOSS_DATA.STAGES[z.id]; // 현재 스테이지 ID 기준
+
+        if (isBoss && bossInfo) {
+            monster.name = bossInfo.name;
+            monster.hp = Math.floor(monster.hp * bossInfo.hpMult);
+            monster.maxHp = monster.hp;
+            monster.atk = Math.floor(monster.atk * bossInfo.atkMult);
+            monster.gold = Math.floor(monster.gold * bossInfo.goldMult);
+            monster.exp = Math.floor(monster.exp * bossInfo.expMult);
+            monster.isBoss = true; // 보스 플래그
+        }
         
+        // 3. 전투 대기 상태 설정
         CombatSystem.tempMonster = monster;
         CombatSystem.isEncounter = true;
 
+        // 4. 화면 렌더링
         CombatSystem.renderEncounterUI(monster);
     },
 
-    // 3. 조우 UI 렌더링
     renderEncounterUI: (m) => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
+        
         const imgPath = `image/${m.img}`;
+        
+        // [수정] 보스일 경우 이름 강조 및 배경 효과 차별화
+        const nameColor = m.isBoss ? '#f1c40f' : '#ffffff'; // 보스는 황금색
+        const borderColor = m.isBoss ? 'border:3px solid #f1c40f;' : 'border:2px solid var(--hunt);';
+        const bossTag = m.isBoss ? '<span style="font-size:0.8em; display:block; color:#f1c40f;">[STAGE BOSS]</span>' : '';
+
         grid.innerHTML = `
-            <div style="width:100%; padding:20px; text-align:center; border:2px solid var(--hunt); border-radius:10px; background:rgba(0,0,0,0.2);">
-                <img src="${imgPath}" style="width:100px; height:100px; object-fit:contain; margin-bottom:10px;" onerror="this.style.display='none';">
-                <h3 style="margin:5px 0;">${m.name} <span style="color:#e74c3c">Lv.${m.lv}</span></h3>
+            <div style="width:100%; padding:20px; text-align:center; ${borderColor} border-radius:10px; background:rgba(0,0,0,0.2);">
+                <img src="${imgPath}" style="width:100px; height:100px; object-fit:contain; margin-bottom:10px; ${m.isBoss ? 'filter: drop-shadow(0 0 10px #f1c40f);' : ''}" onerror="this.style.display='none';">
+                ${bossTag}
+                <h3 style="margin:5px 0; color:${nameColor};">${m.name} <span style="color:#e74c3c">Lv.${m.lv}</span></h3>
                 <div style="color:#aaa; font-size:0.9em; margin-bottom:15px;">HP: ${m.hp.toLocaleString()}</div>
                 <div style="display:flex; gap:10px; justify-content:center;">
                     <button class="main-menu-btn" style="background:#c0392b; width:45%; margin:0;" onclick="CombatSystem.startBattle()">⚔️ 싸운다</button>
@@ -86,8 +112,12 @@ const CombatSystem = {
                 </div>
                 <div style="margin-top:10px; font-size:0.8em; color:#888;">도망 성공률: 80%</div>
             </div>`;
+            
         const log = document.getElementById('battle-log');
-        if(log) log.innerHTML = `야생의 <strong>${m.name}</strong>(을)를 발견했습니다!`;
+        if(log) {
+            const bossMsg = m.isBoss ? `<strong style="color:#f1c40f">스테이지 보스 [${m.name}]</strong>` : `야생의 <strong>${m.name}</strong>`;
+            log.innerHTML = `${bossMsg}(을)를 발견했습니다!`;
+        }
     },
 
     runAway: () => {
@@ -309,3 +339,4 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
