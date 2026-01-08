@@ -213,8 +213,7 @@ const GameDatabase = {
         weapon: (base, k, en) => base * k * (1 + 0.2 * Math.pow(en, 1.1)),
         armor:  (base, k, en) => base * k * (1 + 0.5 * en),
         belt:   (base, k, en) => base * k * (1 + 0.1 * Math.pow(en, 1.25)),
-        gloves: (k, en) => {
-        return k * (1 + en * 0.02); 
+        gloves: (k, en) => k * (1 + en * 0.02) 
     }
 },
 
@@ -612,6 +611,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
