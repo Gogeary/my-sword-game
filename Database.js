@@ -559,21 +559,89 @@ const GameDatabase = {
     ]
     },
 
-    // [중요] 여기가 GACHA의 올바른 위치입니다. (GameDatabase 닫히기 전)
+    // [Database.js] 기존 GACHA 부분을 이것으로 교체
     GACHA: {
-        ENHANCE_BOX: {
-            COST: 100000,
-            RATES: [
-                { type: 'ticket', val: 5,  name: '+5 강화권', chance: 30, color: '#2ecc71' },
-                { type: 'ticket', val: 7,  name: '+7 강화권', chance: 15, color: '#3498db' },
-                { type: 'ticket', val: 10, name: '+10 강화권', chance: 10, color: '#9b59b6' },
-                { type: 'ticket', val: 12, name: '+12 강화권', chance: 3,  color: '#f1c40f' },
-                { type: 'scroll', id: 1,   name: '하급 방지권', chance: 20, color: '#bdc3c7' },
-                { type: 'scroll', id: 2,   name: '중급 방지권', chance: 15, color: '#95a5a6' },
-                { type: 'scroll', id: 3,   name: '상급 방지권', chance: 7,  color: '#e74c3c' }
+        // =====================================================================
+        // 1. [Lv.30] 초보자의 행운 상자 (가격: 10만 G)
+        // =====================================================================
+        BOX_30: {
+            name: "🌱 초보자의 상자 (~30Lv)",
+            cost: 100000,
+            info: "30레벨 이하 장비 전용. (+15 강화권을 노려보세요!)",
+            rates: [
+                // [주문서: 55%]
+                { type: 'scroll', id: 1, name: '하급 방지권', chance: 38, color: '#bdc3c7' },
+                { type: 'scroll', id: 2, name: '중급 방지권', chance: 15, color: '#95a5a6' },
+                { type: 'scroll', id: 3, name: '상급 방지권', chance: 2, color: '#7f8c8d' },
+                // [강화권: 45%]
+                { type: 'ticket', val: 5,  name: '+5 강화권',  chance: 20,  color: '#2ecc71' },
+                { type: 'ticket', val: 7,  name: '+7 강화권',  chance: 15,  color: '#27ae60' },
+                { type: 'ticket', val: 10, name: '+10 강화권', chance: 8,  color: '#3498db' },
+                { type: 'ticket', val: 12, name: '+12 강화권', chance: 2,   color: '#9b59b6' }
+            ]
+        },
+
+        // =====================================================================
+        // 2. [Lv.50] 숙련자의 보급 상자 (가격: 1,000만 G)
+        // =====================================================================
+        BOX_50: {
+            name: "🔨 숙련자의 상자 (~50Lv)",
+            cost: 10000000,
+            info: "50레벨 이하 장비 전용. 중급 장비를 완성하세요.",
+            rates: [
+                // [주문서: 55%]
+                { type: 'scroll', id: 4, name: '숙련 하급 방지권', chance: 38, color: '#bdc3c7' },
+                { type: 'scroll', id: 5, name: '숙련 중급 방지권', chance: 15, color: '#95a5a6' },
+                { type: 'scroll', id: 6, name: '숙련 상급 방지권', chance: 2, color: '#7f8c8d' },
+                // [강화권: 45%]
+                { type: 'ticket', val: 5,  name: '+5 강화권',  chance: 20,  color: '#2ecc71' },
+                { type: 'ticket', val: 7,  name: '+7 강화권',  chance: 15,  color: '#27ae60' },
+                { type: 'ticket', val: 10, name: '+10 강화권', chance: 8,  color: '#3498db' },
+                { type: 'ticket', val: 12, name: '+12 강화권', chance: 2,   color: '#9b59b6' }
+            ]
+        },
+
+        // =====================================================================
+        // 3. [Lv.70] 장인의 비밀 상자 (가격: 10억 G)
+        // =====================================================================
+        BOX_70: {
+            name: "🔥 장인의 상자 (~70Lv)",
+            cost: 1000000000,
+            info: "70레벨 이하 장비 전용. 고수가 되기 위한 필수 코스.",
+            rates: [
+                // [주문서: 55%]
+                { type: 'scroll', id: 7, name: '장인 하급 방지권', chance: 38, color: '#bdc3c7' },
+                { type: 'scroll', id: 8, name: '장인 중급 방지권', chance: 15, color: '#95a5a6' },
+                { type: 'scroll', id: 9, name: '장인 상급 방지권', chance: 2, color: '#7f8c8d' },
+                // [강화권: 45%]
+                { type: 'ticket', val: 5,  name: '+5 강화권',  chance: 20,  color: '#2ecc71' },
+                { type: 'ticket', val: 7,  name: '+7 강화권',  chance: 15,  color: '#27ae60' },
+                { type: 'ticket', val: 10, name: '+10 강화권', chance: 8,  color: '#3498db' },
+                { type: 'ticket', val: 12, name: '+12 강화권', chance: 2,   color: '#9b59b6' }
+            ]
+        },
+
+        // =====================================================================
+        // 4. [Lv.100] 신화의 판도라 상자 (가격: 1,000억 G)
+        // =====================================================================
+        BOX_100: {
+            name: "🌌 신화의 상자 (~100Lv)",
+            cost: 100000000000,
+            info: "100레벨 이하 장비 전용. 신의 힘을 손에 넣으세요.",
+            rates: [
+                // [주문서: 55%]
+                { type: 'scroll', id: 10, name: '전설 하급 방지권', chance: 38, color: '#bdc3c7' },
+                { type: 'scroll', id: 11, name: '전설 중급 방지권', chance: 15, color: '#95a5a6' },
+                { type: 'scroll', id: 12, name: '전설 상급 방지권', chance: 2, color: '#7f8c8d' },
+                // [강화권: 45%]
+                { type: 'ticket', val: 5,  name: '+5 강화권',  chance: 20,  color: '#2ecc71' },
+                { type: 'ticket', val: 7,  name: '+7 강화권',  chance: 15,  color: '#27ae60' },
+                { type: 'ticket', val: 10, name: '+10 강화권', chance: 8,  color: '#3498db' },
+                { type: 'ticket', val: 12, name: '+12 강화권', chance: 2,   color: '#9b59b6' }
             ]
         }
     },
+   
    // [추가] 아이템 등급별 테두리 색상 반환 함수
     getItemRarityColor: (item) => {
         if (!item) return '#fff'; // 기본 흰색
@@ -610,6 +678,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
