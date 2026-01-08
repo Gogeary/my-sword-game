@@ -316,6 +316,14 @@
     <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
 </div>
 
+<div id="modal-inventory" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <h3>📦 인벤토리</h3>
+        <div id="modal-item-list" class="item-list" style="max-height: 300px; overflow-y: auto;"></div>
+        <button class="btn-close" onclick="MainEngine.closeModal()">닫기</button>
+    </div>
+</div>
+    
     <div id="page-shop-select" class="page">
         <h2>🏪 상점</h2>
         <div style="display:flex; flex-direction:column; gap:10px;">
@@ -360,6 +368,7 @@
 <link rel="shortcut icon" href="#">
 </div> </body>
 </html>
+
 
 
 
