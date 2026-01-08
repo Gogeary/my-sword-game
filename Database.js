@@ -259,16 +259,52 @@ const GameDatabase = {
         ],
 
         // =========================================================================
-        // [강화권] 즉시 해당 레벨로 강화 (확률 100%)
+        // [강화권] 즉시 해당 레벨로 강화 (limitLv: 사용 가능한 장비 최대 레벨)
         // =========================================================================
         tickets: [
-            { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 20000, img: 'ticket5.png', info: '이건 왜 있는거야?'},
-            { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 50000, img: 'ticket7.png', info: '그래도 좀 쓸만한 것 같다.'},
-            { id: 't10', name: '+10 강화권', val: 10, type: 'ticket', p: 1000000, img: 'ticket10.png', info: '자동강화를 사용 한 것 같은 마법! 그러나 돈이 들진 않아서 좋다.'},
-            { id: 't12', name: '+12 강화권', val: 12, type: 'ticket', p: 2000000, img: 'ticket12.png', info: '그래도 난 운이 좋은편인거지.'},
-            { id: 't13', name: '+13 강화권', val: 13, type: 'ticket', p: 4000000, img: 'ticket13.png', info: '그래도 확실한 성능은 보장해 주는거지'},
-            { id: 't14', name: '+14 강화권', val: 14, type: 'ticket', p: 10000000, img: 'ticket14.png', info: '이제 내 장비에서 빛을 나게 할 자신이 생긴다.'},
-            { id: 't15', name: '+15 강화권', val: 15, type: 'ticket', p: 20000000, img: 'ticket15.png', info: '사냥터를 부수러 가자.'}
+            // ---------------------------------------------------------------------
+            // [Lv.30 이하 장비용] - 초보자 (용돈으로 구매 가능)
+            // ---------------------------------------------------------------------
+            { id: 't30_5',  name: '초급 +5 강화권 (~30Lv)', val: 5, type: 'ticket', limitLv: 30, p: 20000, img: 'ticket5.png', info: '초보 장비를 위한 작은 선물.'},
+            { id: 't30_7',  name: '초급 +7 강화권 (~30Lv)', val: 7, type: 'ticket', limitLv: 30, p: 50000, img: 'ticket7.png', info: '조금 더 강해진 느낌이 든다.'},
+            { id: 't30_10', name: '초급 +10 강화권 (~30Lv)', val: 10, type: 'ticket', limitLv: 30, p: 500000, img: 'ticket10.png', info: '초반 구간을 빠르게 넘길 수 있다.'},
+            { id: 't30_12', name: '초급 +12 강화권 (~30Lv)', val: 12, type: 'ticket', limitLv: 30, p: 2000000, img: 'ticket12.png', info: '운이 좋은 날에만 쓴다는 강화권.'},
+            { id: 't30_13', name: '초급 +13 강화권 (~30Lv)', val: 13, type: 'ticket', limitLv: 30, p: 4000000, img: 'ticket13.png', info: '안정적인 성능을 보장한다.'},
+            { id: 't30_14', name: '초급 +14 강화권 (~30Lv)', val: 14, type: 'ticket', limitLv: 30, p: 10000000, img: 'ticket14.png', info: '초보자 장비치고는 꽤 강력해진다.'},
+            { id: 't30_15', name: '초급 +15 강화권 (~30Lv)', val: 15, type: 'ticket', limitLv: 30, p: 20000000, img: 'ticket15.png', info: '초보자 장비의 한계에 가까워진다.'},
+
+            // ---------------------------------------------------------------------
+            // [Lv.50 이하 장비용] - 중수 (사냥으로 골드 수급 가능 구간)
+            // ---------------------------------------------------------------------
+            { id: 't50_5',  name: '중급 +5 강화권 (~50Lv)', val: 5, type: 'ticket', limitLv: 50, p: 1000000, img: 'ticket5.png', info: '중급 장비의 기초를 다져준다.'},
+            { id: 't50_7',  name: '중급 +7 강화권 (~50Lv)', val: 7, type: 'ticket', limitLv: 50, p: 5000000, img: 'ticket7.png', info: '적당한 성능을 낼 수 있다.'},
+            { id: 't50_10', name: '중급 +10 강화권 (~50Lv)', val: 10, type: 'ticket', limitLv: 50, p: 50000000, img: 'ticket10.png', info: '본격적인 강화의 시작.'},
+            { id: 't50_12', name: '중급 +12 강화권 (~50Lv)', val: 12, type: 'ticket', limitLv: 50, p: 150000000, img: 'ticket12.png', info: '중급 사냥터에서 부족함이 없다.'},
+            { id: 't50_13', name: '중급 +13 강화권 (~50Lv)', val: 13, type: 'ticket', limitLv: 50, p: 300000000, img: 'ticket13.png', info: '실패의 위험 없이 고강을 만든다.'},
+            { id: 't50_14', name: '중급 +14 강화권 (~50Lv)', val: 14, type: 'ticket', limitLv: 50, p: 700000000, img: 'ticket14.png', info: '매우 훌륭한 성능을 발휘한다.'},
+            { id: 't50_15', name: '중급 +15 강화권 (~50Lv)', val: 15, type: 'ticket', limitLv: 50, p: 1500000000, img: 'ticket15.png', info: '중급 장비가 낼 수 있는 최고의 효율.'},
+
+            // ---------------------------------------------------------------------
+            // [Lv.70 이하 장비용] - 고수 (억 단위 골드 소모)
+            // ---------------------------------------------------------------------
+            { id: 't70_5',  name: '상급 +5 강화권 (~70Lv)', val: 5, type: 'ticket', limitLv: 70, p: 50000000, img: 'ticket5.png', info: '고급 장비 강화의 첫걸음.'},
+            { id: 't70_7',  name: '상급 +7 강화권 (~70Lv)', val: 7, type: 'ticket', limitLv: 70, p: 200000000, img: 'ticket7.png', info: '기본적인 성능은 보장된다.'},
+            { id: 't70_10', name: '상급 +10 강화권 (~70Lv)', val: 10, type: 'ticket', limitLv: 70, p: 3000000000, img: 'ticket10.png', info: '고급 장비에 걸맞은 품격.'},
+            { id: 't70_12', name: '상급 +12 강화권 (~70Lv)', val: 12, type: 'ticket', limitLv: 70, p: 8000000000, img: 'ticket12.png', info: '강력한 힘이 느껴지는 붉은 종이.'},
+            { id: 't70_13', name: '상급 +13 강화권 (~70Lv)', val: 13, type: 'ticket', limitLv: 70, p: 15000000000, img: 'ticket13.png', info: '어디 가서 꿀리지 않는 장비가 된다.'},
+            { id: 't70_14', name: '상급 +14 강화권 (~70Lv)', val: 14, type: 'ticket', limitLv: 70, p: 30000000000, img: 'ticket14.png', info: '장인이 심혈을 기울여 강화했다.'},
+            { id: 't70_15', name: '상급 +15 강화권 (~70Lv)', val: 15, type: 'ticket', limitLv: 70, p: 50000000000, img: 'ticket15.png', info: '전설적인 대장장이의 보증서.'},
+
+            // ---------------------------------------------------------------------
+            // [Lv.100 이하 장비용] - 엔드게임 (조 단위 골드 소모)
+            // ---------------------------------------------------------------------
+            { id: 't100_5',  name: '신화 +5 강화권 (~100Lv)', val: 5, type: 'ticket', limitLv: 100, p: 1000000000, img: 'ticket5.png', info: '신화 장비의 잠재력을 아주 조금 깨운다.'},
+            { id: 't100_7',  name: '신화 +7 강화권 (~100Lv)', val: 7, type: 'ticket', limitLv: 100, p: 5000000000, img: 'ticket7.png', info: '신화 장비의 기운이 흘러나오기 시작한다.'},
+            { id: 't100_10', name: '신화 +10 강화권 (~100Lv)', val: 10, type: 'ticket', limitLv: 100, p: 100000000000, img: 'ticket10.png', info: '신의 물건을 다루기 위한 자격.'},
+            { id: 't100_12', name: '신화 +12 강화권 (~100Lv)', val: 12, type: 'ticket', limitLv: 100, p: 500000000000, img: 'ticket12.png', info: '세상을 호령할 수 있는 힘.'},
+            { id: 't100_13', name: '신화 +13 강화권 (~100Lv)', val: 13, type: 'ticket', limitLv: 100, p: 2000000000000, img: 'ticket13.png', info: '차원을 넘나드는 힘이 깃들어 있다.'},
+            { id: 't100_14', name: '신화 +14 강화권 (~100Lv)', val: 14, type: 'ticket', limitLv: 100, p: 8000000000000, img: 'ticket14.png', info: '신조차 두려워할 힘.'},
+            { id: 't100_15', name: '신화 +15 강화권 (~100Lv)', val: 15, type: 'ticket', limitLv: 100, p: 20000000000000, img: 'ticket15.png', info: '세상을 구할 수 있는 절대적인 힘.'}
         ]
     },
 
@@ -576,6 +612,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
