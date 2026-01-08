@@ -84,24 +84,32 @@ const CombatSystem = {
         CombatSystem.isEncounter = true;
         CombatSystem.renderEncounterUI(monster);
     },
-
+// 3. 조우 UI 렌더링 (보스 크기 및 시각 효과 완성판)
     renderEncounterUI: (m) => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
         
         const imgPath = `image/${m.img}`;
         
-        // [수정] 보스일 경우 이름 강조 및 배경 효과 차별화
-        const nameColor = m.isBoss ? '#f1c40f' : '#ffffff'; // 보스는 황금색
+        // 보스 여부에 따른 설정값들
+        const nameColor = m.isBoss ? '#f1c40f' : '#ffffff'; 
         const borderColor = m.isBoss ? 'border:3px solid #f1c40f;' : 'border:2px solid var(--hunt);';
         const bossTag = m.isBoss ? '<span style="font-size:0.8em; display:block; color:#f1c40f;">[STAGE BOSS]</span>' : '';
+        
+        // [수정] 보스일 때 이미지 크기를 150px로 확대
+        const imgSize = m.isBoss ? "150px" : "100px"; 
 
         grid.innerHTML = `
             <div style="width:100%; padding:20px; text-align:center; ${borderColor} border-radius:10px; background:rgba(0,0,0,0.2);">
-                <img src="${imgPath}" style="width:100px; height:100px; object-fit:contain; margin-bottom:10px; ${m.isBoss ? 'filter: drop-shadow(0 0 10px #f1c40f);' : ''}" onerror="this.style.display='none';">
+                <img src="${imgPath}" 
+                     style="width:${imgSize}; height:${imgSize}; object-fit:contain; margin-bottom:10px; 
+                     ${m.isBoss ? 'filter: drop-shadow(0 0 15px #f1c40f);' : ''}" 
+                     onerror="this.style.display='none';">
+                
                 ${bossTag}
                 <h3 style="margin:5px 0; color:${nameColor};">${m.name} <span style="color:#e74c3c">Lv.${m.lv}</span></h3>
                 <div style="color:#aaa; font-size:0.9em; margin-bottom:15px;">HP: ${m.hp.toLocaleString()}</div>
+                
                 <div style="display:flex; gap:10px; justify-content:center;">
                     <button class="main-menu-btn" style="background:#c0392b; width:45%; margin:0;" onclick="CombatSystem.startBattle()">⚔️ 싸운다</button>
                     <button class="main-menu-btn" style="background:#2ecc71; width:45%; margin:0;" onclick="CombatSystem.runAway()">🏃 도망간다</button>
@@ -335,5 +343,6 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
 
 
