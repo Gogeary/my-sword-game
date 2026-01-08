@@ -302,10 +302,21 @@ renderInventory: () => {
 },
 
     // [추가] 아이템 카드 HTML 생성을 담당하는 보조 함수
+    네, 원하시는 대로 **"인벤토리에 있을 때는 설명(info)"**을 보여주고, **"장착했을 때만 능력치(공격력 등)"**를 보여주도록 코드를 수정해 드리겠습니다.
+
+isEquipped 변수를 활용해서, 장착 여부에 따라 보여주는 텍스트를 다르게 처리하면 됩니다.
+
+🛠️ Main_Engine.js 수정
+MainEngine 내부의 createItemHTML 함수를 아래 코드로 덮어씌워 주세요.
+
+JavaScript
+
+    // [수정됨] 인벤토리=설명, 장착중=능력치 표시
     createItemHTML: (it, idx, isEquipped) => {
         const div = document.createElement('div'); 
         div.className = 'item-card';
         
+        // 장착 중이면 테두리 강조
         if (isEquipped) { 
             div.style.border = '2px solid var(--mine)'; 
             div.style.background = 'rgba(46, 204, 113, 0.1)'; 
@@ -329,12 +340,19 @@ renderInventory: () => {
             `; 
         }
 
-        // 아이템 정보 텍스트 (단위 적용)
+        // ─────────────────────────────────────────────────────────────
+        // ★ [핵심 로직 변경] 장착 여부에 따라 텍스트 다르게 표시
+        // ─────────────────────────────────────────────────────────────
         let subText = "";
         const type = it.type;
+        const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
 
-        if (it.info) subText = it.info;
-        else if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
+        // 1. 인벤토리에 있고(장착X) + 설명(info)이 있으면 -> 설명 보여주기
+        if (!isEquipped && it.info) {
+            subText = it.info;
+        }
+        // 2. 장착 중이거나 설명이 없는 장비 -> 구체적인 스탯(공격력 등) 보여주기
+        else if (isGear) {
             let statName = "능력"; let statIcon = "⭐";
             switch(type) {
                 case 'weapon': statName = "공격력"; statIcon = "⚔️"; break;
@@ -343,13 +361,14 @@ renderInventory: () => {
                 case 'gloves': statName = "증폭도"; statIcon = "🥊"; break;
                 case 'shoes':  statName = "민첩성"; statIcon = "👟"; break;
             }
-            // k값이 100 이상이면 +수치, 이하면 배율(x)로 가정해서 표시
-            // 만약 무조건 배율이라면: `x${it.k}`
-            subText = `${statIcon} ${statName}: x${it.k}`;
+            // k값을 배율(x)로 표시 (글러브 등) 혹은 수치(+)로 표시
+            // 여기서는 통일감 있게 'x 배율' 형태로 표시합니다.
+            subText = `<span style="color:#f1c40f;">${statIcon} ${statName}: x${it.k.toFixed(2)}</span>`;
         }
+        // 3. 기타 아이템들
         else if (type === 'potion') subText = `🧪 회복량: ${MainEngine.formatNumber(it.val)}`;
         else if (type === 'ticket') subText = `🎫 확정 강화 +${it.val}`;
-        else if (it.p) subText = `💰 가치: ${MainEngine.formatNumber(it.p)}`; // 티어 대신 가격 표시로 변경 (원하시면 티어로 유지 가능)
+        else if (it.p) subText = `💰 가치: ${MainEngine.formatNumber(it.p)}`;
 
         const countBadge = (it.count && it.count > 1) ? ` <span style="color:#f1c40f; font-weight:bold;">x${it.count}</span>` : '';
 
@@ -687,6 +706,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
