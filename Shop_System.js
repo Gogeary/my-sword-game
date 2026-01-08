@@ -1,6 +1,7 @@
 /* ==========================================
    [Shop_System.js] 
    상점 시스템 (장비 / 소비 / 뽑기 통합)
+   - 수정사항: 장비 탭 열 때 5티어 이하만 표시되도록 필터링 적용
    ========================================== */
 
 const ShopSystem = {
@@ -21,7 +22,11 @@ const ShopSystem = {
         
         if (tab === 'equip') {
             title.innerText = "⚔️ 장비 상점";
-            items = GameDatabase.EQUIPMENT;
+            
+            // [★핵심 수정] 5티어(Tier 5) 이하인 아이템만 필터링하여 보여줌
+            // item.tier가 없으면(구버전 데이터) 그냥 보여주거나 1티어로 취급
+            items = GameDatabase.EQUIPMENT.filter(item => (item.tier || 1) <= 5);
+
         } else {
             title.innerText = "🧪 소비 아이템 상점";
             // 물약과 주문서 데이터를 안전하게 합침
@@ -41,7 +46,7 @@ const ShopSystem = {
                 `<img src="${imgPath}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='💰';">` 
                 : '<div class="item-icon">💰</div>';
 
-           // 아이템 설명 텍스트 (커스텀 info 우선 방식)
+            // 아이템 설명 텍스트 (커스텀 info 우선 방식)
             let subText = "";
 
             if (item.info) {
@@ -54,10 +59,10 @@ const ShopSystem = {
                 // 3순위: 주문서 효과
                 subText = `효과: 강화 파괴 방지`;
             } else {
-                // 4순위: 아무것도 없을 때만 기존 티어 표시
-              const tier = Math.floor((item.p || 0) / 1000); 
-                subText = `등급: Tier ${tier > 0 ? tier : 1}`;
-}
+                // 4순위: 아무것도 없을 때 등급 표시 (DB에 tier 속성이 있으면 그것 사용)
+                const tierVal = item.tier ? item.tier : Math.floor((item.p || 0) / 1000); 
+                subText = `등급: Tier ${tierVal > 0 ? tierVal : 1}`;
+            }
 
             div.innerHTML = `
                 ${imgTag}
@@ -221,7 +226,8 @@ const ShopSystem = {
 
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
- };
+};
+
 /* ==========================================
    [추가] 강화권 합성 시스템
    ========================================== */
@@ -322,8 +328,3 @@ const SynthesisSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
 };
-
-
-
-
-
