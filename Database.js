@@ -485,8 +485,8 @@ const GameDatabase = {
         { id: 5, name: "회사", minLv: 26, maxLv: 30, cost: 50000 },
         // [중반] 현실의 쓴맛 & 던전 진입 (Lv.31 ~ 50)
         // 몬스터 골드: 100만 ~ 5000만 G 구간
-        { id: 6, name: "야근하는 사무실", minLv: 31, maxLv: 35, cost: 500000 },     // 50만
-        { id: 7, name: "지옥철 2호선", minLv: 36, maxLv: 40, cost: 2000000 },       // 200만
+        { id: 6, name: "심야 사무실", minLv: 31, maxLv: 35, cost: 500000 },     // 50만
+        { id: 7, name: "지옥철 1호선", minLv: 36, maxLv: 40, cost: 2000000 },       // 200만
         { id: 8, name: "지하 던전 입구", minLv: 41, maxLv: 45, cost: 5000000 },     // 500만
         { id: 9, name: "잊혀진 광산", minLv: 46, maxLv: 50, cost: 15000000 },       // 1500만
 
@@ -678,6 +678,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
