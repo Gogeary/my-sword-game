@@ -175,59 +175,61 @@ const CombatSystem = {
             log.innerHTML = `[Turn ${turn}] 유저 공격: ${pDmg} ${atkMsg} (적 HP: ${Math.max(0, Math.floor(mHP))})<br>` + log.innerHTML;
 
             // --- [2. 유저 승리 판정] ---
-            if (mHP <= 0) {
-                clearInterval(autoTimer);
-                autoTimer = null;
-                data.gold += m.gold;
-                data.exp += m.exp;
+if (mHP <= 0) {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    data.gold += m.gold;
+    data.exp += m.exp;
+    
+    let dropMsg = "";
+
+    // [장비 드랍] (10%)
+    const targetTier = Math.ceil(m.lv / 5);
+    if (Math.random() * 100 < 10) { 
+        const validItems = GameDatabase.EQUIPMENT.filter(e => (e.tier || 0) === targetTier);
+        if (validItems.length > 0) {
+            const baseItem = validItems[Math.floor(Math.random() * validItems.length)];
+            
+            // ★ 수정: 원본 복사 후 초기화 (uid는 addItem에서 자동 생성됨)
+            let newItem = { ...baseItem, en: 0, skills: [] }; 
+            
+            const countRoll = Math.random() * 100;
+            let skillCount = (countRoll < 70) ? 1 : (countRoll < 90) ? 2 : 3;
+
+            if (typeof SkillSystem !== 'undefined') {
+                newItem = SkillSystem.attachSkill(newItem, skillCount);
+            }
+
+            // ★ 핵심: data.inventory.push 대신 반드시 MainEngine.addItem 사용!
+            if (typeof MainEngine !== 'undefined') {
+                MainEngine.addItem(newItem); 
+            }
+            
+            dropMsg += `<br><span style="color:#e94560">🎁 [T${targetTier}] ${newItem.name} 획득!</span>`;
+        }
+    }
+
+    // [보석 드랍] (5%)
+    if (Math.random() * 100 < 5) {
+        const tierKey = `TIER_${targetTier}`;
+        const gemList = (GameDatabase.GEM_DROPS && GameDatabase.GEM_DROPS[tierKey]) ? GameDatabase.GEM_DROPS[tierKey] : null;
+
+        if (gemList && gemList.length > 0) {
+            const isRare = (Math.random() * 100) >= 70; 
+            const gemIndex = (isRare && gemList.length > 1) ? 1 : 0;
+            const dropGem = gemList[gemIndex];
+
+            if (dropGem) {
+                // ★ 보석도 MainEngine.addItem을 사용하여 중첩 로직을 태웁니다.
+                if (typeof MainEngine !== 'undefined') {
+                    MainEngine.addItem({ ...dropGem, count: 1 });
+                }
                 
-                let dropMsg = "";
-
-                // [장비 드랍] (10%)
-                const targetTier = Math.ceil(m.lv / 5);
-                if (Math.random() * 100 < 10) { 
-                    const validItems = GameDatabase.EQUIPMENT.filter(e => (e.tier || 0) === targetTier);
-                    if (validItems.length > 0) {
-                        const baseItem = validItems[Math.floor(Math.random() * validItems.length)];
-                        let newItem = { ...baseItem, id: Date.now(), en: 0, skills: [] };
-                        
-                        const countRoll = Math.random() * 100;
-                        let skillCount = 1; 
-                        if (countRoll < 70) skillCount = 1;
-                        else if (countRoll < 90) skillCount = 2;
-                        else skillCount = 3;
-
-                        if (typeof SkillSystem !== 'undefined') {
-                            newItem = SkillSystem.attachSkill(newItem, skillCount);
-                        }
-                        data.inventory.push(newItem);
-                        dropMsg += `<br><span style="color:#e94560">🎁 [T${targetTier}] ${newItem.name} 획득!</span>`;
-                    }
-                }
-
-                // [보석 드랍] (5%)
-                if (Math.random() * 100 < 5) {
-                    const tierKey = `TIER_${targetTier}`;
-                    const gemList = (GameDatabase.GEM_DROPS && GameDatabase.GEM_DROPS[tierKey]) 
-                                    ? GameDatabase.GEM_DROPS[tierKey] : null;
-
-                    if (gemList && gemList.length > 0) {
-                        const isRare = (Math.random() * 100) >= 70; 
-                        const gemIndex = (isRare && gemList.length > 1) ? 1 : 0;
-                        const dropGem = gemList[gemIndex];
-
-                        if (dropGem) {
-                            data.inventory.push({
-                                id: Date.now() + Math.random(),
-                                ...dropGem,
-                                type: 'gem', count: 1
-                            });
-                            const color = (gemIndex === 1) ? '#9b59b6' : '#2ecc71';
-                            const prefix = (gemIndex === 1) ? '[✨희귀]' : '[🔹일반]';
-                            dropMsg += `<br><span style="color:${color}; font-weight:bold;">💎 ${prefix} ${dropGem.name} 획득!</span>`;
-                        }
-                    }
-                }
+                const color = (gemIndex === 1) ? '#9b59b6' : '#2ecc71';
+                dropMsg += `<br><span style="color:${color}; font-weight:bold;">💎 ${dropGem.name} 획득!</span>`;
+            }
+        }
+    }
 
                 if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
                 log.innerHTML = `<span style="color:var(--money)">★ 승리! +${Math.floor(m.gold)}G, +${Math.floor(m.exp)}EXP</span>${dropMsg}<br>` + log.innerHTML;
@@ -415,5 +417,6 @@ tryAutoPotion: function(pStats) {
     return { healed: healAmount, usedCount: usedCount };
 }
 };
+
 
 
