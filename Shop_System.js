@@ -187,50 +187,144 @@ const ShopSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     },
 
-    // 4. [수정됨] 합성 로직 (MainEngine.addItem 사용)
-    craft: (srcVal, dstVal) => {
-        // ... (이전 코드의 craft 내부 로직 중 재료 찾기 부분 동일) ...
-        const materialIndices = [];
-        data.inventory.forEach((item, idx) => {
-            if (item.type === 'ticket' && item.val === srcVal) {
-                // 겹쳐진 아이템 처리 필요
-                // 하지만 현재 합성 로직은 단순화를 위해 '슬롯' 기준이 아닌 '총 개수'로 처리하는게 좋음
-                // 여기서는 기존 로직 유지하되, 겹쳐진 아이템에서 개수를 빼는 방식으로 수정해야 함.
+   합성 시스템을 **레벨 구간(30, 50, 70, 100)**별로 나누어 처리하려면, craft 함수뿐만 아니라 화면을 그려주는 render 함수도 함께 수정해야 합니다.
+
+그래야 화면에 [Lv.30] +5 합성 버튼과 [Lv.100] +5 합성 버튼이 따로 생성되고, 각각의 재료를 올바르게 소모할 수 있습니다.
+
+Shop_System.js 파일의 하단에 있는 SynthesisSystem 객체 전체를 아래 코드로 교체해 주세요.
+
+🛠️ Shop_System.js 수정 (SynthesisSystem 부분)
+JavaScript
+
+/* ==========================================
+   [Shop_System.js] 하단 부분
+   합성 시스템 (수정됨: 4단계 레벨 구간 적용)
+   ========================================== */
+const SynthesisSystem = {
+    // 1. 레벨 구간 정의
+    tiers: [30, 50, 70, 100],
+
+    // 2. 합성 레시피 정의 (재료 -> 결과)
+    recipes: [
+        { src: 5, dst: 7 },
+        { src: 7, dst: 10 },
+        { src: 10, dst: 12 },
+        { src: 12, dst: 13 },
+        { src: 13, dst: 14 },
+        { src: 14, dst: 15 }
+    ],
+
+    open: () => {
+        showPage('page-synthesis');
+        SynthesisSystem.render();
+    },
+
+    // 3. [수정됨] UI 렌더링 (구간별로 분류하여 표시)
+    render: () => {
+        const list = document.getElementById('synthesis-list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        // 현재 인벤토리의 강화권 수량 파악 (Key: "val_limitLv" 형태)
+        // 예: "5_30" -> 3개
+        const ticketCounts = {};
+        data.inventory.forEach(item => {
+            if (item.type === 'ticket') {
+                const key = `${item.val}_${item.limitLv}`;
+                ticketCounts[key] = (ticketCounts[key] || 0) + (item.count || 1);
             }
         });
 
-        // ★ [중요] 겹치기가 적용되면 '인덱스'로 삭제하는 방식은 버그가 생깁니다.
-        // 아래와 같이 '개수'를 차감하는 방식으로 로직을 변경합니다.
+        // 각 티어별로 섹션 생성
+        SynthesisSystem.tiers.forEach(tier => {
+            // 섹션 헤더 (구분선)
+            const header = document.createElement('div');
+            header.style.padding = "10px";
+            header.style.marginTop = "10px";
+            header.style.backgroundColor = "#333";
+            header.style.color = "#f1c40f";
+            header.style.fontWeight = "bold";
+            header.innerText = `▼ 장비 레벨제한 ${tier}Lv 구간`;
+            list.appendChild(header);
 
-        // 1. 보유량 확인
-        const srcItem = data.inventory.find(i => i.type === 'ticket' && i.val === srcVal);
+            // 해당 티어의 레시피 생성
+            SynthesisSystem.recipes.forEach(recipe => {
+                const countKey = `${recipe.src}_${tier}`;
+                const count = ticketCounts[countKey] || 0;
+                const canCraft = count >= 3;
+
+                const div = document.createElement('div');
+                div.className = 'item-card';
+                div.style.border = canCraft ? '1px solid #2ecc71' : '1px solid #444';
+                div.style.marginBottom = '5px';
+                
+                div.innerHTML = `
+                    <div style="flex:1; text-align:left; padding-left:10px;">
+                        <div style="font-size:1.0em; color:#fff;">
+                            <span style="color:#aaa; font-size:0.8em;">[Lv.${tier}]</span> 
+                            +${recipe.src}권 <span style="color:#aaa;">x3</span> 
+                            <span style="margin:0 5px;">➡</span> 
+                            <span style="color:#f1c40f; font-weight:bold;">+${recipe.dst}권</span>
+                        </div>
+                        <div style="font-size:0.85em; color:${canCraft ? '#2ecc71' : '#e74c3c'}; margin-top:4px;">
+                            보유량: ${count} / 3
+                        </div>
+                    </div>
+                    <button class="item-btn" 
+                        style="background:${canCraft ? '#27ae60' : '#555'}; color:#fff; width:70px; padding:8px;" 
+                        onclick="ShopSystem.craft(${recipe.src}, ${recipe.dst}, ${tier})" 
+                        ${canCraft ? '' : 'disabled'}>
+                        합성
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        });
+    },
+
+    // 4. [수정됨] 합성 로직 (티어 구분 추가)
+    // 인자값: srcVal(재료수치), dstVal(결과수치), limitLv(티어)
+    craft: (srcVal, dstVal, limitLv) => {
+        // 해당 티어의 재료 아이템 찾기
+        const srcItem = data.inventory.find(i => 
+            i.type === 'ticket' && 
+            i.val === srcVal && 
+            i.limitLv === limitLv
+        );
+        
         const currentCount = srcItem ? (srcItem.count || 1) : 0;
 
         if (currentCount < 3) return alert("재료가 부족합니다.");
 
-        if (!confirm(`+${srcVal} 강화권 3개를 소모하여 +${dstVal} 강화권을 만드시겠습니까?`)) return;
+        if (!confirm(`[Lv.${limitLv}] +${srcVal} 강화권 3개를 사용하여\n[Lv.${limitLv}] +${dstVal} 강화권을 만드시겠습니까?`)) return;
 
-        // 2. 재료 소모
+        // 재료 소모 (겹치기 처리)
         srcItem.count -= 3;
         if (srcItem.count <= 0) {
-            // 개수가 0 이하면 인벤토리에서 제거
             const idx = data.inventory.indexOf(srcItem);
             if (idx > -1) data.inventory.splice(idx, 1);
         }
 
-        // 3. 결과 지급
-        const targetTicket = GameDatabase.CONSUMABLES.tickets.find(t => t.val === dstVal);
+        // 결과물 지급 (같은 티어의 상위 강화권 찾기)
+        const targetTicket = GameDatabase.CONSUMABLES.tickets.find(t => 
+            t.val === dstVal && 
+            t.limitLv === limitLv
+        );
+        
         if (targetTicket) {
+            // MainEngine.addItem을 사용하여 겹치기 처리
             const newItem = { ...targetTicket, count: 1, en: 0 };
             MainEngine.addItem(newItem);
-            alert(`🎉 합성 성공! [+${dstVal} 강화권] 획득!`);
+            alert(`🎉 합성 성공! [Lv.${limitLv} +${dstVal} 강화권] 획득!`);
         } else {
-            alert("데이터 오류");
+            alert(`데이터 오류: Lv.${limitLv} +${dstVal} 강화권을 DB에서 찾을 수 없습니다.`);
+            // 복구 로직 (에러 시 재료 돌려주기)
+            srcItem.count += 3;
+            if(!data.inventory.includes(srcItem)) data.inventory.push(srcItem);
         }
 
-        // UI 갱신 (합성 시스템 렌더링 호출 필요)
-        SynthesisSystem.render(); // Main_Engine이 아닌 Shop_System 내부에서 호출되므로 그냥 씀
+        // UI 갱신
+        SynthesisSystem.render();
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
 };
-
