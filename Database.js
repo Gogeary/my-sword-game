@@ -512,7 +512,7 @@ const GameDatabase = {
                 { type: 'scroll', id: 3,   name: '상급 방지권', chance: 7,  color: '#e74c3c' }
             ]
         }
-    }
+    },
    // [추가] 아이템 등급별 테두리 색상 반환 함수
     getItemRarityColor: (item) => {
         if (!item) return '#fff'; // 기본 흰색
@@ -549,6 +549,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
