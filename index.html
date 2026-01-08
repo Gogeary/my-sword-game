@@ -257,7 +257,7 @@
         </div>
         <div style="display:flex; gap:5px; margin-bottom:15px;">
             <button onclick="MainEngine.openInventoryModal('support')" class="btn-nav" style="background:#8e44ad; flex:1; margin:0;">📦 보조 아이템 선택</button>
-            <button onclick="EnhancementSystem.clearSupport()" class="btn-nav" style="background:#555; width:60px; margin:0;">❌</button>
+            <button onclick="UpgradeSystem.clearSupport()" class="btn-nav" style="background:#555; width:60px; margin:0;">❌</button>
         </div>
 
         <div style="display:flex; justify-content:space-between; margin:10px 0; font-weight:bold; font-size:1.1em;">
@@ -272,7 +272,7 @@
         <button class="btn-upgrade" id="btn-up-exec" onclick="UpgradeSystemUpgradeSystem.try()" disabled>강화하기</button>
         
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:5px; background:rgba(255,255,255,0.05); padding:5px; border-radius:8px;">
-            <button class="btn-nav" style="background:#3498db; width:60%; margin:0;" id="auto-btn" onclick="EnhancementSystem.startAuto()">자동 강화 시작</button>
+            <button class="btn-nav" style="background:#3498db; width:60%; margin:0;" id="auto-btn" onclick="UpgradeSystem.startAuto()">자동 강화 시작</button>
             <div style="display:flex; align-items:center; gap:5px; width:35%; justify-content:flex-end;">
                 <input type="checkbox" id="chk-safe-mode" checked style="width:20px; height:20px;">
                 <label for="chk-safe-mode" style="font-size:0.8em; color:#ddd;">+10강<br>멈춤</label>
@@ -375,6 +375,7 @@
 </div> 
 </body>
 </html>
+
 
 
 
