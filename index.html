@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강화하기 v2.3</title>
+    <title>강화하기 v2.4</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     
@@ -80,7 +80,7 @@
 <body>
 
 <div id="login-container">
-    <h1 style="color:var(--money); margin-bottom:20px;">🎮 강화하기 v2.3</h1> 
+    <h1 style="color:var(--money); margin-bottom:20px;">🎮 강화하기 v2.4</h1> 
     <input type="text" id="login-id" class="login-input" placeholder="아이디를 입력하세요">
     <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요">
     
@@ -132,6 +132,7 @@
         <h2>🗺️ 사냥터 선택</h2>
         <div id="hunting-zone-list" style="display:flex; flex-direction:column; gap:8px;"></div>
         <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
     <div id="page-hunt-play" class="page">
@@ -152,6 +153,7 @@
             🏥 응급 치료소 (골드 소모)
         </button>
         <button class="btn-nav" onclick="CombatSystem.resetBattleUI(); showPage('page-hunt-select');">🏃 사냥터 나가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 </div>
 
@@ -164,6 +166,7 @@
             <button class="main-menu-btn" style="background:#f1c40f; color:#000;" onclick="MiningSystem.enter(3)">4. 찬란한 광산 (500,000G)</button>
         </div>
         <button class="btn-nav" onclick="showPage('page-earn')">⬅️ 뒤로가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
     <div id="page-mine-play" class="page">
@@ -171,6 +174,7 @@
         <div id="mine-grid" class="grid-4"></div>
         <button id="mine-refresh" class="main-menu-btn" style="background:var(--mine); color:#000; display:none;" onclick="MiningSystem.refresh()">💎 새로운 광맥 찾기</button>
         <button class="btn-nav" onclick="showPage('page-mine-select')">⬅️ 광산 나가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
     
     <div id="page-gamble" class="page">
@@ -188,6 +192,7 @@
             성공 시 2배, 실패 시 0원!
         </div>
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 나가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
     
     <div id="page-shop-gacha" class="page">
@@ -206,6 +211,7 @@
             <div style="text-align:center; color:#555; margin-top:60px;">버튼을 눌러 뽑기를 시작하세요.</div>
         </div>
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 나가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
     <div id="page-upgrade" class="page">
@@ -319,12 +325,14 @@
         <div id="synthesis-list" style="display:flex; flex-direction:column; gap:10px;"></div>
 
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 나가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
     
     <div id="page-shop-detail" class="page">
         <h2 id="shop-title">목록</h2>
         <div id="shop-list"></div>
         <button class="btn-nav" onclick="showPage('page-shop-select')">⬅️ 뒤로가기</button>
+        <button class="btn-nav" onclick="showPage('page-main')">⬅️ 메인으로</button>
     </div>
 
     <div id="inv-modal" class="modal">
@@ -337,6 +345,7 @@
 
 </div> </body>
 </html>
+
 
 
 
