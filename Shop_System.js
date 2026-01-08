@@ -74,23 +74,25 @@ const ShopSystem = {
         });
     },
 
-    // 3. 뽑기 실행 로직 (최종 수정본: 이름 기반 매칭)
+    // 3. 뽑기 실행 로직 (최종 수정본)
     playGacha: (boxKey, count) => {
         const boxData = GameDatabase.GACHA[boxKey];
         if (!boxData) return alert("존재하지 않는 뽑기 상자입니다.");
 
         const cost = boxData.cost * count;
-
         if (data.gold < cost) return alert(`골드가 부족합니다. (${MainEngine.formatNumber(cost)} G 필요)`);
-        
-        // 인벤토리 여유공간 체크 (대략적인 슬롯 수 체크)
-        if (data.inventory.length > 100) return alert("인벤토리가 가득 찼습니다! 정리가 필요합니다.");
+        if (data.inventory.length > 100) return alert("인벤토리가 가득 찼습니다!");
 
         if(!confirm(`[${boxData.name}]\n${MainEngine.formatNumber(cost)} G를 사용하여 ${count}회 뽑으시겠습니까?`)) return;
 
         data.gold -= cost;
+        
+        // 로그 박스 찾기 (ShopSystem.renderGachaBoxes에서 생성된 id="gacha-log")
         const logBox = document.getElementById('gacha-log');
-        if(logBox) logBox.innerHTML = ''; 
+        if(logBox) {
+            logBox.innerHTML = ''; // 이전 로그 초기화
+            logBox.style.color = "#fff";
+        }
 
         let results = [];
 
@@ -99,7 +101,6 @@ const ShopSystem = {
             let currentProb = 0;
             let selectedOption = null;
 
-            // 1. 확률 계산
             for (let rate of boxData.rates) {
                 currentProb += rate.chance;
                 if (rand < currentProb) {
@@ -109,51 +110,44 @@ const ShopSystem = {
             }
             if (!selectedOption) selectedOption = boxData.rates[boxData.rates.length - 1];
 
-            // 2. [★핵심] 실제 아이템 데이터 찾기
             let pick = null;
             
-            // A. 강화권(ticket)일 경우: 해당 상자의 레벨(limitLv)과 일치하는 강화수치(val)의 티켓 찾기
+            // A. 강화권(ticket) 처리
             if (selectedOption.type === 'ticket') {
-                // 상자 키(BOX_30, BOX_50 등)에서 레벨 추출
-                const targetLimitLv = parseInt(boxKey.split('_')[1]); 
+                // [개선] 문자열에서 숫자만 추출 (BOX_30 -> 30, BOX100 -> 100 모두 대응)
+                const targetLimitLv = parseInt(boxKey.replace(/[^0-9]/g, ''));
                 
                 pick = GameDatabase.CONSUMABLES.tickets.find(t => 
                     t.val === selectedOption.val && t.limitLv === targetLimitLv
                 );
             } 
-            // B. 주문서(scroll)일 경우: ID값으로 찾기
+            // B. 주문서(scroll) 처리
             else if (selectedOption.type === 'scroll') {
                 pick = GameDatabase.CONSUMABLES.scrolls.find(s => s.id === selectedOption.id);
             }
 
             if (pick) {
-                // 원본 데이터를 복사해서 지급 (count 속성 추가)
                 const newItem = { ...pick, count: 1 };
-                
-                // 시각 효과를 위해 뽑기 옵션의 색상/이름 전달
-                newItem.displayColor = selectedOption.color;
-                newItem.displayName = selectedOption.name;
-                
                 MainEngine.addItem(newItem);
-                results.push(newItem);
+                results.push({ name: pick.name, color: selectedOption.color || '#fff' });
             } else {
-                results.push({ displayName: "데이터 오류 (아이템 없음)", displayColor: "#555" });
+                results.push({ name: "데이터 오류 (매칭 실패)", color: "#555" });
             }
         }
 
-        // 3. 결과 로그 출력
+        // 결과 출력
         if(logBox) {
             results.forEach((res, idx) => {
                 const div = document.createElement('div');
-                div.style.padding = "5px";
-                div.style.borderBottom = "1px solid #333";
-                div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.displayColor || '#fff'}; font-weight:bold;">${res.name}</span> 획득!`;
+                div.style.padding = "3px 0";
+                div.style.borderBottom = "1px solid #222";
+                div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.color}; font-weight:bold;">${res.name}</span> 획득!`;
                 logBox.appendChild(div);
             });
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
+        MainEngine.updateUI();
     },
 
     // 4. 합성 로직
@@ -206,5 +200,6 @@ const SynthesisSystem = {
         });
     }
 };
+
 
 
