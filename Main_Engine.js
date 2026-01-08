@@ -226,7 +226,7 @@ renderInventory: () => {
             console.log(`아이템 '${it.name}'은(는) 탭이 맞지 않아 숨겨짐 (카테고리: ${category})`);
         }
     });
-}
+},
 
     // [추가] 아이템 카드 HTML 생성을 담당하는 보조 함수
     createItemHTML: (it, idx, isEquipped) => {
@@ -406,6 +406,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
