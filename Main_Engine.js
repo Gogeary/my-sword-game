@@ -714,6 +714,7 @@ updateUI: function() {
             potionDisplay.style.color = "var(--mine)";
         }
     },
+   };   // ← 여기서 반드시 닫기
 /* ==========================================
    [추가] 도박 시스템 (홀짝)
    ========================================== */
@@ -816,6 +817,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
