@@ -352,41 +352,52 @@ const CombatSystem = {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
         const missingHp = pStats.hp - data.hp;
         
+        // 1. 체력이 꽉 찼으면 종료
         if (missingHp <= 0) return { healed: 0, usedCount: 0 };
 
+        // 2. 인벤토리에서 포션만 골라내기 (수치 낮은 순으로 정렬)
         const potions = data.inventory.filter(i => i.type === 'potion').sort((a, b) => a.val - b.val);
         if (potions.length === 0) return { healed: 0, usedCount: 0 };
 
-        const totalPotionsValue = potions.reduce((acc, cur) => acc + cur.val, 0);
+        // 3. 현재 소지한 모든 포션의 총 회복량 계산 (중첩된 개수 count 반영)
+        const totalPotionsValue = potions.reduce((acc, cur) => acc + (cur.val * (cur.count || 1)), 0);
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
 
         if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 };
 
-        // [최대 회복 제한] 전체 체력의 10%
+        // 4. [제한] 턴당 최대 회복량은 전체 체력의 10%
         const limit = Math.floor(pStats.hp * 0.1);
 
-        // 최종 회복량 결정
+        // 5. 실제 회복할 양 결정
         const healAmount = Math.min(missingHp, realRemainingPool, limit);
 
         data.hp += healAmount;
-        data.potionBuffer += healAmount;
+        data.potionBuffer += healAmount; // 사용된 회복 에너지를 버퍼에 누적
 
         let usedCount = 0;
+        // 6. [핵심 수정] 버퍼에 쌓인 양만큼 인벤토리의 실제 포션 개수 차감
+        // 버퍼가 포션 1개의 회복량보다 커지면 포션을 소모한 것으로 간주
         while (potions.length > 0) {
             const smallestPotion = potions[0];
             if (data.potionBuffer >= smallestPotion.val) {
                 data.potionBuffer -= smallestPotion.val;
-                const realIdx = data.inventory.findIndex(i => i.id === smallestPotion.id);
-                if (realIdx !== -1) {
-                    data.inventory.splice(realIdx, 1);
-                    potions.shift();
-                    usedCount++;
-                } else break;
-            } else break;
+                usedCount++;
+
+                // 중첩된 수량 차감 로직
+                if (smallestPotion.count > 1) {
+                    smallestPotion.count--;
+                } else {
+                    // 수량이 1개뿐이면 인벤토리에서 아예 제거
+                    const realIdx = data.inventory.findIndex(i => i === smallestPotion);
+                    if (realIdx !== -1) data.inventory.splice(realIdx, 1);
+                    potions.shift(); // 작업 완료된 포션은 리스트에서 제거
+                }
+            } else {
+                break; // 버퍼가 포션 1개분도 안 남았으면 중단
+            }
         }
 
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
         return { healed: healAmount, usedCount: usedCount };
     }
-};
 
