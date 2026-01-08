@@ -44,11 +44,10 @@ const CombatSystem = {
         if(log) log.innerHTML = `사냥터에 입장했습니다. (탐색 비용: ${zone.cost.toLocaleString()}G)`;
     },
 
-    // 2. 몬스터 탐색 (보스 조우 로직 통합)
+    // 2. 몬스터 탐색 (보스 조우 및 이미지 교체 로직)
     scanHunt: () => {
         if (CombatSystem.isEncounter) return alert("이미 몬스터와 조우 중입니다!");
 
-        // 현재 존 정보 가져오기
         const z = CombatSystem.currentZone; 
         const cost = z.cost;
 
@@ -56,36 +55,33 @@ const CombatSystem = {
             return alert(`탐색 비용이 부족합니다. (${cost.toLocaleString()}G 필요)`);
         }
 
-        // 비용 차감 및 UI 갱신
         data.gold -= cost;
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-        // 1. 레벨 결정 및 기초 몬스터 데이터 생성
+        // 1. 일반 몬스터 기본 생성
         const range = z.maxLv - z.minLv + 1;
         const randomLv = z.minLv + Math.floor(Math.random() * range);
         let monster = CombatSystem.getMonsterData(randomLv);
-        monster = CombatSystem.setMonsterIdentity(monster); // 이름, 아이콘 등 부여
+        monster = CombatSystem.setMonsterIdentity(monster); 
 
-        // 2. 보스 변환 로직 적용
-        // GameDatabase.BOSS_DATA.CHANCE 확률로 보스 등장
+        // 2. 보스 변환 체크 (확률 및 이미지 교체)
         const isBoss = Math.random() * 100 < GameDatabase.BOSS_DATA.CHANCE;
-        const bossInfo = GameDatabase.BOSS_DATA.STAGES[z.id]; // 현재 스테이지 ID 기준
+        const bossInfo = GameDatabase.BOSS_DATA.STAGES[z.id]; 
 
         if (isBoss && bossInfo) {
             monster.name = bossInfo.name;
+            monster.img = bossInfo.img; // [추가] 보스 전용 이미지로 교체
             monster.hp = Math.floor(monster.hp * bossInfo.hpMult);
             monster.maxHp = monster.hp;
             monster.atk = Math.floor(monster.atk * bossInfo.atkMult);
             monster.gold = Math.floor(monster.gold * bossInfo.goldMult);
             monster.exp = Math.floor(monster.exp * bossInfo.expMult);
-            monster.isBoss = true; // 보스 플래그
+            monster.isBoss = true; 
         }
         
-        // 3. 전투 대기 상태 설정
+        // 3. 전투 대기 및 UI 출력
         CombatSystem.tempMonster = monster;
         CombatSystem.isEncounter = true;
-
-        // 4. 화면 렌더링
         CombatSystem.renderEncounterUI(monster);
     },
 
@@ -339,4 +335,5 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
 
