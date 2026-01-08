@@ -146,7 +146,7 @@ const GameDatabase = {
     { lv: 95, tier: 20, name: '[95]제네시스 웨폰', k: 600.0, p: 100000000000000, type: 'weapon', img: 'genesis_weapon.png', info: '세상을 창조할 때 사용된 태초의 도구.' },
     { lv: 95, tier: 20, name: '[95]신의 권능', k: 550.0, p: 100000000000000, type: 'armor', img: 'god_authority.png', info: '신의 권능 그 자체를 갑옷의 형태로 형상화했다.' },
     { lv: 95, tier: 20, name: '[95]진리의 띠', k: 800.0, p: 100000000000000, type: 'belt', img: 'belt_of_truth.png', info: '우주의 모든 진리가 담겨있는 절대적인 허리띠.' }
-],
+       
     // =========================================================================
     // [글러브] 공격 보조 / 손 방어구 (type: 'gloves')
     // =========================================================================
@@ -540,6 +540,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
