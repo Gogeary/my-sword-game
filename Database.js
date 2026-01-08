@@ -74,29 +74,108 @@ const GameDatabase = {
         ]
     },
 
-const GEM_LIST = [
-    // --- [하급 보석: 흔하게 드랍됨, 소소한 용돈] ---
-    { id: 101, name: '재스퍼', p: 1000, type: 'etc', img: 'gem_jasper.png', info: '알록달록한 무늬가 있는 흔한 돌.' },
-    { id: 102, name: '아게이트', p: 5000, type: 'etc', img: 'gem_agate.png', info: '나이테 같은 띠무늬가 매력적인 마노.' },
-    { id: 103, name: '쿼츠', p: 10000, type: 'etc', img: 'gem_quartz.png', info: '투명하고 깨끗한 수정 조각.' },
-    { id: 104, name: '시트린', p: 30000, type: 'etc', img: 'gem_citrine.png', info: '상큼한 노란 빛을 띠는 황수정.' },
-    { id: 105, name: '터키석', p: 50000, type: 'etc', img: 'gem_turquoise.png', info: '행운을 상징하는 불투명한 하늘색 보석.' },
-    { id: 106, name: '자수정', p: 100000, type: 'etc', img: 'gem_amethyst.png', info: '신비로운 보라색이 감도는 수정.' },
-    { id: 107, name: '라피스 라줄리', p: 200000, type: 'etc', img: 'gem_lapis.png', info: '밤하늘 같은 짙은 푸른색에 금빛 점이 박혀있다.' },
-    { id: 108, name: '호박', p: 400000, type: 'etc', img: 'gem_amber.png', info: '고대의 송진이 굳어 만들어진 황금빛 보석.' },
-    { id: 109, name: '페리도트', p: 1000000, type: 'etc', img: 'gem_peridot.png', info: '싱그러운 올리브 녹색을 띠는 감람석.' },
-    { id: 110, name: '토파즈', p: 2000000, type: 'etc', img: 'gem_topaz.png', info: '청명하고 시원한 파란색이 일품이다.' },
-    { id: 111, name: '오팔', p: 5000000, type: 'etc', img: 'gem_opal.png', info: '보는 각도에 따라 무지개색으로 변한다.' },
-    { id: 112, name: '아쿠아마린', p: 10000000, type: 'etc', img: 'gem_aquamarine.png', info: '바다의 푸른 빛을 그대로 담은 듯하다.' },
-    { id: 113, name: '스피넬', p: 20000000, type: 'etc', img: 'gem_spinel.png', info: '루비와 비슷해 보이지만 다른 매력을 가진 붉은 보석.' },
-    { id: 114, name: '탄자나이트', p: 50000000, type: 'etc', img: 'gem_tanzanite.png', info: '아프리카의 푸른 밤하늘을 닮은 희귀한 보석.' },
-    { id: 115, name: '사파이어', p: 100000000, type: 'etc', img: 'gem_sapphire.png', info: '깊고 푸른색이 매혹적인 귀보석.' },
-    { id: 116, name: '에메랄드', p: 200000000, type: 'etc', img: 'gem_emerald.png', info: '생명력이 느껴지는 짙은 녹색의 귀보석.' },
-    { id: 117, name: '루비', p: 500000000, type: 'etc', img: 'gem_ruby.png', info: '불타오르는 듯한 강렬한 붉은색의 보석의 왕.' },
-    { id: 118, name: '다이아몬드', p: 1000000000, type: 'etc', img: 'gem_diamond.png', info: '가장 단단하고 영원히 빛나는 보석.' },
-    { id: 119, name: '핑크 다이아몬드', p: 2000000000, type: 'etc', img: 'gem_pink_dia.png', info: '기적적인 확률로 발견되는 천연 분홍빛 다이아몬드.' },
-    { id: 120, name: '레드 다이아몬드', p: 5000000000, type: 'etc', img: 'gem_red_dia.png', info: '전 세계에 몇 개 없는 전설적인 붉은 다이아몬드.' }
-];
+   GEM_DROPS: {
+        // [1티어] Lv.1~5 (1,000 G ~ 5,000 G)
+        TIER_1: [
+            { id: 101, name: '재스퍼', p: 1000, type: 'etc', img: 'gem_jasper.png', info: '알록달록한 무늬가 있는 흔한 돌.' },
+            { id: 102, name: '아게이트', p: 5000, type: 'etc', img: 'gem_agate.png', info: '나이테 같은 띠무늬가 매력적인 마노.' }
+        ],
+        // [2티어] Lv.6~10 (10,000 G ~ 30,000 G)
+        TIER_2: [
+            { id: 103, name: '쿼츠', p: 10000, type: 'etc', img: 'gem_quartz.png', info: '투명하고 깨끗한 수정 조각.' },
+            { id: 104, name: '시트린', p: 30000, type: 'etc', img: 'gem_citrine.png', info: '상큼한 노란 빛을 띠는 황수정.' }
+        ],
+        // [3티어] Lv.11~15 (50,000 G ~ 100,000 G)
+        TIER_3: [
+            { id: 105, name: '터키석', p: 50000, type: 'etc', img: 'gem_turquoise.png', info: '행운을 상징하는 불투명한 하늘색 보석.' },
+            { id: 106, name: '자수정', p: 100000, type: 'etc', img: 'gem_amethyst.png', info: '신비로운 보라색이 감도는 수정.' }
+        ],
+        // [4티어] Lv.16~20 (200,000 G ~ 400,000 G)
+        TIER_4: [
+            { id: 107, name: '라피스 라줄리', p: 200000, type: 'etc', img: 'gem_lapis.png', info: '밤하늘 같은 짙은 푸른색에 금빛 점이 박혀있다.' },
+            { id: 108, name: '호박', p: 400000, type: 'etc', img: 'gem_amber.png', info: '고대의 송진이 굳어 만들어진 황금빛 보석.' }
+        ],
+        // [5티어] Lv.21~25 (80만 G ~ 150만 G)
+        TIER_5: [
+            { id: 109, name: '페리도트', p: 800000, type: 'etc', img: 'gem_peridot.png', info: '싱그러운 올리브 녹색을 띠는 감람석.' },
+            { id: 110, name: '토파즈', p: 1500000, type: 'etc', img: 'gem_topaz.png', info: '청명하고 시원한 파란색이 일품이다.' }
+        ],
+        // [6티어] Lv.26~30 (300만 G ~ 500만 G)
+        TIER_6: [
+            { id: 111, name: '오팔', p: 3000000, type: 'etc', img: 'gem_opal.png', info: '보는 각도에 따라 무지개색으로 변한다.' },
+            { id: 112, name: '아쿠아마린', p: 5000000, type: 'etc', img: 'gem_aquamarine.png', info: '바다의 푸른 빛을 그대로 담은 듯하다.' }
+        ],
+        // [7티어] Lv.31~35 (750만 G ~ 1000만 G)
+        TIER_7: [
+            { id: 113, name: '스피넬', p: 7500000, type: 'etc', img: 'gem_spinel.png', info: '루비와 비슷해 보이지만 다른 매력을 가진 붉은 보석.' },
+            { id: 114, name: '탄자나이트', p: 10000000, type: 'etc', img: 'gem_tanzanite.png', info: '아프리카의 푸른 밤하늘을 닮은 희귀한 보석.' }
+        ],
+        // [8티어] Lv.36~40 (1500만 G ~ 2000만 G)
+        TIER_8: [
+            { id: 115, name: '사파이어', p: 15000000, type: 'etc', img: 'gem_sapphire.png', info: '깊고 푸른색이 매혹적인 귀보석.' },
+            { id: 116, name: '에메랄드', p: 20000000, type: 'etc', img: 'gem_emerald.png', info: '생명력이 느껴지는 짙은 녹색의 귀보석.' }
+        ],
+        // [9티어] Lv.41~45 (2500만 G ~ 5000만 G)
+        TIER_9: [
+            { id: 117, name: '루비', p: 25000000, type: 'etc', img: 'gem_ruby.png', info: '불타오르는 듯한 강렬한 붉은색의 보석의 왕.' },
+            { id: 118, name: '다이아몬드', p: 50000000, type: 'etc', img: 'gem_diamond.png', info: '가장 단단하고 영원히 빛나는 보석.' }
+        ],
+        // [10티어] Lv.46~50 (7500만 G ~ 1억 G)
+        TIER_10: [
+            { id: 119, name: '핑크 다이아몬드', p: 75000000, type: 'etc', img: 'gem_pink_dia.png', info: '기적적인 확률로 발견되는 천연 분홍빛 다이아몬드.' },
+            { id: 120, name: '레드 다이아몬드', p: 100000000, type: 'etc', img: 'gem_red_dia.png', info: '전 세계에 몇 개 없는 전설적인 붉은 다이아몬드.' }
+        ],
+        // [11티어] Lv.51~55 (2억 G ~ 3억 G)
+        TIER_11: [
+            { id: 121, name: '문스톤', p: 200000000, type: 'etc', img: 'gem_moonstone.png', info: '달빛을 머금어 은은하게 빛나는 신비한 돌.' },
+            { id: 122, name: '썬스톤', p: 300000000, type: 'etc', img: 'gem_sunstone.png', info: '태양의 열기를 품고 있어 만지면 따뜻하다.' }
+        ],
+        // [12티어] Lv.56~60 (5억 G ~ 7억 G)
+        TIER_12: [
+            { id: 123, name: '스타더스트', p: 500000000, type: 'etc', img: 'gem_stardust.png', info: '떨어진 별똥별의 파편을 가공한 보석.' },
+            { id: 124, name: '보이드 오팔', p: 700000000, type: 'etc', img: 'gem_void_opal.png', info: '공허의 기운이 감도는 검은 빛의 오팔.' }
+        ],
+        // [13티어] Lv.61~65 (10억 G ~ 15억 G)
+        TIER_13: [
+            { id: 125, name: '드래곤 아이', p: 1000000000, type: 'etc', img: 'gem_dragon_eye.png', info: '고룡의 눈동자를 닮은 맹렬한 붉은 보석.' },
+            { id: 126, name: '피닉스 엠버', p: 1500000000, type: 'etc', img: 'gem_phoenix.png', info: '불사조의 깃털이 화석화되어 만들어진 호박.' }
+        ],
+        // [14티어] Lv.66~70 (25억 G ~ 40억 G)
+        TIER_14: [
+            { id: 127, name: '엔젤릭 쿼츠', p: 2500000000, type: 'etc', img: 'gem_angelic.png', info: '천사의 날개처럼 투명하고 성스러운 기운이 느껴진다.' },
+            { id: 128, name: '데모닉 루비', p: 4000000000, type: 'etc', img: 'gem_demonic.png', info: '마계의 붉은 달빛을 받아 핏빛으로 빛난다.' }
+        ],
+        // [15티어] Lv.71~75 (60억 G ~ 90억 G)
+        TIER_15: [
+            { id: 129, name: '크로노스 젬', p: 6000000000, type: 'etc', img: 'gem_chronos.png', info: '시간의 흐름을 왜곡시킨다는 전설의 보석.' },
+            { id: 130, name: '아이테르 결정', p: 9000000000, type: 'etc', img: 'gem_aether.png', info: '대기의 정수가 응축되어 공중에 살짝 떠 있다.' }
+        ],
+        // [16티어] Lv.76~80 (150억 G ~ 200억 G)
+        TIER_16: [
+            { id: 131, name: '카오스 에메랄드', p: 15000000000, type: 'etc', img: 'gem_chaos.png', info: '혼돈의 에너지가 소용돌이치는 녹색 보석.' },
+            { id: 132, name: '코스믹 사파이어', p: 20000000000, type: 'etc', img: 'gem_cosmic.png', info: '우주의 성운이 보석 안에 들어있는 것 같다.' }
+        ],
+        // [17티어] Lv.81~85 (350억 G ~ 500억 G)
+        TIER_17: [
+            { id: 133, name: '갤럭시 펄', p: 35000000000, type: 'etc', img: 'gem_galaxy.png', info: '은하수 전체를 담고 있는 영롱한 진주.' },
+            { id: 134, name: '네뷸라 스톤', p: 50000000000, type: 'etc', img: 'gem_nebula.png', info: '성운의 가스와 먼지가 압축되어 만들어진 보석.' }
+        ],
+        // [18티어] Lv.86~90 (800억 G ~ 1000억 G)
+        TIER_18: [
+            { id: 135, name: '신의 눈물', p: 80000000000, type: 'etc', img: 'gem_god_tear.png', info: '신이 흘린 눈물이 결정화되었다는 성유물.' },
+            { id: 136, name: '심연의 심장', p: 100000000000, type: 'etc', img: 'gem_abyss.png', info: '깊은 심연 속에서만 발견되는 고동치는 보석.' }
+        ],
+        // [19티어] Lv.91~95 (2000억 G ~ 5000억 G)
+        TIER_19: [
+            { id: 137, name: '차원의 조각', p: 200000000000, type: 'etc', img: 'gem_dimension.png', info: '다른 차원으로 이동할 수 있을 것 같은 균열이 보인다.' },
+            { id: 138, name: '영혼의 보석', p: 500000000000, type: 'etc', img: 'gem_soul.png', info: '강력한 영혼의 힘이 깃들어 있어 바라보기만 해도 압도된다.' }
+        ],
+        // [20티어] Lv.96~100 (1조 G ~ 5조 G) - 엔드 게임 아이템
+        TIER_20: [
+            { id: 139, name: '이터널 다이아몬드', p: 1000000000000, type: 'etc', img: 'gem_eternal.png', info: '영원한 시간 속에서도 절대 변하지 않는 불멸의 보석.' },
+            { id: 140, name: '창조의 근원', p: 5000000000000, type: 'etc', img: 'gem_origin.png', info: '세상이 창조될 때 생겨난 최초의 물질. 부르는 것이 값일 것이다.' }
+        ]
+    },
 
 
    
@@ -213,6 +292,7 @@ const GEM_LIST = [
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
