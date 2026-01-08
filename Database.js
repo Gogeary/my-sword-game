@@ -162,12 +162,12 @@ const GameDatabase = {
             { id: 4, name: '상급 포션', val: 100000, p: 5000000, type: 'potion', img: 'health_potion_4.png', info: '손에 상처를 내봤는데 실시간으로 낫는게 신기하다.'},
             { id: 5, name: '최상급 포션', val: 1000000, p: 50000000, type: 'potion', img: 'health_potion_5.png', info: '돈만있으면 안되는게 없는데, 돈이 없어서 문제다.'}
         ],
-        /* Database.js 내부의 CONSUMABLES - scrolls 부분 교체 */
-
+        
+            /* Database.js 내부의 CONSUMABLES - scrolls 부분 교체 */
       scrolls: [
-    { id: 1, name: '하급 방지권', p: 50000, type: 'scroll', maxLimit: 13, img: 'scroll_1.png', info: '장비의 파괴를 막아준다. (단, +13강 장비까지만 사용 가능)'},
-    { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', maxLimit: 15, img: 'scroll_2.png', info: '장비 파괴 한계를 늘린 개선품. (+15강 장비까지만 사용 가능)'},
-    { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', maxLimit: 17, img: 'scroll_3.png', info: '품질을 극한으로 끌어올렸다. (+17강 장비까지만 사용 가능)'}
+            { id: 1, name: '하급 방지권', p: 50000, type: 'scroll', maxLimit: 13, img: 'scroll_1.png', info: '장비의 파괴를 막아준다. (단, +13강 장비까지만 사용 가능)'},
+            { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', maxLimit: 15, img: 'scroll_2.png', info: '장비 파괴 한계를 늘린 개선품. (+15강 장비까지만 사용 가능)'},
+            { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', maxLimit: 17, img: 'scroll_3.png', info: '품질을 극한으로 끌어올렸다. (+17강 장비까지만 사용 가능)'}
         ],
         tickets: [
             { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 20000, img: 'ticket5.png', info: '이건 왜 있는거야?'},
@@ -465,6 +465,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
