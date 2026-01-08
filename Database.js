@@ -14,7 +14,33 @@ const GameDatabase = {
 
     USER_STATS: {
         BASE: { ATK: 10, DEF: 2, HP: 100 },
-        GET_NEXT_EXP: (lv) => Math.floor(lv * 100 * 1.4),
+        // [경험치 공식] 레벨 구간별 난이도 조절
+    GET_NEXT_EXP: (lv) => {
+        if (lv < 20) {
+            // [초반: Lv.1 ~ 19] 
+            // 광속 레벨업 구간. 몬스터 몇 마리 잡으면 업.
+            // Lv.10 기준 필요 경험치: 2,000 (Lv.10 몬스터 20마리)
+            return Math.floor(20 * Math.pow(lv, 2)); 
+        } 
+        else if (lv < 60) {
+            // [중반: Lv.20 ~ 59] 
+            // 본격적인 사냥 구간. 약간의 노가다 시작.
+            // Lv.50 기준 필요 경험치: 250만 (Lv.50 몬스터 400마리)
+            return Math.floor(20 * Math.pow(lv, 3)); 
+        } 
+        else if (lv < 90) {
+            // [후반: Lv.60 ~ 89] 
+            // 헬 구간 진입. 장비 강화와 스킬작이 필수.
+            // Lv.80 기준 필요 경험치: 4억 (Lv.80 몬스터 600마리)
+            return Math.floor(10 * Math.pow(lv, 4)); 
+        } 
+        else {
+            // [극후반: Lv.90 ~ 99] 
+            // 엔드 컨텐츠. 레벨업 하나하나가 업적.
+            // Lv.99 기준 필요 경험치: 475억 (Lv.100 보스 950마리 / 일반몹 수천 마리)
+            return Math.floor(5 * Math.pow(lv, 5)); 
+        }
+    },
         CALC_ATK: (lv) => Math.floor(10 + 0.5 * Math.pow(lv - 1, 1.2)),
         CALC_DEF: (lv) => Math.floor(2 + 0.1 * Math.pow(lv - 1, 1.1)),
         CALC_HP: (lv) => Math.floor(100 + 5 * Math.pow(lv - 1, 1.3))
@@ -437,6 +463,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
