@@ -5,6 +5,7 @@
 
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
 const SECRET_KEY = "my_super_secret_game_key_v1.8";
+var invCurrentTab = 'equip'; // 기본값을 '장비' 탭으로 설정
 
 const MainEngine = {
     encrypt: (dataObj) => {
@@ -186,30 +187,98 @@ const MainEngine = {
         return { atk: fAtk, def: fDef, hp: fHP };
     },
     
+    // [추가] 현재 인벤토리 탭 상태 (기본값: 장비)
+    invCurrentTab: 'equip',
+
+    // [추가] 탭 변경 시 호출되는 함수
+    setInvTab: (tab) => {
+        MainEngine.invCurrentTab = tab;
+        MainEngine.renderInventory();
+    },
+
     renderInventory: () => {
         const eqList = document.getElementById('equipped-list');
         const invList = document.getElementById('inventory-list');
         if(!eqList || !invList) return;
-        eqList.innerHTML = ''; invList.innerHTML = '';
-        if (data.inventory.length === 0) {
+
+        eqList.innerHTML = ''; 
+        invList.innerHTML = '';
+
+        if (!data.inventory || data.inventory.length === 0) {
             invList.innerHTML = '<div style="color:#666; padding:20px;">가방이 비어있습니다.</div>';
             eqList.innerHTML = '<div style="color:#666; padding:10px;">장착된 장비가 없습니다.</div>';
             return;
         }
+
         let equippedCount = 0;
+        let visibleItemCount = 0;
+
         data.inventory.forEach((it, idx) => {
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-            const div = document.createElement('div'); div.className = 'item-card';
-            if (isEquipped) { div.style.border = '2px solid var(--mine)'; div.style.background = 'rgba(46, 204, 113, 0.1)'; equippedCount++; }
-            const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
-            const isConsumable = (it.type === 'ticket' || it.type === 'scroll' || it.type === 'potion');
-            let actionButtons = '';
-            if (isConsumable) { actionButtons = `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>`; }
-            else { actionButtons = `<button class="item-btn" style="background:var(--money); color:#000;" onclick="MainEngine.goToUpgrade(${idx})">강화</button><button class="item-btn" style="background:${isEquipped ? '#e74c3c' : 'var(--hunt)'}; color:#fff;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}`; }
-            div.innerHTML = `${imgTag}<div class="item-info"><strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong><br>${isEquipped ? '<span style="color:var(--mine); font-weight:bold;">[장착중]</span>' : (it.p ? `<span style="color:#888; font-size:0.9em;">티어 ${Math.floor(it.p/1000)}</span>` : '')}</div><div class="item-actions">${actionButtons}</div>`;
-            if (isEquipped) eqList.appendChild(div); else invList.appendChild(div);
+            
+            // --- [탭 분류 로직 추가] ---
+            let category = 'etc'; // 기본값: 기타
+            if (['weapon', 'armor', 'belt'].includes(it.type)) category = 'equip';
+            else if (['potion', 'ticket', 'scroll'].includes(it.type)) category = 'consume';
+
+            // 1. 장착 중인 아이템은 탭에 상관없이 상단에 무조건 표시
+            if (isEquipped) {
+                const div = MainEngine.createItemHTML(it, idx, true);
+                eqList.appendChild(div);
+                equippedCount++;
+            } 
+            // 2. 장착 중이지 않은 아이템은 현재 선택된 탭과 일치할 때만 표시
+            else if (MainEngine.invCurrentTab === category) {
+                const div = MainEngine.createItemHTML(it, idx, false);
+                invList.appendChild(div);
+                visibleItemCount++;
+            }
         });
+
         if (equippedCount === 0) eqList.innerHTML = '<div style="color:#555; font-size:0.9em; padding:10px;">장착된 장비가 없습니다.</div>';
+        if (visibleItemCount === 0) invList.innerHTML = `<div style="color:#666; padding:30px; font-size:0.9em;">해당 카테고리에 아이템이 없습니다.</div>`;
+    },
+
+    // [추가] 아이템 카드 HTML 생성을 담당하는 보조 함수 (가독성 개선)
+    createItemHTML: (it, idx, isEquipped) => {
+        const div = document.createElement('div'); 
+        div.className = 'item-card';
+        
+        if (isEquipped) { 
+            div.style.border = '2px solid var(--mine)'; 
+            div.style.background = 'rgba(46, 204, 113, 0.1)'; 
+        }
+
+        const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
+        const isConsumable = (it.type === 'ticket' || it.type === 'scroll' || it.type === 'potion');
+        
+        let actionButtons = '';
+        if (isConsumable) { 
+            actionButtons = `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>`; 
+        } else { 
+            actionButtons = `
+                <button class="item-btn" style="background:var(--money); color:#000;" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+                <button class="item-btn" style="background:${isEquipped ? '#e74c3c' : 'var(--hunt)'}; color:#fff;" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
+            `; 
+        }
+
+        // 아이템 정보 문구 조정
+        let subText = "";
+        if (it.type === 'potion') subText = `회복량: ${it.val.toLocaleString()}`;
+        else if (it.type === 'ticket') subText = `확정 강화 +${it.val}`;
+        else if (it.type === 'scroll') subText = `파괴 방지권`;
+        else if (it.p) subText = `티어 ${Math.floor(it.p/1000)}`;
+
+        div.innerHTML = `
+            ${imgTag}
+            <div class="item-info">
+                <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong><br>
+                <span style="color:#aaa; font-size:0.85em;">${subText}</span>
+            </div>
+            <div class="item-actions">${actionButtons}</div>`;
+        
+        return div;
     },
 
     toggleEquip: (idx) => {
@@ -328,6 +397,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
