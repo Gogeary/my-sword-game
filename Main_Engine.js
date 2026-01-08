@@ -330,31 +330,31 @@ const MainEngine = {
 
         // [핵심] 필터링 순서를 보석 우선으로 변경
         const targets = data.inventory.filter(it => {
-            const type = (it.type || "").toLowerCase().trim();
+    const type = (it.type || "").toLowerCase().trim();
 
-            // 1. 보석(etc) 또는 재료인 경우: 장착 검사 없이 바로 체크박스 확인
-            if (type === 'etc' || type === 'gem') {
-                return sellGems; 
-            }
+    // 1. 보석류는 장착 개념이 없으므로 바로 패스
+    if (type === 'etc' || type === 'gem') {
+        return sellGems;
+    }
 
-            // 2. 장비류인 경우: 장착 여부와 강화 수치를 꼼꼼히 확인
-            const gearTypes = ['weapon', 'armor', 'belt', 'gloves', 'shoes'];
-            if (gearTypes.includes(type)) {
-                // 장착 중인 장비는 절대 판매 금지
-                const isEquipped = data.equipment[type] && 
-                                   (data.equipment[type].uid === it.uid || data.equipment[type].id === it.id);
-                if (isEquipped) return false;
+    // 2. 장비류 필터링
+    const gearTypes = ['weapon', 'armor', 'belt', 'gloves', 'shoes'];
+    if (gearTypes.includes(type)) {
+        // [수정 핵심] it.id가 아니라 it.uid를 비교!
+        // 장착 슬롯에 있는 아이템의 '주민번호(uid)'와 현재 검사 중인 아이템의 '주민번호'가 같을 때만 장착된 것으로 간주
+        const isEquipped = data.equipment[type] && data.equipment[type].uid === it.uid;
+        
+        if (isEquipped) return false; // 장착 중이면 판매 대상에서 제외
 
-                // 0강(강화 안 된 것)만 일괄 판매 대상
-                if ((it.en || 0) === 0) {
-                    const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
-                    if (!hasSkill && sellNoSkill) return true;
-                    if (hasSkill && sellWithSkill) return true;
-                }
-            }
-
-            return false;
-        });
+        // 3. 0강 아이템만 판매 대상에 포함
+        if ((it.en || 0) === 0) {
+            const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
+            if (!hasSkill && sellNoSkill) return true;
+            if (hasSkill && sellWithSkill) return true;
+        }
+    }
+    return false;
+});
 
         if (targets.length === 0) {
             alert("판매할 대상이 없습니다.\n'보석(재료) 전체 판매'에 체크했는지 확인해 주세요!");
@@ -502,6 +502,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
