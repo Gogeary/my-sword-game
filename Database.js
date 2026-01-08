@@ -122,15 +122,25 @@ const GameDatabase = {
 
     SKILLS: {
         weapon: [
-            { id: 'smash', name: '강타', turn: 3, val: 2.0, desc: '3턴마다 2배 데미지' },
-            { id: 'crit', name: '치명타', turn: 4, val: 1.5, desc: '4턴마다 1.5배 데미지' }
+            { id: 'smash', name: '강타1', turn: 3, val: 2.0, desc: '3턴마다 2배 데미지' },
+            { id: 'smash', name: '강타2', turn: 3, val: 2.5, desc: '3턴마다 2.5배 데미지' },
+            { id: 'smash', name: '강타3', turn: 3, val: 3.0, desc: '3턴마다 3배 데미지' },
+            { id: 'crit', name: '치명타1', turn: 4, val: 1.5, desc: '4턴마다 1.5배 데미지' },
+            { id: 'crit', name: '치명타2', turn: 4, val: 2, desc: '4턴마다 2배 데미지' },
+            { id: 'crit', name: '치명타3', turn: 4, val: 2.5, desc: '4턴마다 2.5배 데미지' }
         ],
         armor: [
-            { id: 'iron', name: '철벽', turn: 3, val: 0.5, desc: '3턴마다 받는 피해 50% 감소' },
-            { id: 'evade', name: '회피', turn: 5, val: 0.0, desc: '5턴마다 데미지 무효화' }
+            { id: 'iron', name: '철벽1', turn: 3, val: 0.3, desc: '3턴마다 받는 피해 30% 감소' },
+            { id: 'iron', name: '철벽2', turn: 3, val: 0.4, desc: '3턴마다 받는 피해 40% 감소' },
+            { id: 'iron', name: '철벽3', turn: 3, val: 0.5, desc: '3턴마다 받는 피해 50% 감소' },
+            { id: 'evade', name: '회피1', turn: 5, val: 0.0, desc: '5턴마다 데미지 무효화' }
+            { id: 'evade', name: '회피2', turn: 4, val: 0.0, desc: '4턴마다 데미지 무효화' }
+            { id: 'evade', name: '회피3', turn: 3, val: 0.0, desc: '3턴마다 데미지 무효화' }
         ],
         belt: [
-            { id: 'heal', name: '재생', turn: 4, val: 0.1, desc: '4턴마다 최대 체력의 10% 회복' }
+            { id: 'heal', name: '재생1', turn: 4, val: 0.1, desc: '4턴마다 최대 체력의 10% 회복' }
+            { id: 'heal', name: '재생2', turn: 4, val: 0.15, desc: '4턴마다 최대 체력의 15% 회복' }
+            { id: 'heal', name: '재생3', turn: 4, val: 0.2, desc: '4턴마다 최대 체력의 20% 회복' }
         ]
     },
 
@@ -176,6 +186,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
