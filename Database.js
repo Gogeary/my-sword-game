@@ -147,7 +147,72 @@ const GameDatabase = {
     { lv: 95, tier: 20, name: '[95]신의 권능', k: 550.0, p: 100000000000000, type: 'armor', img: 'god_authority.png', info: '신의 권능 그 자체를 갑옷의 형태로 형상화했다.' },
     { lv: 95, tier: 20, name: '[95]진리의 띠', k: 800.0, p: 100000000000000, type: 'belt', img: 'belt_of_truth.png', info: '우주의 모든 진리가 담겨있는 절대적인 허리띠.' }
 ],
+    // =========================================================================
+    // [글러브] 공격 보조 / 손 방어구 (type: 'gloves')
+    // =========================================================================
+    
+    // --- [1티어 (Lv.1)] ---
+    { lv: 1, tier: 1, name: '목장갑', k: 1.02, p: 1000, type: 'gloves', img: 'glove_cotton.png', info: '빨간 코팅이 되어있는 작업용 장갑.' },
 
+    // --- [2티어 (Lv.5)] ---
+    { lv: 5, tier: 2, name: '가죽 장갑', k: 1.05, p: 10000, type: 'gloves', img: 'glove_leather.png', info: '질긴 가죽으로 만들어 손을 보호한다.' },
+
+    // --- [3티어 (Lv.10)] ---
+    { lv: 10, tier: 3, name: '징 박힌 장갑', k: 1.1, p: 50000, type: 'gloves', img: 'glove_studded.png', info: '주먹을 쥐면 쇠징이 튀어나와 위협적이다.' },
+
+    // --- [4티어 (Lv.15)] ---
+    { lv: 15, tier: 4, name: '청동 건틀릿', k: 1.15, p: 250000, type: 'gloves', img: 'glove_bronze.png', info: '청동으로 주조된 묵직한 건틀릿.' },
+
+    // --- [5티어 (Lv.20)] ---
+    { lv: 20, tier: 5, name: '강철 건틀릿', k: 1.2, p: 1250000, type: 'gloves', img: 'glove_steel.png', info: '강철을 두드려 만들어 내구성이 좋다.' },
+
+    // --- [6티어 (Lv.25)] ---
+    { lv: 25, tier: 6, name: '은장 건틀릿', k: 1.25, p: 6000000, type: 'gloves', img: 'glove_silver.png', info: '화려한 은 세공이 돋보이는 장갑.' },
+
+    // --- [7티어 (Lv.30)] ---
+    { lv: 30, tier: 7, name: '미스릴 글러브', k: 1.3, p: 30000000, type: 'gloves', img: 'glove_mithril.png', info: '가볍고 단단한 미스릴 실로 짜여졌다.' },
+
+    // --- [8티어 (Lv.35)] ---
+    { lv: 35, tier: 8, name: '기사단 건틀릿', k: 1.4, p: 150000000, type: 'gloves', img: 'glove_knight.png', info: '정식 기사 서임식 때 수여받는 건틀릿.' },
+
+    // --- [9티어 (Lv.40)] ---
+    { lv: 40, tier: 9, name: '백금 손 보호대', k: 1.5, p: 500000000, type: 'gloves', img: 'glove_platinum.png', info: '백금으로 만들어져 마력 전도율이 높다.' },
+
+    // --- [10티어 (Lv.45)] ---
+    { lv: 45, tier: 10, name: '타이탄 피스트', k: 1.7, p: 2000000000, type: 'gloves', img: 'glove_titan.png', info: '거인의 힘을 잠시 빌려 쓸 수 있다고 한다.' },
+
+    // --- [11티어 (Lv.50)] ---
+    { lv: 50, tier: 11, name: '오리할콘 건틀릿', k: 2.0, p: 8000000000, type: 'gloves', img: 'glove_orichalcum.png', info: '전설의 금속 오리할콘으로 제작된 명품.' },
+
+    // --- [12티어 (Lv.55)] ---
+    { lv: 55, tier: 12, name: '아다만티움 클로', k: 2.5, p: 25000000000, type: 'gloves', img: 'glove_adamantium.png', info: '무엇이든 찢어발길 수 있는 날카로운 손톱이 달렸다.' },
+
+    // --- [13티어 (Lv.60)] ---
+    { lv: 60, tier: 13, name: '드래곤 핸드', k: 3.2, p: 80000000000, type: 'gloves', img: 'glove_dragon.png', info: '붉은 용의 가죽과 발톱을 통째로 가공했다.' },
+
+    // --- [14티어 (Lv.65)] ---
+    { lv: 65, tier: 14, name: '정령의 손길', k: 4.0, p: 200000000000, type: 'gloves', img: 'glove_spirit.png', info: '자연의 에너지를 손끝에 모아 방출한다.' },
+
+    // --- [15티어 (Lv.70)] ---
+    { lv: 15, tier: 15, name: '데몬 그립', k: 5.0, p: 600000000000, type: 'gloves', img: 'glove_demon.png', info: '악마의 팔을 이식한 듯한 불길한 기운이 감돈다.' },
+
+    // --- [16티어 (Lv.75)] ---
+    { lv: 75, tier: 16, name: '홀리 건틀릿', k: 7.0, p: 1500000000000, type: 'gloves', img: 'glove_holy.png', info: '성스러운 빛이 주먹을 감싸 타격 시 정화한다.' },
+
+    // --- [17티어 (Lv.80)] ---
+    { lv: 80, tier: 17, name: '스타더스트 글러브', k: 10.0, p: 4000000000000, type: 'gloves', img: 'glove_star.png', info: '별 가루를 뿌려놓은 듯 반짝이는 우주의 장갑.' },
+
+    // --- [18티어 (Lv.85)] ---
+    { lv: 85, tier: 18, name: '블랙홀 그리퍼', k: 15.0, p: 10000000000000, type: 'gloves', img: 'glove_blackhole.png', info: '손바닥 안에 작은 블랙홀을 제어하는 장치.' },
+
+    // --- [19티어 (Lv.90)] ---
+    { lv: 90, tier: 19, name: '인피니티 건틀릿', k: 25.0, p: 30000000000000, type: 'gloves', img: 'glove_infinity.png', info: '무한한 힘을 다룰 수 있는 전설적인 건틀릿.' },
+
+    // --- [20티어 (Lv.95)] ---
+    { lv: 95, tier: 20, name: '갓 핸드', k: 40.0, p: 100000000000000, type: 'gloves', img: 'glove_god.png', info: '신의 손길 그 자체. 만지는 모든 것을 지배한다.' },
+
+
+   
     ENHANCE_FORMULA: {
         weapon: (base, k, en) => base * k * (1 + 0.2 * Math.pow(en, 1.1)),
         armor:  (base, k, en) => base * k * (1 + 0.5 * en),
@@ -465,6 +530,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
