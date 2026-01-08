@@ -73,6 +73,33 @@ const GameDatabase = {
             { id: 't15', name: '+15 강화권', val: 15, type: 'ticket', p: 20000000, img: 'ticket15.png', info: '사냥터를 부수러 가자.'}
         ]
     },
+
+const GEM_LIST = [
+    // --- [하급 보석: 흔하게 드랍됨, 소소한 용돈] ---
+    { id: 101, name: '재스퍼', p: 1000, type: 'etc', img: 'gem_jasper.png', info: '알록달록한 무늬가 있는 흔한 돌.' },
+    { id: 102, name: '아게이트', p: 5000, type: 'etc', img: 'gem_agate.png', info: '나이테 같은 띠무늬가 매력적인 마노.' },
+    { id: 103, name: '쿼츠', p: 10000, type: 'etc', img: 'gem_quartz.png', info: '투명하고 깨끗한 수정 조각.' },
+    { id: 104, name: '시트린', p: 30000, type: 'etc', img: 'gem_citrine.png', info: '상큼한 노란 빛을 띠는 황수정.' },
+    { id: 105, name: '터키석', p: 50000, type: 'etc', img: 'gem_turquoise.png', info: '행운을 상징하는 불투명한 하늘색 보석.' },
+    { id: 106, name: '자수정', p: 100000, type: 'etc', img: 'gem_amethyst.png', info: '신비로운 보라색이 감도는 수정.' },
+    { id: 107, name: '라피스 라줄리', p: 200000, type: 'etc', img: 'gem_lapis.png', info: '밤하늘 같은 짙은 푸른색에 금빛 점이 박혀있다.' },
+    { id: 108, name: '호박', p: 400000, type: 'etc', img: 'gem_amber.png', info: '고대의 송진이 굳어 만들어진 황금빛 보석.' },
+    { id: 109, name: '페리도트', p: 1000000, type: 'etc', img: 'gem_peridot.png', info: '싱그러운 올리브 녹색을 띠는 감람석.' },
+    { id: 110, name: '토파즈', p: 2000000, type: 'etc', img: 'gem_topaz.png', info: '청명하고 시원한 파란색이 일품이다.' },
+    { id: 111, name: '오팔', p: 5000000, type: 'etc', img: 'gem_opal.png', info: '보는 각도에 따라 무지개색으로 변한다.' },
+    { id: 112, name: '아쿠아마린', p: 10000000, type: 'etc', img: 'gem_aquamarine.png', info: '바다의 푸른 빛을 그대로 담은 듯하다.' },
+    { id: 113, name: '스피넬', p: 20000000, type: 'etc', img: 'gem_spinel.png', info: '루비와 비슷해 보이지만 다른 매력을 가진 붉은 보석.' },
+    { id: 114, name: '탄자나이트', p: 50000000, type: 'etc', img: 'gem_tanzanite.png', info: '아프리카의 푸른 밤하늘을 닮은 희귀한 보석.' },
+    { id: 115, name: '사파이어', p: 100000000, type: 'etc', img: 'gem_sapphire.png', info: '깊고 푸른색이 매혹적인 귀보석.' },
+    { id: 116, name: '에메랄드', p: 200000000, type: 'etc', img: 'gem_emerald.png', info: '생명력이 느껴지는 짙은 녹색의 귀보석.' },
+    { id: 117, name: '루비', p: 500000000, type: 'etc', img: 'gem_ruby.png', info: '불타오르는 듯한 강렬한 붉은색의 보석의 왕.' },
+    { id: 118, name: '다이아몬드', p: 1000000000, type: 'etc', img: 'gem_diamond.png', info: '가장 단단하고 영원히 빛나는 보석.' },
+    { id: 119, name: '핑크 다이아몬드', p: 2000000000, type: 'etc', img: 'gem_pink_dia.png', info: '기적적인 확률로 발견되는 천연 분홍빛 다이아몬드.' },
+    { id: 120, name: '레드 다이아몬드', p: 5000000000, type: 'etc', img: 'gem_red_dia.png', info: '전 세계에 몇 개 없는 전설적인 붉은 다이아몬드.' }
+];
+
+
+   
    BOSS_DATA: {
         CHANCE: 5, // 보스 조우 확률 (%)
         STAGES: {
@@ -186,6 +213,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
