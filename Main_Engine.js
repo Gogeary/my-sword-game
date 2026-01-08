@@ -321,69 +321,55 @@ const MainEngine = {
     },
 
     executeBatchSell: () => {
-        // [1] HTML 요소가 있는지 먼저 확인
-        const cbNoSkill = document.getElementById('sell-no-skill');
-        const cbWithSkill = document.getElementById('sell-with-skill');
-        const cbGems = document.getElementById('sell-gems');
+        const sellNoSkill = document.getElementById('sell-no-skill')?.checked || false;
+        const sellWithSkill = document.getElementById('sell-with-skill')?.checked || false;
+        const sellGems = document.getElementById('sell-gems')?.checked || false;
 
-        // 체크박스 값을 읽어옴 (없을 경우 false 처리)
-        const sellNoSkill = cbNoSkill ? cbNoSkill.checked : false;
-        const sellWithSkill = cbWithSkill ? cbWithSkill.checked : false;
-        const sellGems = cbGems ? cbGems.checked : false;
-
-        // 디버깅용 로그 (F12를 눌러 확인하세요)
-        console.log("--- 일괄 판매 로직 시작 ---");
-        console.log("보석 판매 체크 상태:", sellGems);
-        console.log("가방 전체 아이템 수:", data.inventory.length);
-
-        // [2] 판매 대상 필터링
+        // [핵심] 필터링 순서를 보석 우선으로 변경
         const targets = data.inventory.filter(it => {
-            // 장착 중인 아이템 보호
-            const isEquipped = data.equipment[it.type] && 
-                               (data.equipment[it.type].uid === it.uid || data.equipment[it.type].id === it.id);
-            if (isEquipped) return false;
-
-            // 타입 소문자화 + 공백 제거 (etc 가 etc 인지 확실히 검사)
             const type = (it.type || "").toLowerCase().trim();
 
-            // 보석(etc) 판별
-            if (type === 'etc') {
-                return sellGems; // 체크박스가 켜져있어야 true가 됨
+            // 1. 보석(etc) 또는 재료인 경우: 장착 검사 없이 바로 체크박스 확인
+            if (type === 'etc' || type === 'gem') {
+                return sellGems; 
             }
 
-            // 일반 장비 판별 (0강만 대상)
-            if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
-                if ((it.en || 0) > 0) return false; 
-                const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
-                if (!hasSkill && sellNoSkill) return true;
-                if (hasSkill && sellWithSkill) return true;
+            // 2. 장비류인 경우: 장착 여부와 강화 수치를 꼼꼼히 확인
+            const gearTypes = ['weapon', 'armor', 'belt', 'gloves', 'shoes'];
+            if (gearTypes.includes(type)) {
+                // 장착 중인 장비는 절대 판매 금지
+                const isEquipped = data.equipment[type] && 
+                                   (data.equipment[type].uid === it.uid || data.equipment[type].id === it.id);
+                if (isEquipped) return false;
+
+                // 0강(강화 안 된 것)만 일괄 판매 대상
+                if ((it.en || 0) === 0) {
+                    const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
+                    if (!hasSkill && sellNoSkill) return true;
+                    if (hasSkill && sellWithSkill) return true;
+                }
             }
+
             return false;
         });
 
-        console.log("필터링된 판매 대상 수:", targets.length);
-
-        // [3] 예외 처리
         if (targets.length === 0) {
-            alert("판매할 대상이 없습니다.\n'보석(재료) 전체 판매' 체크박스를 클릭했는지 다시 확인해 주세요.");
+            alert("판매할 대상이 없습니다.\n'보석(재료) 전체 판매'에 체크했는지 확인해 주세요!");
             return;
         }
 
-        // [4] 수익 계산
         let totalGold = 0;
         targets.forEach(t => {
             const count = t.count || 1;
             totalGold += Math.floor((t.p || 0) * 0.5) * count; 
         });
 
-        // [5] 최종 실행
-        if (confirm(`총 ${targets.length}개의 아이템을 판매하시겠습니까?\n예상 수익: ${MainEngine.formatNumber(totalGold)} G`)) {
-            // 인벤토리 갱신
+        if (confirm(`총 ${targets.length}종의 아이템을 판매하시겠습니까?\n예상 수익: ${MainEngine.formatNumber(totalGold)} G`)) {
+            // 인벤토리에서 대상 아이템들 완전 제거 (보석은 count 상관없이 통째로 삭제)
             data.inventory = data.inventory.filter(item => !targets.includes(item));
             data.gold += totalGold;
 
-            alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G가 지급되었습니다.`);
-            
+            alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G를 획득했습니다.`);
             MainEngine.closeModal();
             MainEngine.updateUI();
         }
@@ -513,6 +499,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
