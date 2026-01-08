@@ -390,7 +390,7 @@ renderInventory: () => {
 
     confirmSell: (idx) => {
         const it = data.inventory[idx];
-        if (['weapon', 'armor', 'belt'].includes(it.type)) {
+        if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(it.type)) {
             const equippedItem = data.equipment[it.type];
             if (equippedItem && equippedItem.id === it.id) {
                 alert("🚫 장착 중인 아이템은 판매할 수 없습니다!");
@@ -789,6 +789,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
