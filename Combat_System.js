@@ -1,4 +1,4 @@
-/* Combat_System.js - 조우 화면 스킵 & 죽을 때까지 무한 사냥 */
+/* Combat_System.js */
 
 const CombatSystem = {
     currentZone: null,
@@ -34,7 +34,7 @@ const CombatSystem = {
         // [비용 체크]
         if (data.gold < cost) {
             if (MainEngine.isAutoHunting) {
-                MainEngine.toggleAutoHunt(); // 돈 없으면 강제 중지
+                MainEngine.toggleAutoHunt();
                 alert("골드가 부족하여 자동 사냥이 중단되었습니다.");
             } else {
                 alert(`탐색 비용이 부족합니다. (${cost.toLocaleString()}G 필요)`);
@@ -69,19 +69,15 @@ const CombatSystem = {
         CombatSystem.tempMonster = monster;
         CombatSystem.isEncounter = true;
 
-        // ─────────────────────────────────────────────────────────────
-        // ★ [핵심 수정] 자동 사냥 중이면 "조우 화면(버튼)" 스킵하고 바로 전투 시작!
-        // ─────────────────────────────────────────────────────────────
+        // [자동 사냥] 조우 화면 스킵하고 바로 전투 시작
         if (typeof MainEngine !== 'undefined' && MainEngine.isAutoHunting) {
-            // 딜레이 없이 바로 전투 진입 (쾌적함 UP)
             CombatSystem.startBattle();
         } else {
-            // 수동일 때만 조우 화면 보여줌
             CombatSystem.renderEncounterUI(monster);
         }
     },
 
-    // 3. 조우 UI 렌더링 (수동 사냥용)
+    // 3. 조우 UI 렌더링
     renderEncounterUI: (m) => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
@@ -131,7 +127,6 @@ const CombatSystem = {
         const grid = document.getElementById('hunt-grid');
         const imgPath = `image/${m.img}`;
         
-        // 전투 화면 그리기
         if(grid) grid.innerHTML = `
             <div style="padding:20px; text-align:center; border:2px solid #e74c3c; border-radius:10px; background:rgba(231, 76, 60, 0.1);">
                 <img src="${imgPath}" style="width:100px; height:100px; object-fit:contain; animation: shake 0.5s infinite alternate; mix-blend-mode: multiply;" onerror="this.style.display='none';">
@@ -145,7 +140,6 @@ const CombatSystem = {
 
         if (autoTimer) clearInterval(autoTimer);
 
-        // 전투 루프 시작 (1초마다 턴 진행)
         autoTimer = setInterval(() => {
             turn++;
             const pStats = MainEngine.getFinalStats();
@@ -238,18 +232,13 @@ const CombatSystem = {
                 CombatSystem.isEncounter = false;
                 CombatSystem.tempMonster = null;
                 
-                // [무한 자동 사냥 연결]
+                // [무한 자동 사냥 (체력 있으면 계속)]
                 if (MainEngine.isAutoHunting) {
-                    // ─────────────────────────────────────────────────────────────
-                    // ★ [핵심 수정] 체력이 0보다 크기만 하면(살아만 있으면) 계속 진행
-                    // (기존의 10% 안전장치 삭제 -> 죽을 때까지 싸움)
-                    // ─────────────────────────────────────────────────────────────
                     if (data.hp > 0) { 
                         setTimeout(() => {
                             if (MainEngine.isAutoHunting) CombatSystem.scanHunt();
-                        }, 1000); // 1초 뒤 다음 사냥 시작
+                        }, 1000); 
                     } else {
-                        // 사실 hp <= 0이면 패배 판정에서 이미 처리되지만 안전장치로 둠
                         MainEngine.toggleAutoHunt();
                     }
                 } else {
@@ -294,17 +283,13 @@ const CombatSystem = {
             
             if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-            // --- [4. 유저 패배 판정 (죽으면 여기서 자동사냥 멈춤)] ---
+            // --- [4. 유저 패배 판정] ---
             if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
-                
-                // 죽었으니까 자동 사냥 중지
                 if (MainEngine.isAutoHunting) MainEngine.toggleAutoHunt();
-                
-                data.hp = 1; // 마을로 돌아가면 체력 1
+                data.hp = 1;
                 alert("패배했습니다... (자동 사냥 종료)");
-                
                 CombatSystem.resetBattleUI();
                 if (typeof MainEngine !== 'undefined') { MainEngine.updateUI(); MainEngine.saveGame(); }
                 showPage('page-main');
@@ -353,22 +338,36 @@ const CombatSystem = {
         return m;
     },
 
+    // ─────────────────────────────────────────────────────────────
+    // ★ [핵심 수정] 물약 사용 로직 (10% 제한 적용)
+    // ─────────────────────────────────────────────────────────────
     tryAutoPotion: (pStats) => {
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
         const missingHp = pStats.hp - data.hp;
+        
+        // 회복할 필요 없으면 종료
         if (missingHp <= 0) return { healed: 0, usedCount: 0 };
 
         const potions = data.inventory.filter(i => i.type === 'potion').sort((a, b) => a.val - b.val);
         if (potions.length === 0) return { healed: 0, usedCount: 0 };
 
         const totalPotionsValue = potions.reduce((acc, cur) => acc + cur.val, 0);
+        // 물약 총량에서 이미 사용 예정인 버퍼를 뺀 '실제 잔여 회복량'
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
+
         if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 };
 
-        const healAmount = Math.min(missingHp, realRemainingPool);
+        // [1] 최대 회복 제한: 전체 체력의 10%
+        const limit = Math.floor(pStats.hp * 0.1);
+
+        // [2] 최종 회복량 결정 (잃은 체력, 가진 물약 총량, 10% 제한 중 가장 작은 값)
+        const healAmount = Math.min(missingHp, realRemainingPool, limit);
+
+        // [3] 체력 및 버퍼 반영
         data.hp += healAmount;
         data.potionBuffer += healAmount;
 
+        // [4] 실제 물약 소모 처리 (버퍼에 쌓인 만큼 물약 아이템 삭제)
         let usedCount = 0;
         while (potions.length > 0) {
             const smallestPotion = potions[0];
