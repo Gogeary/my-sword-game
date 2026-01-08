@@ -470,8 +470,7 @@ renderInventory: () => {
             </div>
         `;
         log.innerHTML = levelUpMsg + log.innerHTML;
-    }
-},
+    },
    // 1. 일괄 판매 모달 열기
     openBatchSell: () => {
         const modal = document.getElementById('modal-batch-sell');
@@ -626,5 +625,6 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
