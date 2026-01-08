@@ -78,10 +78,10 @@ const GameDatabase = {
         STAGES: {
             0: { name: "👑 왕 꿈틀이", hpMult: 3, atkMult: 1.5, goldMult: 5, expMult: 5, img: 'Zirung.png' }, // 집 앞마당 보스
             1: { name: "👑 왕 뱀", hpMult: 3.5, atkMult: 1.6, goldMult: 6, expMult: 6, img: 'Bam.png' }, // 뒷산 보스
-            2: { name: "👑 쑥 먹는 김용준", hpMult: 4, atkMult: 1.8, goldMult: 7, expMult: 7, img: 'wood_sword.png' }, // 뒷산 동굴 보스
-            3: { name: "👑 야근 망령", hpMult: 4.5, atkMult: 2.0, goldMult: 8, expMult: 8, img: 'wood_sword.png' }, // 동네 폐허 보스
-            4: { name: "👑 이완기 (야근망령)", hpMult: 5, atkMult: 2.2, goldMult: 10, expMult: 10, img: 'wood_sword.png' }, // 회사 근처 보스
-            5: { name: "👑 소부장 (기술팀 흑막)", hpMult: 7, atkMult: 2.5, goldMult: 15, expMult: 15, img: 'wood_sword.png' }  // 회사 보스
+            2: { name: "👑 쑥 먹는 김용준", hpMult: 4, atkMult: 1.8, goldMult: 7, expMult: 7, img: 'YJ_1.png' }, // 뒷산 동굴 보스
+            3: { name: "👑 야근 망령", hpMult: 4.5, atkMult: 2.0, goldMult: 8, expMult: 8, img: 'Overtime_ghost.png' }, // 동네 폐허 보스
+            4: { name: "👑 이완기 (산스장 망령)", hpMult: 5, atkMult: 2.2, goldMult: 10, expMult: 10, img: 'LWG.png' }, // 사기막골 보스
+            5: { name: "👑 소부장 (기술팀 흑막)", hpMult: 7, atkMult: 2.5, goldMult: 15, expMult: 15, img: 'SSM.png' }  // 회사 보스
         }
     },
 
@@ -97,11 +97,11 @@ const GameDatabase = {
 
     HUNTING_ZONES: [
         { id: 0, name: "집 앞마당", minLv: 1, maxLv: 5, cost: 1000 },
-        { id: 1, name: "뒷산", minLv: 6, maxLv: 10, cost: 5000 },
-        { id: 2, name: "뒷산 동굴", minLv: 11, maxLv: 15, cost: 15000 },
-        { id: 3, name: "우리동네 폐허", minLv: 16, maxLv: 20, cost: 30000 },
-        { id: 4, name: "회사 근처", minLv: 21, maxLv: 25, cost: 50000 },
-        { id: 5, name: "회사", minLv: 26, maxLv: 30, cost: 100000 }
+        { id: 1, name: "뒷산", minLv: 6, maxLv: 10, cost: 2500 },
+        { id: 2, name: "뒷산 동굴", minLv: 11, maxLv: 15, cost: 7500 },
+        { id: 3, name: "우리동네 폐허", minLv: 16, maxLv: 20, cost: 15000 },
+        { id: 4, name: "사기막골", minLv: 21, maxLv: 25, cost: 25000 },
+        { id: 5, name: "회사", minLv: 26, maxLv: 30, cost: 50000 }
     ],
 
     MINES: [
@@ -176,6 +176,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
