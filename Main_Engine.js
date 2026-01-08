@@ -227,59 +227,85 @@ const MainEngine = {
 
     /* Main_Engine.js 내 createItemHTML 함수 수정 */
   createItemHTML: (it, idx, isEquipped) => {
-    const div = document.createElement('div');
-    div.className = 'item-card';
-    if (isEquipped) div.style.border = '2px solid #2ecc71';
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        // 장착 중인 경우 초록색 테두리 강조
+        if (isEquipped) div.style.border = '2px solid #2ecc71';
 
-    const imgTag = it.img ? 
-        `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
-        : '<div class="item-icon">📦</div>';
+        // 이미지 로드 실패 시 📦 아이콘으로 대체
+        const imgTag = it.img ? 
+            `<img src="image/${it.img}" class="item-icon" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'item-icon\'>📦</div>';">` 
+            : '<div class="item-icon">📦</div>';
 
-    const type = (it.type || "").toLowerCase();
-    const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
-    const formulas = GameDatabase.ENHANCE_FORMULA;
+        const type = (it.type || "").toLowerCase();
+        const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
+        const isConsumable = ['potion', 'scroll', 'ticket'].includes(type);
+        const isGem = (type === 'etc' || type === 'gem'); 
+        const formulas = GameDatabase.ENHANCE_FORMULA;
 
-    let subText = it.info || "";
-    if (isGear) {
-        let finalMult = 1;
-        const k = it.k || 1;
-        const en = it.en || 0;
+        let subText = it.info || "";
 
-        // [공식 적용] 표시용 최종 배율(기본 대비 몇 배인가) 계산
-        if (type === 'weapon') finalMult = k * (1 + 0.2 * Math.pow(en, 1.1));
-        else if (type === 'armor') finalMult = k * (1 + 0.5 * en);
-        else if (type === 'belt') finalMult = k * (1 + 0.1 * Math.pow(en, 1.25));
-        else if (type === 'gloves' || type === 'shoes') finalMult = k * (1 + en * 0.02);
+        // [핵심] 장비일 경우 DB의 ENHANCE_FORMULA를 적용하여 최종 배율 계산
+        if (isGear) {
+            const k = Number(it.k) || 1;
+            const en = Number(it.en) || 0;
+            let finalMult = k;
 
-        subText = `<span style="color:#f1c40f;">최종 배율: x${finalMult.toFixed(2)}</span>`;
-    }
+            try {
+                if (type === 'weapon') {
+                    // 무기 공식: k * (1 + 0.2 * en^1.1)
+                    finalMult = k * (1 + 0.2 * Math.pow(en, 1.1));
+                } else if (type === 'armor') {
+                    // 방어구 공식: k * (1 + 0.5 * en)
+                    finalMult = k * (1 + 0.5 * en);
+                } else if (type === 'belt') {
+                    // 벨트 공식: k * (1 + 0.1 * en^1.25)
+                    finalMult = k * (1 + 0.1 * Math.pow(en, 1.25));
+                } else if (type === 'gloves' || type === 'shoes') {
+                    // 장갑/신발 공식: k * (1 + en * 0.02)
+                    // (신발 전용 공식이 없을 경우 장갑 공식을 준용)
+                    finalMult = formulas.gloves ? formulas.gloves(k, en) : k * (1 + en * 0.02);
+                }
+            } catch (e) {
+                console.error("배율 연산 중 오류 발생:", e);
+                finalMult = k;
+            }
 
-    // 버튼 로직 (중략 - 기존과 동일)
-    let actionButtons = '';
-    if (['potion', 'scroll', 'ticket', 'etc'].includes(type)) {
-        actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
-    } else if (isGear) {
-        actionButtons = `
-            <button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
-            <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
-            ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
+            // 노란색 배율 텍스트 업데이트
+            subText = `<span style="color:#f1c40f;">능력치 배율: x${finalMult.toFixed(2)}</span>`;
+            if (en > 0) {
+                subText += ` <small style="color:#888;">(강화 반영됨)</small>`;
+            }
+        }
+
+        // [버튼 로직]
+        let actionButtons = '';
+        if (isGem || isConsumable) {
+            actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+        } else if (isGear) {
+            actionButtons = `
+                <button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
+                <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
+                ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
+            `;
+        } else {
+            actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+        }
+
+        div.innerHTML = `
+            <div class="item-icon-container" style="width:50px; height:50px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                ${imgTag}
+            </div>
+            <div class="item-info">
+                <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong>${it.count > 1 ? ` (x${it.count})` : ""}<br>
+                <small>${subText}</small>
+            </div>
+            <div class="item-actions">
+                ${actionButtons}
+            </div>
         `;
-    }
-
-    div.innerHTML = `
-        <div class="item-icon-container" style="width:50px; height:50px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-            ${imgTag}
-        </div>
-        <div class="item-info">
-            <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong>${it.count > 1 ? ` (x${it.count})` : ""}<br>
-            <small>${subText}</small>
-        </div>
-        <div class="item-actions">
-            ${actionButtons}
-        </div>
-    `;
-    return div;
-},
+        return div;
+    },
    
     toggleEquip: (idx) => {
     const it = data.inventory[idx];
@@ -534,6 +560,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
