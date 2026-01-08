@@ -373,26 +373,19 @@ renderInventory: () => {
 
     confirmSell: (idx) => {
         const it = data.inventory[idx];
-
-        // [수정] 1. 장착 중인지 먼저 확인 (안전장치)
-        // 장비류(weapon, armor, belt)일 때만 검사
         if (['weapon', 'armor', 'belt'].includes(it.type)) {
             const equippedItem = data.equipment[it.type];
-            // 현재 장착된 아이템의 ID와 팔려는 아이템의 ID가 같으면 판매 차단
             if (equippedItem && equippedItem.id === it.id) {
-                alert("🚫 장착 중인 아이템은 판매할 수 없습니다!\n먼저 장비를 해제해 주세요.");
-                return; // 여기서 함수를 끝내서 판매 창이 안 뜨게 함
+                alert("🚫 장착 중인 아이템은 판매할 수 없습니다!");
+                return; 
             }
         }
-
-        // 2. 판매 로직 (장착 중이 아닐 때만 실행됨)
         const count = it.count || 1;
         const sellPrice = Math.floor(it.p * 0.5) * count;
 
-        if(confirm(`${it.name} ${count > 1 ? `(${count}개)` : ''}을(를) 판매하시겠습니까?\n총 판매가: ${sellPrice.toLocaleString()} G`)) {
+        // ★ 여기서도 단위 적용!
+        if(confirm(`${it.name} ${count > 1 ? `(${count}개)` : ''}을(를) 판매하시겠습니까?\n총 판매가: ${MainEngine.formatNumber(sellPrice)} G`)) {
             data.gold += sellPrice;
-            
-            // 가방에서 삭제
             data.inventory.splice(idx, 1);
             MainEngine.updateUI();
         }
@@ -694,6 +687,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
