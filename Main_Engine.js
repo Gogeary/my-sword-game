@@ -414,6 +414,7 @@ renderInventory: () => {
             MainEngine.updateUI();
         }
     },
+};
 
 // ... 이하 GamblingSystem, renderHuntingZones, showPage 등은 기존과 동일 ...
 const GamblingSystem = {
@@ -466,6 +467,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
