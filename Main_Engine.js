@@ -659,29 +659,38 @@ renderInventory: () => {
     },
    
    addItem: (newItem) => {
-        // 1. 겹칠 수 있는 타입 정의 (강화권, 주문서 추가)
-        const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
-        
-        if (stackableTypes.includes(newItem.type)) {
-            // 이름이 같은 아이템이 있는지 찾음 (ID는 상점에서 랜덤으로 생성될 수 있으므로 이름으로 비교)
-            const existingItem = data.inventory.find(item => item.name === newItem.name);
-            
-            if (existingItem) {
-                // 있으면 개수만 증가
-                existingItem.count = (existingItem.count || 1) + (newItem.count || 1);
-                // (선택사항) 새로 들어온 아이템의 정보를 덮어씌울지 여부는 여기서 결정 (보통 카운트만 늘림)
-            } else {
-                // 없으면 새로 추가 (카운트 1로 설정)
-                if (!newItem.count) newItem.count = 1;
-                data.inventory.push(newItem);
-            }
+    // 1. 겹칠 수 있는 타입 정의 (강화권, 주문서, 방지권 포함)
+    const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
+
+    if (stackableTypes.includes(newItem.type)) {
+
+        // ★ [핵심 수정] "같은 아이템" 기준을 name 하나가 아니라
+        // type + name + val (+ 필요한 다른 속성)까지 비교
+        const existingItem = data.inventory.find(item =>
+            item.type === newItem.type &&
+            item.name === newItem.name &&
+            item.val === newItem.val &&          // 강화 수치, 방지 수치
+            item.p === newItem.p                // 가격도 다르면 다른 아이템 취급
+            // 필요하면 아래도 추가 가능
+            // && item.grade === newItem.grade
+            // && item.option === newItem.option
+        );
+
+        if (existingItem) {
+            // 있으면 개수만 증가
+            existingItem.count = (existingItem.count || 1) + (newItem.count || 1);
         } else {
-            // 장비(weapon, armor 등)는 겹치지 않고 무조건 새로 추가
-            // 장비는 고유 ID가 필요하므로 없으면 생성
-            if (!newItem.id) newItem.id = Date.now() + Math.random();
+            // 없으면 새로 추가
+            if (!newItem.count) newItem.count = 1;
             data.inventory.push(newItem);
         }
-    },
+
+    } else {
+        // 장비는 무조건 개별 추가
+        if (!newItem.id) newItem.id = Date.now() + Math.random();
+        data.inventory.push(newItem);
+    }
+},
 
 
    
@@ -758,6 +767,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
