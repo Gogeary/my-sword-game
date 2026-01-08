@@ -52,25 +52,25 @@ const GameDatabase = {
 
     CONSUMABLES: {
         potions: [
-            { id: 1, name: '최하급 포션', val: 100, p: 5000, type: 'potion', img: 'health_potion_1.png' },
-            { id: 2, name: '하급 포션', val: 400, p: 20000, type: 'potion', img: 'health_potion_2.png' },
-            { id: 3, name: '중급 포션', val: 1000, p: 50000, type: 'potion', img: 'health_potion_3.png' },
-            { id: 4, name: '상급 포션', val: 2000, p: 100000, type: 'potion', img: 'health_potion_4.png' },
-            { id: 5, name: '최상급 포션', val: 4000, p: 200000, type: 'potion', img: 'health_potion_5.png' }
+            { id: 1, name: '최하급 포션', val: 100, p: 5000, type: 'potion', img: 'health_potion_1.png', info: '회복력이 미미하다.'},
+            { id: 2, name: '하급 포션', val: 1000, p: 50000, type: 'potion', img: 'health_potion_2.png', info: '좀 더 농축된 회복력을 느낄 수 있다.'},
+            { id: 3, name: '중급 포션', val: 10000, p: 500000, type: 'potion', img: 'health_potion_3.png', info: '좀 걸쭉한것 같아서 기분은 나쁘지만 효과는 좋다.'},
+            { id: 4, name: '상급 포션', val: 100000, p: 5000000, type: 'potion', img: 'health_potion_4.png', info: '손에 상처를 내봤는데 실시간으로 낫는게 신기하다.'},
+            { id: 5, name: '최상급 포션', val: 1000000, p: 50000000, type: 'potion', img: 'health_potion_5.png', info: '돈만있으면 안되는게 없는데, 돈이 없어서 문제다.'}
         ],
         scrolls: [
-            { id: 1, name: '하급 방지권', p: 50000, type: 'scroll', img: 'scroll_1.png' },
-            { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', img: 'scroll_2.png' },
-            { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', img: 'scroll_3.png' }
+            { id: 1, name: '하급 방지권', p: 50000, type: 'scroll', img: 'scroll_1.png', info: '장비의 파괴를 막아주지만 한계가 있다.'},
+            { id: 2, name: '중급 방지권', p: 150000, type: 'scroll', img: 'scroll_2.png', info: '장비 파괴 한계를 조금 더 늘린 개선품이다.'},
+            { id: 3, name: '상급 방지권', p: 500000, type: 'scroll', img: 'scroll_3.png', info: '조금 더 개선해서 품질을 더욱 끌어올렸다.'}
         ],
         tickets: [
-            { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 20000, img: 'ticket5.png' },
-            { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 50000, img: 'ticket7.png' },
-            { id: 't10', name: '+10 강화권', val: 10, type: 'ticket', p: 1000000, img: 'ticket10.png' },
-            { id: 't12', name: '+12 강화권', val: 12, type: 'ticket', p: 2000000, img: 'ticket12.png' },
-            { id: 't13', name: '+13 강화권', val: 13, type: 'ticket', p: 4000000, img: 'ticket13.png' },
-            { id: 't14', name: '+14 강화권', val: 14, type: 'ticket', p: 10000000, img: 'ticket14.png' },
-            { id: 't15', name: '+15 강화권', val: 15, type: 'ticket', p: 20000000, img: 'ticket15.png' }
+            { id: 't5', name: '+5 강화권', val: 5, type: 'ticket', p: 20000, img: 'ticket5.png', info: '이건 왜 있는거야?'},
+            { id: 't7', name: '+7 강화권', val: 7, type: 'ticket', p: 50000, img: 'ticket7.png', info: '그래도 좀 쓸만한 것 같다.'},
+            { id: 't10', name: '+10 강화권', val: 10, type: 'ticket', p: 1000000, img: 'ticket10.png', info: '자동강화를 사용 한 것 같은 마법! 그러나 돈이 들진 않아서 좋다.'},
+            { id: 't12', name: '+12 강화권', val: 12, type: 'ticket', p: 2000000, img: 'ticket12.png', info: '그래도 난 운이 좋은편인거지.'},
+            { id: 't13', name: '+13 강화권', val: 13, type: 'ticket', p: 4000000, img: 'ticket13.png', info: '그래도 확실한 성능은 보장해 주는거지'},
+            { id: 't14', name: '+14 강화권', val: 14, type: 'ticket', p: 10000000, img: 'ticket14.png', info: '이제 내 장비에서 빛을 나게 할 자신이 생긴다.'},
+            { id: 't15', name: '+15 강화권', val: 15, type: 'ticket', p: 20000000, img: 'ticket15.png', info: '사냥터를 부수러 가자.'}
         ]
     },
    BOSS_DATA: {
@@ -186,6 +186,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
