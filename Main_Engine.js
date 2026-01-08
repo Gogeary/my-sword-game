@@ -150,38 +150,48 @@ const MainEngine = {
     },
 
     getFinalStats: () => {
-        const stats = GameDatabase.USER_STATS;
-        
-        // 1. DB의 계산 함수를 사용하여 레벨에 따른 기본 스탯 산출
-        let final = {
-            atk: stats.CALC_ATK(data.level),
-            def: stats.CALC_DEF(data.level),
-            hp: stats.CALC_HP(data.level)
-        };
+    const stats = GameDatabase.USER_STATS;
+    const lv = data.level || 1; // 레벨이 누락될 경우를 대비해 1로 기본값 설정
+    
+    // 1. DB의 CALC 함수를 사용하여 레벨별 기본 스탯 산출
+    let final = {
+        atk: stats.CALC_ATK(lv),
+        def: stats.CALC_DEF(lv),
+        hp: stats.CALC_HP(lv)
+    };
 
-        // 2. 장착한 아이템의 능력치 합산 (아이템 배율 k 및 강화 수치 en 반영)
-        Object.keys(data.equipment).forEach(slot => {
-            const item = data.equipment[slot];
-            if (item) {
-                // 강화 보너스 계산: 1강당 10% (0.1) 가산
-                const bonus = 1 + ((item.en || 0) * 0.1);
-                
-                // 부위별 스탯 공식 적용
-                // weapon, gloves는 공격력에 영향
-                if (slot === 'weapon') final.atk = Math.floor(final.atk * item.k * bonus);
-                if (slot === 'gloves') final.atk = Math.floor(final.atk * (1 + (item.k - 1) * bonus));
-                
-                // armor, shoes는 방어력에 영향
-                if (slot === 'armor') final.def = Math.floor(final.def * item.k * bonus);
-                if (slot === 'shoes') final.def = Math.floor(final.def * (1 + (item.k - 1) * bonus));
-                
-                // belt는 체력에 영향
-                if (slot === 'belt') final.hp = Math.floor(final.hp * item.k * bonus);
+    // 2. 장착 중인 아이템 순회 및 강화 수치 반영
+    Object.keys(data.equipment).forEach(slot => {
+        const item = data.equipment[slot];
+        if (item) {
+            // [강화 보너스 공식] 1 + (강화수치 * 0.1) -> +10강이면 2배 효과
+            const enBonus = 1 + ((item.en || 0) * 0.1);
+            
+            // 아이템의 최종 배율 = 기본 배율(k) * 강화 보너스
+            const totalMult = item.k * enBonus;
+
+            // 부위별 반영
+            if (slot === 'weapon') {
+                final.atk = Math.floor(final.atk * totalMult);
+            } 
+            else if (slot === 'armor') {
+                final.def = Math.floor(final.def * totalMult);
+            } 
+            else if (slot === 'belt') {
+                final.hp = Math.floor(final.hp * totalMult);
+            } 
+            else if (slot === 'gloves') {
+                // 보조 장비는 배율의 증가분만큼만 더함 (너무 강해지는 것 방지)
+                final.atk = Math.floor(final.atk * (1 + (totalMult - 1)));
+            } 
+            else if (slot === 'shoes') {
+                final.def = Math.floor(final.def * (1 + (totalMult - 1)));
             }
-        });
+        }
+    });
 
-        return final;
-    },
+    return final;
+},
 
     addItem: (newItem) => {
         const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
@@ -523,6 +533,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
