@@ -1,4 +1,4 @@
-/* Combat_System.js - 중복 선언 제거 및 로직 수정 완료 */
+/* Combat_System.js - 조우 화면 스킵 & 죽을 때까지 무한 사냥 */
 
 const CombatSystem = {
     currentZone: null,
@@ -14,7 +14,8 @@ const CombatSystem = {
         CombatSystem.resetBattleUI();
         
         showPage('page-hunt-play');
-        document.getElementById('hunt-title').innerText = `⚔️ ${zone.name} (Lv.${zone.minLv}~${zone.maxLv})`;
+        const titleEl = document.getElementById('hunt-title');
+        if(titleEl) titleEl.innerText = `⚔️ ${zone.name} (Lv.${zone.minLv}~${zone.maxLv})`;
         
         const searchBtn = document.querySelector('#page-hunt-play .main-menu-btn');
         if(searchBtn) searchBtn.innerHTML = `📡 몬스터 탐색 (${zone.cost.toLocaleString()}G)`;
@@ -23,27 +24,34 @@ const CombatSystem = {
         if(log) log.innerHTML = `사냥터에 입장했습니다. (탐색 비용: ${zone.cost.toLocaleString()}G)`;
     },
 
-    // 2. 몬스터 탐색 (보스 조우 및 이미지 교체 로직)
+    // 2. 몬스터 탐색
     scanHunt: () => {
         if (CombatSystem.isEncounter) return alert("이미 몬스터와 조우 중입니다!");
 
         const z = CombatSystem.currentZone; 
         const cost = z.cost;
 
+        // [비용 체크]
         if (data.gold < cost) {
-            return alert(`탐색 비용이 부족합니다. (${cost.toLocaleString()}G 필요)`);
+            if (MainEngine.isAutoHunting) {
+                MainEngine.toggleAutoHunt(); // 돈 없으면 강제 중지
+                alert("골드가 부족하여 자동 사냥이 중단되었습니다.");
+            } else {
+                alert(`탐색 비용이 부족합니다. (${cost.toLocaleString()}G 필요)`);
+            }
+            return;
         }
 
         data.gold -= cost;
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-        // 1. 일반 몬스터 기본 생성
+        // 1. 몬스터 생성
         const range = z.maxLv - z.minLv + 1;
         const randomLv = z.minLv + Math.floor(Math.random() * range);
         let monster = CombatSystem.getMonsterData(randomLv);
         monster = CombatSystem.setMonsterIdentity(monster); 
 
-        // 2. 보스 변환 체크 (확률 및 이미지 교체)
+        // 2. 보스 변환 체크
         const isBoss = Math.random() * 100 < GameDatabase.BOSS_DATA.CHANCE;
         const bossInfo = GameDatabase.BOSS_DATA.STAGES[z.id]; 
 
@@ -58,19 +66,27 @@ const CombatSystem = {
             monster.isBoss = true; 
         }
         
-        // 3. 전투 대기 및 UI 출력
         CombatSystem.tempMonster = monster;
         CombatSystem.isEncounter = true;
-        CombatSystem.renderEncounterUI(monster);
+
+        // ─────────────────────────────────────────────────────────────
+        // ★ [핵심 수정] 자동 사냥 중이면 "조우 화면(버튼)" 스킵하고 바로 전투 시작!
+        // ─────────────────────────────────────────────────────────────
+        if (typeof MainEngine !== 'undefined' && MainEngine.isAutoHunting) {
+            // 딜레이 없이 바로 전투 진입 (쾌적함 UP)
+            CombatSystem.startBattle();
+        } else {
+            // 수동일 때만 조우 화면 보여줌
+            CombatSystem.renderEncounterUI(monster);
+        }
     },
 
-    // 3. 조우 UI 렌더링
+    // 3. 조우 UI 렌더링 (수동 사냥용)
     renderEncounterUI: (m) => {
         const grid = document.getElementById('hunt-grid');
         if (!grid) return;
         
         const imgPath = `image/${m.img}`;
-        
         const nameColor = m.isBoss ? '#f1c40f' : '#ffffff'; 
         const borderColor = m.isBoss ? 'border:3px solid #f1c40f;' : 'border:2px solid var(--hunt);';
         const bossTag = m.isBoss ? '<span style="font-size:0.8em; display:block; color:#f1c40f;">[STAGE BOSS]</span>' : '';
@@ -114,6 +130,8 @@ const CombatSystem = {
         
         const grid = document.getElementById('hunt-grid');
         const imgPath = `image/${m.img}`;
+        
+        // 전투 화면 그리기
         if(grid) grid.innerHTML = `
             <div style="padding:20px; text-align:center; border:2px solid #e74c3c; border-radius:10px; background:rgba(231, 76, 60, 0.1);">
                 <img src="${imgPath}" style="width:100px; height:100px; object-fit:contain; animation: shake 0.5s infinite alternate; mix-blend-mode: multiply;" onerror="this.style.display='none';">
@@ -127,6 +145,7 @@ const CombatSystem = {
 
         if (autoTimer) clearInterval(autoTimer);
 
+        // 전투 루프 시작 (1초마다 턴 진행)
         autoTimer = setInterval(() => {
             turn++;
             const pStats = MainEngine.getFinalStats();
@@ -137,15 +156,14 @@ const CombatSystem = {
             let atkMsg = "";
 
             equippedItems.forEach(item => {
-                const triggered = SkillSystem.check(item, turn); // 이번 턴에 발동할 스킬 가져오기
+                const triggered = SkillSystem.check(item, turn);
                 triggered.forEach(s => {
-                    // [수정] s.id(스킬 ID)로 핸들러를 찾도록 변경
-                    if (SkillHandlers.OFFENSIVE && SkillHandlers.OFFENSIVE[s.id]) {
+                    if (typeof SkillHandlers !== 'undefined' && SkillHandlers.OFFENSIVE && SkillHandlers.OFFENSIVE[s.id]) {
                         const res = SkillHandlers.OFFENSIVE[s.id](s.val, pStats);
                         if (res.mul) finalAtk *= res.mul;
                         atkMsg += `<br><span style="color:#f1c40f">⚡ [${s.name}] 발동! ${res.msg}</span>`;
                     }
-                    else if (SkillHandlers.RECOVERY && SkillHandlers.RECOVERY[s.id]) {
+                    else if (typeof SkillHandlers !== 'undefined' && SkillHandlers.RECOVERY && SkillHandlers.RECOVERY[s.id]) {
                         const res = SkillHandlers.RECOVERY[s.id](s.val, pStats, data.hp);
                         if (res.heal) data.hp = Math.min(pStats.hp, data.hp + res.heal);
                         atkMsg += `<br><span style="color:#2ecc71">✨ [${s.name}] ${res.msg}</span>`;
@@ -168,49 +186,35 @@ const CombatSystem = {
                 
                 let dropMsg = "";
 
-                // ────────────────────────────────────────────────
-                // ★ [장비 드랍] (확률 10%, 티어 기반)
-                // ────────────────────────────────────────────────
+                // [장비 드랍] (10%)
                 const targetTier = Math.ceil(m.lv / 5);
-
-                if (Math.random() * 100 < 10) { // 10% 확률
-                    // 해당 티어의 아이템만 필터링 (item.tier가 없으면 0 처리)
+                if (Math.random() * 100 < 10) { 
                     const validItems = GameDatabase.EQUIPMENT.filter(e => (e.tier || 0) === targetTier);
-                    
                     if (validItems.length > 0) {
                         const baseItem = validItems[Math.floor(Math.random() * validItems.length)];
-                        
-                        // 아이템 복제 및 초기화
                         let newItem = { ...baseItem, id: Date.now(), en: 0, skills: [] };
                         
-                        // 스킬 개수 결정 (1개 70%, 2개 20%, 3개 10%)
                         const countRoll = Math.random() * 100;
                         let skillCount = 1; 
                         if (countRoll < 70) skillCount = 1;
                         else if (countRoll < 90) skillCount = 2;
                         else skillCount = 3;
 
-                        // 스킬 부착
                         if (typeof SkillSystem !== 'undefined') {
                             newItem = SkillSystem.attachSkill(newItem, skillCount);
                         }
-                        
                         data.inventory.push(newItem);
                         dropMsg += `<br><span style="color:#e94560">🎁 [T${targetTier}] ${newItem.name} 획득!</span>`;
                     }
                 }
 
-                // ────────────────────────────────────────────────
-                // ★ [보석 드랍] (확률 5%, 티어 기반)
-                // ────────────────────────────────────────────────
+                // [보석 드랍] (5%)
                 if (Math.random() * 100 < 5) {
                     const tierKey = `TIER_${targetTier}`;
                     const gemList = (GameDatabase.GEM_DROPS && GameDatabase.GEM_DROPS[tierKey]) 
-                                    ? GameDatabase.GEM_DROPS[tierKey] 
-                                    : null;
+                                    ? GameDatabase.GEM_DROPS[tierKey] : null;
 
                     if (gemList && gemList.length > 0) {
-                        // 등급 결정 (70% 일반 / 30% 희귀)
                         const isRare = (Math.random() * 100) >= 70; 
                         const gemIndex = (isRare && gemList.length > 1) ? 1 : 0;
                         const dropGem = gemList[gemIndex];
@@ -219,10 +223,8 @@ const CombatSystem = {
                             data.inventory.push({
                                 id: Date.now() + Math.random(),
                                 ...dropGem,
-                                type: 'gem', 
-                                count: 1
+                                type: 'gem', count: 1
                             });
-
                             const color = (gemIndex === 1) ? '#9b59b6' : '#2ecc71';
                             const prefix = (gemIndex === 1) ? '[✨희귀]' : '[🔹일반]';
                             dropMsg += `<br><span style="color:${color}; font-weight:bold;">💎 ${prefix} ${dropGem.name} 획득!</span>`;
@@ -236,15 +238,19 @@ const CombatSystem = {
                 CombatSystem.isEncounter = false;
                 CombatSystem.tempMonster = null;
                 
-                // [무한 자동 사냥 체크]
+                // [무한 자동 사냥 연결]
                 if (MainEngine.isAutoHunting) {
-                    if (data.hp > (MainEngine.getFinalStats().hp * 0.1)) { 
+                    // ─────────────────────────────────────────────────────────────
+                    // ★ [핵심 수정] 체력이 0보다 크기만 하면(살아만 있으면) 계속 진행
+                    // (기존의 10% 안전장치 삭제 -> 죽을 때까지 싸움)
+                    // ─────────────────────────────────────────────────────────────
+                    if (data.hp > 0) { 
                         setTimeout(() => {
                             if (MainEngine.isAutoHunting) CombatSystem.scanHunt();
-                        }, 1000); 
+                        }, 1000); // 1초 뒤 다음 사냥 시작
                     } else {
+                        // 사실 hp <= 0이면 패배 판정에서 이미 처리되지만 안전장치로 둠
                         MainEngine.toggleAutoHunt();
-                        alert("체력이 부족하여 자동 사냥을 중단합니다!");
                     }
                 } else {
                     const cost = CombatSystem.currentZone.cost;
@@ -268,8 +274,7 @@ const CombatSystem = {
             equippedItems.forEach(item => {
                 const triggered = SkillSystem.check(item, turn);
                 triggered.forEach(s => {
-                    // [수정] s.id(스킬 ID)로 핸들러를 찾도록 변경
-                    if (SkillHandlers.DEFENSIVE && SkillHandlers.DEFENSIVE[s.id]) {
+                    if (typeof SkillHandlers !== 'undefined' && SkillHandlers.DEFENSIVE && SkillHandlers.DEFENSIVE[s.id]) {
                         const res = SkillHandlers.DEFENSIVE[s.id](s.val);
                         if (res.mul !== undefined) incDmg = Math.floor(incDmg * res.mul);
                         defMsg += `<br><span style="color:#3498db">🛡️ [${s.name}] 발동! ${res.msg}</span>`;
@@ -289,13 +294,17 @@ const CombatSystem = {
             
             if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
 
-            // --- [4. 유저 패배 판정] ---
+            // --- [4. 유저 패배 판정 (죽으면 여기서 자동사냥 멈춤)] ---
             if (data.hp <= 0) {
                 clearInterval(autoTimer);
                 autoTimer = null;
+                
+                // 죽었으니까 자동 사냥 중지
                 if (MainEngine.isAutoHunting) MainEngine.toggleAutoHunt();
-                data.hp = 1;
-                alert("패배했습니다... 마을로 귀환합니다.");
+                
+                data.hp = 1; // 마을로 돌아가면 체력 1
+                alert("패배했습니다... (자동 사냥 종료)");
+                
                 CombatSystem.resetBattleUI();
                 if (typeof MainEngine !== 'undefined') { MainEngine.updateUI(); MainEngine.saveGame(); }
                 showPage('page-main');
