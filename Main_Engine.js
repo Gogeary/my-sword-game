@@ -4,7 +4,6 @@
 
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
 const SECRET_KEY = "my_super_secret_game_key_v1";
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 const MainEngine = {
     invCurrentTab: 'equip', 
@@ -561,6 +560,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
