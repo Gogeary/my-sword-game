@@ -236,26 +236,26 @@ const GameDatabase = {
         scrolls: [
             // --- [Lv.30 이하 장비용] --- (초반용: 저렴함)
             { id: 1, name: '하급 강화 파괴 방지권 (~30Lv)', p: 50000, type: 'scroll', maxLimit: 13, limitLv: 30, img: 'scroll_1.png', info: '초보자용 장비의 파괴를 막는다. (30레벨 이하, +13강까지 사용 가능)'},
-            { id: 2, name: '중급 방지권 (~30Lv)', p: 150000, type: 'scroll', maxLimit: 15, limitLv: 30, img: 'scroll_2.png', info: '초보자용 장비의 파괴를 막는다. (30레벨 이하, +15강까지 사용 가능)'},
-            { id: 3, name: '상급 방지권 (~30Lv)', p: 500000, type: 'scroll', maxLimit: 17, limitLv: 30, img: 'scroll_3.png', info: '초보자용 장비의 파괴를 막는다. (30레벨 이하, +17강까지 사용 가능)'},
+            { id: 2, name: '중급 강화 파괴 방지권 (~30Lv)', p: 150000, type: 'scroll', maxLimit: 15, limitLv: 30, img: 'scroll_2.png', info: '초보자용 장비의 파괴를 막는다. (30레벨 이하, +15강까지 사용 가능)'},
+            { id: 3, name: '상급 강화 파괴 방지권 (~30Lv)', p: 500000, type: 'scroll', maxLimit: 17, limitLv: 30, img: 'scroll_3.png', info: '초보자용 장비의 파괴를 막는다. (30레벨 이하, +17강까지 사용 가능)'},
 
             // --- [Lv.50 이하 장비용] --- (중반용: 수백만 G 단위)
             // 참고: 50렙 장비 가격대 ~80억 G
-            { id: 4, name: '숙련자용 강화 파괴 방지권 (~50Lv)', p: 5000000, type: 'scroll', maxLimit: 13, limitLv: 50, img: 'scroll_4.png', info: '중급 장비의 파괴를 막아준다. (50레벨 이하, +13강까지 사용 가능)'},
-            { id: 5, name: '전문가용 강화 파괴 방지권 (~50Lv)', p: 15000000, type: 'scroll', maxLimit: 15, limitLv: 50, img: 'scroll_5.png', info: '중급 장비의 파괴를 막아준다. (50레벨 이하, +15강까지 사용 가능)'},
-            { id: 6, name: '장인의 강화 파괴 방지권 (~50Lv)', p: 50000000, type: 'scroll', maxLimit: 17, limitLv: 50, img: 'scroll_6.png', info: '중급 장비의 파괴를 막아준다. (50레벨 이하, +17강까지 사용 가능)'},
+            { id: 4, name: '숙련 하급 강화 파괴 방지권 (~50Lv)', p: 5000000, type: 'scroll', maxLimit: 13, limitLv: 50, img: 'scroll_4.png', info: '중급 장비의 파괴를 막아준다. (50레벨 이하, +13강까지 사용 가능)'},
+            { id: 5, name: '숙련 중급 강화 파괴 방지권 (~50Lv)', p: 15000000, type: 'scroll', maxLimit: 15, limitLv: 50, img: 'scroll_5.png', info: '중급 장비의 파괴를 막아준다. (50레벨 이하, +15강까지 사용 가능)'},
+            { id: 6, name: '숙련 상급 강화 파괴 방지권 (~50Lv)', p: 50000000, type: 'scroll', maxLimit: 17, limitLv: 50, img: 'scroll_6.png', info: '중급 장비의 파괴를 막아준다. (50레벨 이하, +17강까지 사용 가능)'},
 
             // --- [Lv.70 이하 장비용] --- (후반용: 억 단위)
             // 참고: 70렙 장비 가격대 ~6000억 G
-            { id: 7, name: '명장의 강화 파괴 방지권 (~70Lv)', p: 500000000, type: 'scroll', maxLimit: 13, limitLv: 70, img: 'scroll_7.png', info: '고급 장비의 파괴를 막아준다. (70레벨 이하, +13강까지 사용 가능)'},
-            { id: 8, name: '대가용 강화 파괴 방지권 (~70Lv)', p: 1500000000, type: 'scroll', maxLimit: 15, limitLv: 70, img: 'scroll_8.png', info: '고급 장비의 파괴를 막아준다. (70레벨 이하, +15강까지 사용 가능)'},
-            { id: 9, name: '영웅의 강화 파괴 방지권 (~70Lv)', p: 5000000000, type: 'scroll', maxLimit: 17, limitLv: 70, img: 'scroll_9.png', info: '고급 장비의 파괴를 막아준다. (70레벨 이하, +17강까지 사용 가능)'},
+            { id: 7, name: '장인 하급 강화 파괴 방지권 (~70Lv)', p: 500000000, type: 'scroll', maxLimit: 13, limitLv: 70, img: 'scroll_7.png', info: '고급 장비의 파괴를 막아준다. (70레벨 이하, +13강까지 사용 가능)'},
+            { id: 8, name: '장인 중급 강화 파괴 방지권 (~70Lv)', p: 1500000000, type: 'scroll', maxLimit: 15, limitLv: 70, img: 'scroll_8.png', info: '고급 장비의 파괴를 막아준다. (70레벨 이하, +15강까지 사용 가능)'},
+            { id: 9, name: '장인 상급 강화 파괴 방지권 (~70Lv)', p: 5000000000, type: 'scroll', maxLimit: 17, limitLv: 70, img: 'scroll_9.png', info: '고급 장비의 파괴를 막아준다. (70레벨 이하, +17강까지 사용 가능)'},
 
             // --- [Lv.100 이하 장비용] --- (엔드게임: 조 단위 장비 보호용 -> 수백억 G)
             // 참고: 95렙 장비 가격대 ~100조 G
-            { id: 10, name: '전설의 강화 파괴 방지권 (~100Lv)', p: 30000000000, type: 'scroll', maxLimit: 13, limitLv: 100, img: 'scroll_10.png', info: '전설적인 장비의 파괴를 막는다. (100레벨 이하, +13강까지 사용 가능)'},
-            { id: 11, name: '신화의 강화 파괴 방지권 (~100Lv)', p: 100000000000, type: 'scroll', maxLimit: 15, limitLv: 100, img: 'scroll_11.png', info: '신화적인 장비의 파괴를 막는다. (100레벨 이하, +15강까지 사용 가능)'},
-            { id: 12, name: '절대자의 강화 파괴 방지권 (~100Lv)', p: 300000000000, type: 'scroll', maxLimit: 17, limitLv: 100, img: 'scroll_12.png', info: '모든 장비의 파괴를 완벽히 막는다. (100레벨 이하, +17강까지 사용 가능)'}
+            { id: 10, name: '전설 하급 강화 파괴 방지권 (~100Lv)', p: 30000000000, type: 'scroll', maxLimit: 13, limitLv: 100, img: 'scroll_10.png', info: '전설적인 장비의 파괴를 막는다. (100레벨 이하, +13강까지 사용 가능)'},
+            { id: 11, name: '전설 중급 강화 파괴 방지권 (~100Lv)', p: 100000000000, type: 'scroll', maxLimit: 15, limitLv: 100, img: 'scroll_11.png', info: '신화적인 장비의 파괴를 막는다. (100레벨 이하, +15강까지 사용 가능)'},
+            { id: 12, name: '전설 상급 강화 파괴 방지권 (~100Lv)', p: 300000000000, type: 'scroll', maxLimit: 17, limitLv: 100, img: 'scroll_12.png', info: '모든 장비의 파괴를 완벽히 막는다. (100레벨 이하, +17강까지 사용 가능)'}
         ],
 
         // =========================================================================
@@ -576,6 +576,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
