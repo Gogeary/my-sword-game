@@ -446,10 +446,30 @@ renderInventory: () => {
         next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
     }
 
-    if (leveledUp) {
-        alert(`🎉 레벨업! Lv.${data.level}`);
-        data.hp = MainEngine.getFinalStats().hp;
-        MainEngine.updateUI();
+   if (leveledUp) {
+    // 1. [삭제] alert(`🎉 레벨업! Lv.${data.lv}`); 
+    // alert는 지우고 아래 코드로 대체합니다.
+
+    // 2. [추가] 전투 로그에 강조 메시지 출력
+    const log = document.getElementById('battle-log');
+    if (log) {
+        // 눈에 확 띄는 스타일(금색, 굵게, 테두리) 적용
+        const levelUpMsg = `
+            <div style="
+                background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255, 215, 0, 0.3) 50%, rgba(0,0,0,0) 100%);
+                color: #ffd700; 
+                font-weight: bold; 
+                font-size: 1.2em; 
+                text-align: center; 
+                padding: 10px 0; 
+                margin: 10px 0;
+                border-top: 1px solid #ffd700;
+                border-bottom: 1px solid #ffd700;
+                text-shadow: 0 0 5px #ff0000;">
+                🎉 LEVEL UP! — Lv.${data.lv} 달성! 🎉
+            </div>
+        `;
+        log.innerHTML = levelUpMsg + log.innerHTML;
     }
 },
    // 1. 일괄 판매 모달 열기
@@ -564,17 +584,37 @@ function renderHuntingZones() {
 }
 
 function showPage(id) {
+    // 1. [기존] 자동 강화가 켜져 있으면 끄기 (안전장치)
     if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.stopAuto();
+
+    // ─────────────────────────────────────────────────────────────
+    // ★ [추가] 화면을 이동할 때, 사냥 화면이 아니면 자동 사냥 강제 종료
+    // ─────────────────────────────────────────────────────────────
+    if (id !== 'page-hunt-play') {
+        // MainEngine이 있고, 현재 자동 사냥 중이라면?
+        if (typeof MainEngine !== 'undefined' && MainEngine.isAutoHunting) {
+            MainEngine.toggleAutoHunt(); // 사냥 멈춤 (타이머 해제)
+            
+            // (선택사항) 로그에 빨간 글씨로 알림
+            const log = document.getElementById('battle-log');
+            if(log) log.innerHTML = `<span style="color:#e74c3c">🛑 다른 화면으로 이동하여 자동 사냥이 종료되었습니다.</span><br>` + log.innerHTML;
+        }
+    }
+
+    // 2. [기존] 페이지 전환 (active 클래스 조작)
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const t = document.getElementById(id); 
     if(t) t.classList.add('active');
 
-    // [추가] 내 정보 페이지를 열 때 인벤토리와 UI를 새로 고침
+    // 3. [기존] 특정 페이지 진입 시 갱신 로직
     if (id === 'page-info') {
         MainEngine.renderInventory();
     }
     
-    if (id === 'page-hunt-select') renderHuntingZones();
+    if (id === 'page-hunt-select') {
+        // renderHuntingZones 함수가 있으면 실행
+        if(typeof renderHuntingZones === 'function') renderHuntingZones();
+    }
     
     MainEngine.updateUI();
 }
@@ -586,4 +626,5 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
