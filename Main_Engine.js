@@ -150,33 +150,38 @@ const MainEngine = {
     },
 
     getFinalStats: () => {
-    // 1. 기본 유저 스태트 (레벨에 따른 기본값)
-    const base = GameDatabase.USER_STATS.GET_BASE(data.level);
-    let final = {
-        atk: base.atk,
-        def: base.def,
-        hp: base.hp
-    };
+        const stats = GameDatabase.USER_STATS;
+        
+        // 1. DB의 계산 함수를 사용하여 레벨에 따른 기본 스탯 산출
+        let final = {
+            atk: stats.CALC_ATK(data.level),
+            def: stats.CALC_DEF(data.level),
+            hp: stats.CALC_HP(data.level)
+        };
 
-    // 2. 장착한 아이템의 능력치 합산
-    // equipment 객체에 저장된 부위별(weapon, armor 등) 아이템을 순회합니다.
-    Object.keys(data.equipment).forEach(slot => {
-        const item = data.equipment[slot];
-        if (item) {
-            // 장비의 능력치 배율(k)과 강화 수치(en)를 반영
-            // 예: 공격력 = 기본공격력 * (아이템배율 + 강화보너스)
-            const bonus = 1 + (item.en * 0.1); // 1강당 10% 보너스 가정
-            
-            if (slot === 'weapon') final.atk = Math.floor(final.atk * item.k * bonus);
-            if (slot === 'armor') final.def = Math.floor(final.def * item.k * bonus);
-            if (slot === 'belt') final.hp = Math.floor(final.hp * item.k * bonus);
-            if (slot === 'gloves') final.atk = Math.floor(final.atk * (1 + (item.k - 1) * bonus));
-            if (slot === 'shoes') final.def = Math.floor(final.def * (1 + (item.k - 1) * bonus));
-        }
-    });
+        // 2. 장착한 아이템의 능력치 합산 (아이템 배율 k 및 강화 수치 en 반영)
+        Object.keys(data.equipment).forEach(slot => {
+            const item = data.equipment[slot];
+            if (item) {
+                // 강화 보너스 계산: 1강당 10% (0.1) 가산
+                const bonus = 1 + ((item.en || 0) * 0.1);
+                
+                // 부위별 스탯 공식 적용
+                // weapon, gloves는 공격력에 영향
+                if (slot === 'weapon') final.atk = Math.floor(final.atk * item.k * bonus);
+                if (slot === 'gloves') final.atk = Math.floor(final.atk * (1 + (item.k - 1) * bonus));
+                
+                // armor, shoes는 방어력에 영향
+                if (slot === 'armor') final.def = Math.floor(final.def * item.k * bonus);
+                if (slot === 'shoes') final.def = Math.floor(final.def * (1 + (item.k - 1) * bonus));
+                
+                // belt는 체력에 영향
+                if (slot === 'belt') final.hp = Math.floor(final.hp * item.k * bonus);
+            }
+        });
 
-    return final;
-},
+        return final;
+    },
 
     addItem: (newItem) => {
         const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
@@ -518,6 +523,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
