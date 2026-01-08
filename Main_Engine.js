@@ -184,9 +184,10 @@ const MainEngine = {
         const eqList = document.getElementById('equipped-list');
         if (!invList || !eqList) return;
         invList.innerHTML = ''; eqList.innerHTML = '';
-
+       
+            /* Main_Engine.js 내 renderInventory 함수 중 forEach 내부 수정 */
             data.inventory.forEach((it, idx) => {
-            // [수정] id 비교 대신 uid 비교로 변경하여 중복 강조 표시 방지
+            // [수정] it.id 비교 대신 고유한 it.uid 비교로 변경
             const isEquipped = (data.equipment[it.type] && data.equipment[it.type].uid === it.uid);
           
             let category = (['weapon','armor','belt','gloves','shoes'].includes(it.type)) ? 'equip' : 
@@ -195,7 +196,7 @@ const MainEngine = {
             const html = MainEngine.createItemHTML(it, idx, isEquipped);
             if (isEquipped) eqList.appendChild(html);
             else if (MainEngine.invCurrentTab === category) invList.appendChild(html);
-        });
+});
     },
     createItemHTML: (it, idx, isEquipped) => {
         const div = document.createElement('div');
@@ -368,5 +369,6 @@ const GamblingSystem = {
 };
 
 window.onload = MainEngine.init;
+
 
 
