@@ -280,23 +280,22 @@ renderInventory: () => {
     data.inventory.forEach((it, idx) => {
         const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
         
-        // 카테고리 판정
         let category = 'etc'; 
-        const type = it.type ? it.type.toLowerCase() : ''; // 소문자로 통일해서 비교
+        const type = it.type ? it.type.toLowerCase() : ''; 
 
-        if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) category = 'equip';
-        else if (['potion', 'ticket', 'scroll'].includes(type)) category = 'consume';
+        // ★ 이 부분을 수정해야 인벤토리 '장비' 탭에 장갑이 나옵니다!
+        if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
+            category = 'equip';
+        } 
+        else if (['potion', 'ticket', 'scroll'].includes(type)) {
+            category = 'consume';
+        }
 
-        // 1. 장착 중인 아이템은 탭 상관없이 무조건 상단
         if (isEquipped) {
             eqList.appendChild(MainEngine.createItemHTML(it, idx, true));
         } 
-        // 2. 장착 안 된 아이템은 현재 탭과 일치할 때만 하단
         else if (MainEngine.invCurrentTab === category) {
             invList.appendChild(MainEngine.createItemHTML(it, idx, false));
-        } else {
-            // 여기에 걸리면 탭이 맞지 않아서 안 보이는 것입니다.
-            console.log(`아이템 '${it.name}'은(는) 탭이 맞지 않아 숨겨짐 (카테고리: ${category})`);
         }
     });
 },
@@ -752,6 +751,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
