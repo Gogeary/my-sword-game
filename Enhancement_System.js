@@ -13,8 +13,11 @@ const UpgradeSystem = {
     // 비용 계산
     calcCost: (item) => {
         if (!item) return 0;
+        // 장갑을 포함한 모든 장비는 기본적으로 item.p(가격)를 기반으로 계산합니다.
         let baseCost = Math.floor(item.p * 0.1);
+        
         if (item.en < 5) return baseCost + (item.en * 1000);
+        
         let cost = baseCost + (5 * 1000);
         for (let i = 5; i < item.en; i++) {
             if (i < 10) cost *= 1.2;
@@ -563,4 +566,5 @@ const UpgradeSystem = {
         if (btn) btn.innerText = "자동 강화 시작";
     }
 }; // 마지막에 객체를 닫는 중괄호와 세미콜론 확인
+
 
