@@ -67,45 +67,19 @@ const SkillSystem = {
    [스킬 핸들러] DB의 desc(설명)와 val(수치)에 맞춰 동작 구현
    ---------------------------------------------------- */
 const SkillHandlers = {
-    // [무기] 공격 턴
+    // 1. 공격 턴 (무기, 글러브 등)
     OFFENSIVE: {
-        'smash': (val, stats) => { 
-            // DB: val이 2.0, 2.5, 3.0 (배율)
-            return { mul: val, msg: `(강타 x${val})` };
+        // [기존 무기 스킬]
+        'weapon': (val, pStats) => { return { mul: val, msg: `(x${val})` }; },
+        'smash': (val, stats) => { return { mul: val, msg: `(강타 x${val})` }; },
+        'crit': (val, stats) => { return { mul: val, msg: `⚡(치명타 x${val})` }; },
+
+        // [글러브 기본 효과] (아이템 타입 'gloves'가 호출될 때)
+        'gloves': (val, stats) => { 
+            return { mul: val, msg: `(장갑 보너스 x${val.toFixed(2)})` }; 
         },
-        'crit': (val, stats) => {
-            // DB: val이 1.5, 2, 2.5 (배율)
-            return { mul: val, msg: `⚡(치명타 x${val})` };
-        }
-    },
 
-    // [방어구] 방어 턴
-    DEFENSIVE: {
-        'iron': (val) => {
-            // DB: val이 0.3, 0.4, 0.5 (감소율)
-            // 받는 피해 = 데미지 * (1 - 감소율)
-            return { mul: (1 - val), msg: `(철벽 -${val*100}%)` };
-        },
-        'evade': (val) => {
-            // DB: val이 0.0 (데미지 무효화 의미)
-            // 곱연산으로 0을 만들어서 데미지를 없앰
-            return { mul: 0, msg: "💨(완전 회피!)" };
-        }
-    },
-
-    // [벨트] 회복/기타
-    RECOVERY: {
-        'heal': (val, stats, currentHp) => {
-            // DB: val이 0.1, 0.15, 0.2 (퍼센트)
-            const amount = Math.floor(stats.hp * val);
-            return { heal: amount, msg: `+${amount} (${val*100}%)` };
-        }
-    }
-        
-    // [기존에 추가한 글러브 기본 효과]
-        'gloves': (val, stats) => { return { mul: val, msg: `(장갑 보너스 x${val.toFixed(2)})` }; },
-
-        // ★ [추가] 글러브 전용 스킬 핸들러
+        // ★ [추가] 글러브 전용 스킬
         'combo': (val, stats) => {
             // 연타: 빠르고 경쾌한 느낌
             return { mul: val, msg: `🥊(연타 x${val})` };
@@ -115,5 +89,29 @@ const SkillHandlers = {
             return { mul: val, msg: `🎯(약점 포착! x${val})` };
         }
     },
-};
 
+    // 2. 방어 턴 (갑옷, 신발 등)
+    DEFENSIVE: {
+        'armor': (val) => { return { mul: val, msg: `피해 감소` }; }, // 기본 방어
+        'iron': (val) => { 
+            return { mul: (1 - val), msg: `(철벽 -${val*100}%)` }; 
+        },
+        'evade': (val) => { 
+            return { mul: 0, msg: "💨(완전 회피!)" }; 
+        },
+        'shoes': (val) => { return { mul: 0, msg: `완전 회피` }; }
+    },
+
+    // 3. 회복/기타 (벨트, 반지 등)
+    RECOVERY: {
+        'belt': (val, pStats) => {
+            const heal = Math.floor(pStats.hp * val);
+            return { heal: heal, msg: `체력 회복 +${heal}` };
+        },
+        'heal': (val, stats, currentHp) => {
+            const amount = Math.floor(stats.hp * val);
+            return { heal: amount, msg: `+${amount} (${val*100}%)` };
+        },
+        'ring': (val) => { return { heal: 0, msg: "마나 회복(미구현)" }; }
+    }
+};
