@@ -199,8 +199,8 @@ const GameDatabase = {
             1: { name: "👑 왕 뱀", hpMult: 3.5, atkMult: 1.6, goldMult: 6, expMult: 6, img: 'Bam.png' }, // 뒷산 보스
             2: { name: "👑 쑥 먹는 김용준", hpMult: 4, atkMult: 1.8, goldMult: 7, expMult: 7, img: 'YJ_1.png' }, // 뒷산 동굴 보스
             3: { name: "👑 야근 망령", hpMult: 4.5, atkMult: 2.0, goldMult: 8, expMult: 8, img: 'Overtime_ghost.png' }, // 동네 폐허 보스
-            4: { name: "👑 이완기 (산스장 망령)", hpMult: 5, atkMult: 2.2, goldMult: 10, expMult: 10, img: 'LWG.png' }, // 사기막골 보스
-            5: { name: "👑 소부장 (기술팀 흑막)", hpMult: 7, atkMult: 2.5, goldMult: 15, expMult: 15, img: 'SSM.png' }  // 회사 보스
+            4: { name: "👑 이완기의 환영 (산스장 망령)", hpMult: 8, atkMult: 2.2, goldMult: 5, expMult: 5, img: 'LWG.png' }, // 사기막골 보스
+            5: { name: "👑 소부장의 환영 (기술팀 흑막)", hpMult: 10, atkMult: 2.5, goldMult: 5, expMult: 5, img: 'SSM.png' }  // 회사 보스
         }
     },
 
@@ -305,6 +305,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
