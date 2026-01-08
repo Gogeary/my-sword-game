@@ -196,7 +196,7 @@ const MainEngine = {
     },
 
     /* Main_Engine.js 내 createItemHTML 함수 수정 */
-    createItemHTML: (it, idx, isEquipped) => {
+   createItemHTML: (it, idx, isEquipped) => {
         const div = document.createElement('div');
         div.className = 'item-card';
         if (isEquipped) div.style.border = '2px solid #2ecc71';
@@ -209,26 +209,29 @@ const MainEngine = {
         const type = (it.type || "").toLowerCase();
         const isGear = ['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type);
         const isConsumable = ['potion', 'scroll', 'ticket'].includes(type);
-        const isGem = (type === 'etc'); // 보석(재료) 타입
+        const isGem = (type === 'etc'); // 사용자님의 보석 데이터 타입
 
         let subText = it.info || "";
         if (isGear) {
             subText = `<span style="color:#f1c40f;">능력치 배율: x${it.k.toFixed(2)}</span>`;
         }
 
-        // [버튼 로직 수정]
+        // [버튼 로직 최종 수정]
         let actionButtons = '';
         
         if (isGem || isConsumable) {
-            // 보석이나 소비 아이템은 '판매' 버튼만 표시
-            actionButtons = `<button class="item-btn" style="background:#c0392b;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
+            // ★ 보석 및 소비템: 오직 '판매' 버튼만 노출
+            actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
         } else if (isGear) {
-            // 장비류만 '강화', '장착/해제', '판매' 버튼 표시
+            // 장비류: 강화, 장착/해제, 판매 버튼 노출
             actionButtons = `
                 <button class="item-btn" onclick="MainEngine.goToUpgrade(${idx})">강화</button>
                 <button class="item-btn" onclick="MainEngine.toggleEquip(${idx})">${isEquipped ? '해제' : '장착'}</button>
-                ${!isEquipped ? `<button class="item-btn" style="background:#c0392b;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
+                ${!isEquipped ? `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>` : ''}
             `;
+        } else {
+            // 그 외 알 수 없는 타입도 일단 판매는 가능하게 처리
+            actionButtons = `<button class="item-btn" style="background:#c0392b; color:white;" onclick="MainEngine.confirmSell(${idx})">판매</button>`;
         }
 
         div.innerHTML = `
@@ -245,7 +248,7 @@ const MainEngine = {
         `;
         return div;
     },
-
+   
     toggleEquip: (idx) => {
         const it = data.inventory[idx];
         if (!it) return;
@@ -502,6 +505,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
