@@ -25,11 +25,11 @@ const GameDatabase = {
         { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
         { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
         { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png' },
-        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor' },
-        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt' },
-        { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon' },
-        { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor' },
-        { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt' },
+        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png' },
+        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png' },
+        { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png' },
+        { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png' },
+        { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png' },
         { lv: 15, name: '강철 검', k: 1.7, p: 250000, type: 'weapon' },
         { lv: 15, name: '가죽 옷', k: 1.6, p: 250000, type: 'armor' },
         { lv: 15, name: '가죽 벨트', k: 1.9, p: 250000, type: 'belt' },
@@ -176,6 +176,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
