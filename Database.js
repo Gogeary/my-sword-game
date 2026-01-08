@@ -486,6 +486,16 @@ const GameDatabase = {
             { id: 'heal', name: '재생2', turn: 4, val: 0.15, desc: '4턴마다 최대 체력의 15% 회복' },
             { id: 'heal', name: '재생3', turn: 4, val: 0.2, desc: '4턴마다 최대 체력의 20% 회복' }
         ]
+       // ★ [추가] 글러브 전용 스킬
+        gloves: [
+            { id: 'combo', name: '연타1', val: 1.3, turn: 2, desc: '2턴마다 1.3배 피해' },
+            { id: 'combo', name: '연타2', val: 1.5, turn: 2, desc: '2턴마다 1.5배 피해' },
+            { id: 'combo', name: '연타3', val: 1.8, turn: 2, desc: '2턴마다 1.8배 피해' },
+
+            { id: 'weakness', name: '약점포착1', val: 2.5, turn: 4, desc: '4턴마다 2.5배 피해' },
+            { id: 'weakness', name: '약점포착2', val: 3.5, turn: 4, desc: '4턴마다 3.5배 피해' },
+            { id: 'weakness', name: '약점포착3', val: 5.0, turn: 5, desc: '5턴마다 5.0배 피해' }
+    ]
     },
 
     // [중요] 여기가 GACHA의 올바른 위치입니다. (GameDatabase 닫히기 전)
@@ -530,6 +540,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
