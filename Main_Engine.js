@@ -680,8 +680,8 @@ renderInventory: () => {
         uid: Date.now() + Math.random()   // 개별 장비 식별용
     });
 },
-const MainEngine = {
-    updateUI: function() {
+
+updateUI: function() {
         // 1. 골드 업데이트
         document.getElementById('gold').innerText = GameData.data.gold.toLocaleString();
 
@@ -713,12 +713,7 @@ const MainEngine = {
         } else {
             potionDisplay.style.color = "var(--mine)";
         }
-    }
-};
-
-   
-};
-
+    },
 /* ==========================================
    [추가] 도박 시스템 (홀짝)
    ========================================== */
@@ -821,6 +816,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
