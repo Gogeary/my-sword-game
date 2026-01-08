@@ -685,21 +685,52 @@ renderInventory: () => {
    
 };
 
-// ... 이하 GamblingSystem, renderHuntingZones, showPage 등은 기존과 동일 ...
+/* ==========================================
+   [추가] 도박 시스템 (홀짝)
+   ========================================== */
 const GamblingSystem = {
+    // 도박장 입장 시 초기화
     init: () => {
-        const gDisp = document.getElementById('gamble-gold-display');
-        if(gDisp) gDisp.innerText = Math.floor(data.gold).toLocaleString();
-    },
-    play: (choice) => {
+        const display = document.getElementById('gamble-gold-display');
         const input = document.getElementById('gamble-amount');
-        const bet = parseInt(input.value);
-        if (!bet || bet <= 0 || bet > data.gold) return alert("베팅 금액 오류!");
-        const res = (Math.floor(Math.random() * 100) + 1) % 2 !== 0 ? 'odd' : 'even';
-        if (choice === res) { data.gold += bet; alert("승리!"); }
-        else { data.gold -= bet; alert("패배..."); }
+        const log = document.getElementById('gamble-log');
+        
+        if(display) display.innerText = MainEngine.formatNumber(data.gold);
+        if(input) input.value = '';
+        if(log) log.innerHTML = '베팅 금액을 입력하고 홀/짝을 선택하세요.<br>성공 시 2배, 실패 시 0원!';
+    },
+
+    // 게임 실행 (type: 'odd' 홀수 / 'even' 짝수)
+    play: (type) => {
+        const input = document.getElementById('gamble-amount');
+        const amount = parseInt(input.value);
+
+        if (isNaN(amount) || amount <= 0) return alert("올바른 금액을 입력해주세요.");
+        if (data.gold < amount) return alert("골드가 부족합니다.");
+
+        // 골드 차감
+        data.gold -= amount;
+
+        // 결과 계산 (1~100 랜덤)
+        const dice = Math.floor(Math.random() * 100) + 1;
+        const isOdd = dice % 2 !== 0;
+        const isWin = (type === 'odd' && isOdd) || (type === 'even' && !isOdd);
+
+        const logBox = document.getElementById('gamble-log');
+        let msg = "";
+
+        if (isWin) {
+            const reward = amount * 2;
+            data.gold += reward;
+            msg = `<div style="color:#2ecc71">🎉 <b>승리!</b> (주사위: ${dice})<br>+${MainEngine.formatNumber(reward)} G 획득!</div>`;
+        } else {
+            msg = `<div style="color:#e74c3c">💀 <b>패배...</b> (주사위: ${dice})<br>-${MainEngine.formatNumber(amount)} G 잃음</div>`;
+        }
+
+        // 로그 및 UI 갱신
+        if(logBox) logBox.innerHTML = msg + logBox.innerHTML;
+        document.getElementById('gamble-gold-display').innerText = MainEngine.formatNumber(data.gold);
         MainEngine.updateUI();
-        GamblingSystem.init();
     }
 };
 
@@ -756,6 +787,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
