@@ -680,7 +680,41 @@ renderInventory: () => {
         uid: Date.now() + Math.random()   // 개별 장비 식별용
     });
 },
+const MainEngine = {
+    updateUI: function() {
+        // 1. 골드 업데이트
+        document.getElementById('gold').innerText = GameData.data.gold.toLocaleString();
 
+        // 2. 포션 관련 데이터 계산
+        const potionItems = GameData.data.inventory.filter(item => {
+            const dbInfo = CONSUMABLES.potions.find(p => p.id === item.id);
+            return dbInfo && dbInfo.type === 'potion';
+        });
+
+        // 총 개수 (개별 count의 합)
+        const totalCount = potionItems.reduce((acc, cur) => acc + (cur.count || 0), 0);
+        
+        // 총 회복 가능량 (각 포션 val * 개수)
+        const totalValue = potionItems.reduce((acc, cur) => {
+            const dbInfo = CONSUMABLES.potions.find(p => p.id === cur.id);
+            return acc + (dbInfo.val * cur.count);
+        }, 0);
+
+        // 3. HTML에 적용
+        // potion-val에는 남은 총 회복량에서 현재 버퍼를 뺀 '실제 남은 양'을 표시하거나, 
+        // 혹은 단순히 총량을 표시할 수 있습니다.
+        document.getElementById('potion-val').innerText = (totalValue - GameData.data.potionBuffer).toLocaleString();
+        document.getElementById('potion-cnt').innerText = totalCount;
+
+        // (선택 사항) 포션이 0개면 색상을 붉게 변경
+        const potionDisplay = document.getElementById('potion-cnt').parentElement;
+        if (totalCount === 0) {
+            potionDisplay.style.color = "#ff4d4d";
+        } else {
+            potionDisplay.style.color = "var(--mine)";
+        }
+    }
+};
 
    
 };
@@ -787,6 +821,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
