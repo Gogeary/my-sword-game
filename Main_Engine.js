@@ -592,31 +592,28 @@ renderInventory: () => {
         }
     },
    
-   // [신규 기능] 아이템 획득 시 겹치기 처리 (MainEngine 안에 추가해줘!)
-    addItem: (newItem) => {
-        // 1. 겹칠 수 있는 아이템인지 확인 (etc, potion, scroll 등)
+   addItem: (newItem) => {
+        // 1. 겹칠 수 있는 타입 정의 (강화권, 주문서 추가)
         const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
         
         if (stackableTypes.includes(newItem.type)) {
-            // 가방에 같은 아이템(ID 기준)이 있는지 찾기
-            const existingItem = data.inventory.find(item => item.id === newItem.id);
+            // 이름이 같은 아이템이 있는지 찾음 (ID는 상점에서 랜덤으로 생성될 수 있으므로 이름으로 비교)
+            const existingItem = data.inventory.find(item => item.name === newItem.name);
             
             if (existingItem) {
-                // 있으면 개수만 증가! (count가 없으면 1로 초기화 후 증가)
-                if (!existingItem.count) existingItem.count = 1;
-                existingItem.count += 1;
-                // 알림 메시지용 리턴
-                return true; 
+                // 있으면 개수만 증가
+                existingItem.count = (existingItem.count || 1) + (newItem.count || 1);
+                // (선택사항) 새로 들어온 아이템의 정보를 덮어씌울지 여부는 여기서 결정 (보통 카운트만 늘림)
             } else {
-                // 없으면 새로 추가 (개수 1개로 설정)
-                newItem.count = 1;
+                // 없으면 새로 추가 (카운트 1로 설정)
+                if (!newItem.count) newItem.count = 1;
                 data.inventory.push(newItem);
-                return true;
             }
         } else {
-            // 장비(weapon, armor 등)는 겹치지 않고 그냥 추가
+            // 장비(weapon, armor 등)는 겹치지 않고 무조건 새로 추가
+            // 장비는 고유 ID가 필요하므로 없으면 생성
+            if (!newItem.id) newItem.id = Date.now() + Math.random();
             data.inventory.push(newItem);
-            return true;
         }
     },
 
@@ -695,6 +692,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
