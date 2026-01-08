@@ -223,20 +223,21 @@ const MainEngine = {
     },
     toggleEquip: (idx) => {
     const it = data.inventory[idx];
-    
-    // [핵심 수정] 종류(type)가 같으면서 고유 ID(uid)까지 같은 아이템이 이미 장착되어 있는지 확인
+    if (!it) return;
+
+    // [핵심 수정] 종류(type)가 같으면서 고유 식별자(uid)까지 일치하는지 확인
     const isAlreadyEquipped = data.equipment[it.type] && data.equipment[it.type].uid === it.uid;
 
     if (isAlreadyEquipped) {
-        // 이미 장착된 바로 그 아이템이라면 해제
+        // 이미 장착된 바로 그 아이템이면 장착 해제
         data.equipment[it.type] = null;
     } else {
-        // 아니라면 해당 부위에 이 아이템(객체 전체)을 장착
+        // 아니라면 해당 부위에 선택한 아이템 딱 하나만 장착
         data.equipment[it.type] = it;
     }
     
     MainEngine.updateUI();
-    },
+},
    
     confirmSell: (idx) => {
         const it = data.inventory[idx];
@@ -367,4 +368,5 @@ const GamblingSystem = {
 };
 
 window.onload = MainEngine.init;
+
 
