@@ -164,6 +164,7 @@ const MainEngine = {
         if(eq.gloves) fAtk *= GameDatabase.ENHANCE_FORMULA.gloves(eq.gloves.k, eq.gloves.en);
         return { atk: fAtk, def: fDef, hp: fHP };
     },
+   
     addItem: (newItem) => {
         const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
         if (stackableTypes.includes(newItem.type)) {
@@ -184,8 +185,10 @@ const MainEngine = {
         if (!invList || !eqList) return;
         invList.innerHTML = ''; eqList.innerHTML = '';
 
-        data.inventory.forEach((it, idx) => {
-            const isEquipped = (data.equipment[it.type] && (data.equipment[it.type].uid === it.uid || data.equipment[it.type].id === it.id));
+            data.inventory.forEach((it, idx) => {
+            // [수정] id 비교 대신 uid 비교로 변경하여 중복 강조 표시 방지
+            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].uid === it.uid);
+          
             let category = (['weapon','armor','belt','gloves','shoes'].includes(it.type)) ? 'equip' : 
                            (['potion','ticket','scroll'].includes(it.type)) ? 'consume' : 'etc';
 
@@ -219,11 +222,22 @@ const MainEngine = {
         return div;
     },
     toggleEquip: (idx) => {
-        const it = data.inventory[idx];
-        if(data.equipment[it.type] && (data.equipment[it.type].uid === it.uid || data.equipment[it.type].id === it.id)) data.equipment[it.type] = null;
-        else data.equipment[it.type] = it;
-        MainEngine.updateUI();
+    const it = data.inventory[idx];
+    
+    // [핵심 수정] 종류(type)가 같으면서 고유 ID(uid)까지 같은 아이템이 이미 장착되어 있는지 확인
+    const isAlreadyEquipped = data.equipment[it.type] && data.equipment[it.type].uid === it.uid;
+
+    if (isAlreadyEquipped) {
+        // 이미 장착된 바로 그 아이템이라면 해제
+        data.equipment[it.type] = null;
+    } else {
+        // 아니라면 해당 부위에 이 아이템(객체 전체)을 장착
+        data.equipment[it.type] = it;
+    }
+    
+    MainEngine.updateUI();
     },
+   
     confirmSell: (idx) => {
         const it = data.inventory[idx];
         const price = Math.floor((it.p || 0) * 0.5) * (it.count || 1);
@@ -353,3 +367,4 @@ const GamblingSystem = {
 };
 
 window.onload = MainEngine.init;
+
