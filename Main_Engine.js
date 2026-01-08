@@ -260,14 +260,20 @@ renderInventory: () => {
         const div = document.createElement('div'); 
         div.className = 'item-card';
         
+        // 장착 중이면 테두리 강조
         if (isEquipped) { 
             div.style.border = '2px solid var(--mine)'; 
             div.style.background = 'rgba(46, 204, 113, 0.1)'; 
         }
 
-        const imgTag = it.img ? `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='⚔️';">` : '<div class="item-icon">📦</div>';
+        // 이미지 처리 (없으면 📦 아이콘)
+        const imgTag = it.img ? 
+            `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='📦';">` 
+            : '<div class="item-icon">📦</div>';
+        
         const isConsumable = (it.type === 'ticket' || it.type === 'scroll' || it.type === 'potion');
         
+        // 버튼 생성
         let actionButtons = '';
         if (isConsumable) { 
             actionButtons = `<button class="item-btn" style="background:#c0392b; color:#fff;" onclick="MainEngine.confirmSell(${idx})">판매</button>`; 
@@ -279,36 +285,17 @@ renderInventory: () => {
             `; 
         }
 
-        // --- 아이템 정보 문구 결정 로직 ---
+        // 아이템 정보 텍스트 결정
         let subText = "";
+        if (it.info) subText = it.info;
+        else if (it.type === 'potion') subText = `회복량: ${it.val.toLocaleString()}`;
+        else if (it.type === 'ticket') subText = `확정 강화 +${it.val}`;
+        else if (it.p) subText = `티어 ${Math.floor(it.p/1000)}`;
 
-        if (it.info) {
-            // 1. 커스텀 문구 (Database.js에 info: "내용"이 있는 경우)
-            subText = it.info;
-        } 
-        else if (it.type === 'potion') {
-            // 2. 포션 회복량
-            subText = `회복량: ${it.val.toLocaleString()}`;
-        }
-        else if (it.type === 'ticket') {
-            // 3. 강화권 수치
-            subText = `확정 강화 +${it.val}`;
-        }
-        else if (it.p) {
-            // 4. 기본 티어 표시 (가격을 기반으로 자동 계산)
-            subText = `티어 ${Math.floor(it.p/1000)}`;
-        }
-
-        div.innerHTML = `
-            ${imgTag}
-            <div class="item-info">
-                <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}</strong><br>
-                <span style="color:#aaa; font-size:0.85em;">${subText}</span>
-            </div>
-            <div class="item-actions">${actionButtons}</div>`;
-        
+        // 개수 배지 (2개 이상일 때만 표시)
         const countBadge = (it.count && it.count > 1) ? ` <span style="color:#f1c40f; font-weight:bold;">x${it.count}</span>` : '';
 
+        // 최종 HTML 조립
         div.innerHTML = `
             ${imgTag}
             <div class="item-info">
@@ -444,7 +431,14 @@ renderInventory: () => {
 
         modal.style.display = 'flex';
     }, // <--- 콤마 확인!
-    closeModal: () => document.getElementById('inv-modal').style.display='none',
+    closeModal: () => {
+        const modal = document.getElementById('modal-inventory');
+        if (modal) modal.style.display = 'none';
+        
+        // 일괄 판매 모달도 있으면 같이 닫기
+        const batchModal = document.getElementById('modal-batch-sell');
+        if (batchModal) batchModal.style.display = 'none';
+    },
 
     checkLevelUp: () => {
     let leveledUp = false;
@@ -642,6 +636,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
