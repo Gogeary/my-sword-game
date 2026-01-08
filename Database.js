@@ -73,6 +73,17 @@ const GameDatabase = {
             { id: 't15', name: '+15 강화권', val: 15, type: 'ticket', p: 20000000, img: 'ticket15.png' }
         ]
     },
+   BOSS_DATA: {
+        CHANCE: 5, // 보스 조우 확률 (%)
+        STAGES: {
+            0: { name: "👑 왕 꿈틀이", hpMult: 3, atkMult: 1.5, goldMult: 5, expMult: 5 }, // 집 앞마당 보스
+            1: { name: "👑 왕 뱀", hpMult: 3.5, atkMult: 1.6, goldMult: 6, expMult: 6 }, // 뒷산 보스
+            2: { name: "👑 쑥 먹는 김용준", hpMult: 4, atkMult: 1.8, goldMult: 7, expMult: 7 }, // 뒷산 동굴 보스
+            3: { name: "👑 야근 망령", hpMult: 4.5, atkMult: 2.0, goldMult: 8, expMult: 8 }, // 동네 폐허 보스
+            4: { name: "👑 이완기 (야근망령)", hpMult: 5, atkMult: 2.2, goldMult: 10, expMult: 10 }, // 회사 근처 보스
+            5: { name: "👑 소부장 (기술팀 흑막)", hpMult: 7, atkMult: 2.5, goldMult: 15, expMult: 15 }  // 회사 보스
+        }
+    },
 
     MONSTER_STAGES: [
         { lv: 1,  hp: 280,  atk: 25,  def: 5,   gold: 100,      exp: 10 },
@@ -165,6 +176,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
