@@ -307,7 +307,17 @@ renderInventory: () => {
             </div>
             <div class="item-actions">${actionButtons}</div>`;
         
-        return div; // 이 리턴 값이 반드시 있어야 리스트에 추가됩니다!
+        const countBadge = (it.count && it.count > 1) ? ` <span style="color:#f1c40f; font-weight:bold;">x${it.count}</span>` : '';
+
+        div.innerHTML = `
+            ${imgTag}
+            <div class="item-info">
+                <strong>${it.name} ${it.en > 0 ? '+'+it.en : ''}${countBadge}</strong><br>
+                <span style="color:#aaa; font-size:0.85em;">${subText}</span>
+            </div>
+            <div class="item-actions">${actionButtons}</div>`;
+        
+        return div;
     },
     toggleEquip: (idx) => {
         const it = data.inventory[idx];
@@ -436,6 +446,37 @@ renderInventory: () => {
             MainEngine.updateUI();
         }
     },
+   
+   // [신규 기능] 아이템 획득 시 겹치기 처리 (MainEngine 안에 추가해줘!)
+    addItem: (newItem) => {
+        // 1. 겹칠 수 있는 아이템인지 확인 (etc, potion, scroll 등)
+        const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
+        
+        if (stackableTypes.includes(newItem.type)) {
+            // 가방에 같은 아이템(ID 기준)이 있는지 찾기
+            const existingItem = data.inventory.find(item => item.id === newItem.id);
+            
+            if (existingItem) {
+                // 있으면 개수만 증가! (count가 없으면 1로 초기화 후 증가)
+                if (!existingItem.count) existingItem.count = 1;
+                existingItem.count += 1;
+                // 알림 메시지용 리턴
+                return true; 
+            } else {
+                // 없으면 새로 추가 (개수 1개로 설정)
+                newItem.count = 1;
+                data.inventory.push(newItem);
+                return true;
+            }
+        } else {
+            // 장비(weapon, armor 등)는 겹치지 않고 그냥 추가
+            data.inventory.push(newItem);
+            return true;
+        }
+    },
+
+
+   
 };
 
 // ... 이하 GamblingSystem, renderHuntingZones, showPage 등은 기존과 동일 ...
@@ -489,6 +530,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
