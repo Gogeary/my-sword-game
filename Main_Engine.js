@@ -1,3 +1,12 @@
+/* ==========================================
+   [Main_Engine.js] 
+   ========================================== */
+
+// ▼▼▼ [매우 중요] 이 줄이 빠져서 에러가 난 거야! 복사해서 맨 위에 붙여넣어 줘! ▼▼▼
+var currentUser = null, data = null, upIdx = -1, autoTimer = null;
+const SECRET_KEY = "my_super_secret_game_key_v1.8";
+
+
 const MainEngine = {
     // --- [중요] 모든 변수와 함수는 이 중괄호 { } 안에 있어야 합니다 ---
     invCurrentTab: 'equip', // 기본값을 '장비' 탭으로 설정
@@ -480,6 +489,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
