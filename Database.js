@@ -21,15 +21,15 @@ const GameDatabase = {
     },
 
     EQUIPMENT: [
-        { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png' },
-        { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png' },
-        { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png' },
-        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png' },
-        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png' },
-        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png' },
-        { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png' },
-        { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png' },
-        { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png' },
+        { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png', info: '주운 나뭇가지를 깎아서 만들었다.'},
+        { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png', info: '헌옷 수거함에서 주워왔다.'},
+        { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png', info: '봉투를 묶던 천이다.'},
+        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png', info: '창고에 박혀있던 녹이 슨 검이다.'},
+        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png', info: '전통시장에서 팔고있는 저렴한 천 옷이다.'},
+        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png', info: '선물 포장용 천이다'},
+        { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png', info: '평범한 철로 제작한 검이다.'},
+        { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png', info: '질겨서 방어 기능이 조금 생긴 옷이다.'},
+        { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png', info: '바지가 잘 안흘러내려서 좋다.'},
         { lv: 15, name: '강철 검', k: 1.7, p: 250000, type: 'weapon' },
         { lv: 15, name: '가죽 옷', k: 1.6, p: 250000, type: 'armor' },
         { lv: 15, name: '가죽 벨트', k: 1.9, p: 250000, type: 'belt' },
@@ -186,6 +186,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
