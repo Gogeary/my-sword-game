@@ -321,65 +321,73 @@ const MainEngine = {
     },
 
     executeBatchSell: () => {
-    // 1. HTML 체크박스 엘리먼트에서 현재 체크 상태를 명확히 가져옵니다.
-    // 변수명을 아래 filter 로직과 일치시켰습니다.
-    const sellNoSkill = document.getElementById('sell-no-skill')?.checked || false;
-    const sellWithSkill = document.getElementById('sell-with-skill')?.checked || false;
-    const sellGems = document.getElementById('sell-gems')?.checked || false;
+        // [1] HTML 요소가 있는지 먼저 확인
+        const cbNoSkill = document.getElementById('sell-no-skill');
+        const cbWithSkill = document.getElementById('sell-with-skill');
+        const cbGems = document.getElementById('sell-gems');
 
-    // 2. 판매 대상 필터링 로직
-    const targets = data.inventory.filter(it => {
-        // [A] 장착 중인 아이템 보호 (장착 중이면 절대 팔지 않음)
-        const isEquipped = data.equipment[it.type] && 
-                           (data.equipment[it.type].uid === it.uid || data.equipment[it.type].id === it.id);
-        if (isEquipped) return false;
+        // 체크박스 값을 읽어옴 (없을 경우 false 처리)
+        const sellNoSkill = cbNoSkill ? cbNoSkill.checked : false;
+        const sellWithSkill = cbWithSkill ? cbWithSkill.checked : false;
+        const sellGems = cbGems ? cbGems.checked : false;
 
-        const type = (it.type || "").toLowerCase();
+        // 디버깅용 로그 (F12를 눌러 확인하세요)
+        console.log("--- 일괄 판매 로직 시작 ---");
+        console.log("보석 판매 체크 상태:", sellGems);
+        console.log("가방 전체 아이템 수:", data.inventory.length);
 
-        // [B] 보석 및 재료 판매 로직 (Type: 'etc' 판별)
-        // 사용자님의 데이터베이스 id 101~140번 보석들이 여기에 해당합니다.
-        if (type === 'etc') {
-            return sellGems; // '보석 전체 판매' 체크박스가 켜져 있으면 true
+        // [2] 판매 대상 필터링
+        const targets = data.inventory.filter(it => {
+            // 장착 중인 아이템 보호
+            const isEquipped = data.equipment[it.type] && 
+                               (data.equipment[it.type].uid === it.uid || data.equipment[it.type].id === it.id);
+            if (isEquipped) return false;
+
+            // 타입 소문자화 + 공백 제거 (etc 가 etc 인지 확실히 검사)
+            const type = (it.type || "").toLowerCase().trim();
+
+            // 보석(etc) 판별
+            if (type === 'etc') {
+                return sellGems; // 체크박스가 켜져있어야 true가 됨
+            }
+
+            // 일반 장비 판별 (0강만 대상)
+            if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
+                if ((it.en || 0) > 0) return false; 
+                const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
+                if (!hasSkill && sellNoSkill) return true;
+                if (hasSkill && sellWithSkill) return true;
+            }
+            return false;
+        });
+
+        console.log("필터링된 판매 대상 수:", targets.length);
+
+        // [3] 예외 처리
+        if (targets.length === 0) {
+            alert("판매할 대상이 없습니다.\n'보석(재료) 전체 판매' 체크박스를 클릭했는지 다시 확인해 주세요.");
+            return;
         }
 
-        // [C] 일반 장비류 판매 로직 (0강인 경우만)
-        if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
-            if ((it.en || 0) > 0) return false; // 강화된 아이템은 보호
+        // [4] 수익 계산
+        let totalGold = 0;
+        targets.forEach(t => {
+            const count = t.count || 1;
+            totalGold += Math.floor((t.p || 0) * 0.5) * count; 
+        });
 
-            const hasSkill = Array.isArray(it.skills) && it.skills.length > 0;
-            if (!hasSkill && sellNoSkill) return true;  // 스킬 없는 0강 장비
-            if (hasSkill && sellWithSkill) return true; // 스킬 있는 0강 장비
+        // [5] 최종 실행
+        if (confirm(`총 ${targets.length}개의 아이템을 판매하시겠습니까?\n예상 수익: ${MainEngine.formatNumber(totalGold)} G`)) {
+            // 인벤토리 갱신
+            data.inventory = data.inventory.filter(item => !targets.includes(item));
+            data.gold += totalGold;
+
+            alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G가 지급되었습니다.`);
+            
+            MainEngine.closeModal();
+            MainEngine.updateUI();
         }
-
-        return false;
-    });
-
-    // 3. 판매 대상 확인
-    if (targets.length === 0) {
-        alert("판매할 대상이 없습니다.\n'보석(재료) 전체 판매' 체크박스를 켰는지 확인해주세요!");
-        return;
-    }
-
-    // 4. 수익 계산 (원가의 50%)
-    let totalGold = 0;
-    targets.forEach(t => {
-        const count = t.count || 1;
-        totalGold += Math.floor((t.p || 0) * 0.5) * count; 
-    });
-
-    // 5. 실행 확인 및 데이터 반영
-    if (confirm(`총 ${targets.length}종의 아이템을 판매하시겠습니까?\n수익: ${MainEngine.formatNumber(totalGold)} G`)) {
-        // 인벤토리에서 판매된 아이템들만 제외
-        data.inventory = data.inventory.filter(item => !targets.includes(item));
-        
-        data.gold += totalGold;
-        alert(`판매 완료! ${MainEngine.formatNumber(totalGold)} G가 입금되었습니다.`);
-        
-        // 모달 닫기 및 화면 갱신
-        MainEngine.closeModal();
-        MainEngine.updateUI();
-    }
-},
+    },
 
     closeModal: () => {
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
@@ -505,6 +513,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
