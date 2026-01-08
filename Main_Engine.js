@@ -239,7 +239,7 @@ const MainEngine = {
         if (visibleItemCount === 0) invList.innerHTML = `<div style="color:#666; padding:30px; font-size:0.9em;">해당 카테고리에 아이템이 없습니다.</div>`;
     },
 
-    // [추가] 아이템 카드 HTML 생성을 담당하는 보조 함수 (가독성 개선)
+    // [추가] 아이템 카드 HTML 생성을 담당하는 보조 함수
     createItemHTML: (it, idx, isEquipped) => {
         const div = document.createElement('div'); 
         div.className = 'item-card';
@@ -263,12 +263,25 @@ const MainEngine = {
             `; 
         }
 
-        // 아이템 정보 문구 조정
+        // --- 아이템 정보 문구 결정 로직 ---
         let subText = "";
-        if (it.type === 'potion') subText = `회복량: ${it.val.toLocaleString()}`;
-        else if (it.type === 'ticket') subText = `확정 강화 +${it.val}`;
-        else if (it.type === 'scroll') subText = `파괴 방지권`;
-        else if (it.p) subText = `티어 ${Math.floor(it.p/1000)}`;
+
+        if (it.info) {
+            // 1. 커스텀 문구 (Database.js에 info: "내용"이 있는 경우)
+            subText = it.info;
+        } 
+        else if (it.type === 'potion') {
+            // 2. 포션 회복량
+            subText = `회복량: ${it.val.toLocaleString()}`;
+        }
+        else if (it.type === 'ticket') {
+            // 3. 강화권 수치
+            subText = `확정 강화 +${it.val}`;
+        }
+        else if (it.p) {
+            // 4. 기본 티어 표시 (가격을 기반으로 자동 계산)
+            subText = `티어 ${Math.floor(it.p/1000)}`;
+        }
 
         div.innerHTML = `
             ${imgTag}
@@ -278,9 +291,8 @@ const MainEngine = {
             </div>
             <div class="item-actions">${actionButtons}</div>`;
         
-        return div;
+        return div; // 이 리턴 값이 반드시 있어야 리스트에 추가됩니다!
     },
-
     toggleEquip: (idx) => {
         const it = data.inventory[idx];
         if(data.equipment[it.type] && data.equipment[it.type].id === it.id) data.equipment[it.type] = null;
@@ -397,6 +409,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
