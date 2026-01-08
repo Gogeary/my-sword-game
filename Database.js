@@ -21,28 +21,41 @@ const GameDatabase = {
     },
 
     EQUIPMENT: [
-        { lv: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png', info: '주운 나뭇가지를 깎아서 만들었다.'},
-        { lv: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png', info: '헌옷 수거함에서 주워왔다.'},
-        { lv: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png', info: '봉투를 묶던 천이다.'},
-        { lv: 5, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png', info: '창고에 박혀있던 녹이 슨 검이다.'},
-        { lv: 5, name: '천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png', info: '전통시장에서 팔고있는 저렴한 천 옷이다.'},
-        { lv: 5, name: '천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png', info: '선물 포장용 천이다'},
-        { lv: 10, name: '철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png', info: '평범한 철로 제작한 검이다.'},
-        { lv: 10, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png', info: '질겨서 방어 기능이 조금 생긴 옷이다.'},
-        { lv: 10, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png', info: '바지가 잘 안흘러내려서 좋다.'},
-        { lv: 15, name: '강철 검', k: 1.7, p: 250000, type: 'weapon' },
-        { lv: 15, name: '가죽 옷', k: 1.6, p: 250000, type: 'armor' },
-        { lv: 15, name: '가죽 벨트', k: 1.9, p: 250000, type: 'belt' },
-        { lv: 20, name: '연마된 강철 검', k: 2.1, p: 1250000, type: 'weapon' },
-        { lv: 20, name: '강화 가죽 옷', k: 2.0, p: 1250000, type: 'armor' },
-        { lv: 20, name: '강화 가죽 벨트', k: 2.5, p: 1250000, type: 'belt' },
-        { lv: 25, name: '은빛 강철 검', k: 2.7, p: 6000000, type: 'weapon' },
-        { lv: 25, name: '비늘 갑옷', k: 2.5, p: 6000000, type: 'armor' },
-        { lv: 25, name: '금속 장식 벨트', k: 3.3, p: 6000000, type: 'belt' },
-        { lv: 30, name: '은 검', k: 3.5, p: 30000000, type: 'weapon' },
-        { lv: 30, name: '강철 갑옷', k: 3.2, p: 30000000, type: 'armor' },
-        { lv: 30, name: '용병 벨트', k: 4.5, p: 30000000, type: 'belt' }
-    ],
+    // --- [1티어 (Lv.1)] ---
+    { lv: 1, tier: 1, name: '나무 검', k: 1.1, p: 1000, type: 'weapon', img: 'wood_sword.png', info: '주운 나뭇가지를 깎아서 만들었다.'},
+    { lv: 1, tier: 1, name: '헐거운 옷', k: 1.0, p: 1000, type: 'armor', img: 'loose_clothes.png', info: '헌옷 수거함에서 주워왔다.'},
+    { lv: 1, tier: 1, name: '낡은 벨트', k: 1.0, p: 1000, type: 'belt', img: 'old_belt.png', info: '봉투를 묶던 천이다.'},
+
+    // --- [2티어 (Lv.5)] ---
+    { lv: 5, tier: 2, name: '낡은 검', k: 1.2, p: 10000, type: 'weapon' , img: 'rusty_sword.png', info: '창고에 박혀있던 녹이 슨 검이다.'},
+    { lv: 5, tier: 2, name: '천 옷', k: 1.1, p: 10000, type: 'armor', img: 'clothe.png', info: '전통시장에서 팔고있는 저렴한 천 옷이다.'},
+    { lv: 5, tier: 2, name: '천 벨트', k: 1.2, p: 10000, type: 'belt', img: 'clothe_belt.png', info: '선물 포장용 천이다.'},
+
+    // --- [3티어 (Lv.10)] ---
+    { lv: 10, tier: 3, name: '철 검', k: 1.4, p: 50000, type: 'weapon', img: 'iron_sword.png', info: '평범한 철로 제작한 검이다.'},
+    { lv: 10, tier: 3, name: '질긴 옷', k: 1.3, p: 50000, type: 'armor', img: 'durable_clothe.png', info: '질겨서 방어 기능이 조금 생긴 옷이다.'},
+    { lv: 10, tier: 3, name: '질긴 벨트', k: 1.5, p: 50000, type: 'belt', img: 'durable_clothe_belt.png', info: '바지가 잘 안흘러내려서 좋다.'},
+
+    // --- [4티어 (Lv.15)] ---
+    { lv: 15, tier: 4, name: '강철 검', k: 1.7, p: 250000, type: 'weapon', img: 'steel_sword.png', info: '단단한 강철로 만들어져 날이 예리하다.' },
+    { lv: 15, tier: 4, name: '가죽 옷', k: 1.6, p: 250000, type: 'armor', img: 'leather_armor.png', info: '동물의 가죽을 가공해 만든 활동적인 옷이다.' },
+    { lv: 15, tier: 4, name: '가죽 벨트', k: 1.9, p: 250000, type: 'belt', img: 'leather_belt.png', info: '허리를 단단하게 잡아주는 가죽 벨트다.' },
+
+    // --- [5티어 (Lv.20)] ---
+    { lv: 20, tier: 5, name: '연마된 강철 검', k: 2.1, p: 1250000, type: 'weapon', img: 'polished_steel_sword.png', info: '장인의 손길로 연마되어 빛이 난다.' },
+    { lv: 20, tier: 5, name: '강화 가죽 옷', k: 2.0, p: 1250000, type: 'armor', img: 'reinforced_leather_armor.png', info: '가죽을 여러 겹 덧대어 방어력을 높였다.' },
+    { lv: 20, tier: 5, name: '강화 가죽 벨트', k: 2.5, p: 1250000, type: 'belt', img: 'reinforced_leather_belt.png', info: '도구 주머니가 달려 실용성이 늘어났다.' },
+
+    // --- [6티어 (Lv.25)] ---
+    { lv: 25, tier: 6, name: '은빛 강철 검', k: 2.7, p: 6000000, type: 'weapon', img: 'silvery_sword.png', info: '특수 합금으로 제작되어 은은한 빛을 낸다.' },
+    { lv: 25, tier: 6, name: '비늘 갑옷', k: 2.5, p: 6000000, type: 'armor', img: 'scale_armor.png', info: '단단한 비늘을 엮어 만들어 충격 흡수에 탁월하다.' },
+    { lv: 25, tier: 6, name: '금속 장식 벨트', k: 3.3, p: 6000000, type: 'belt', img: 'metal_deco_belt.png', info: '고가의 금속 장식이 박힌 고급 벨트.' },
+
+    // --- [7티어 (Lv.30)] ---
+    { lv: 30, tier: 7, name: '은 검', k: 3.5, p: 30000000, type: 'weapon', img: 'silver_sword.png', info: '순은과 마력으로 제련하여 사악한 기운을 벤다.' },
+    { lv: 30, tier: 7, name: '강철 갑옷', k: 3.2, p: 30000000, type: 'armor', img: 'plate_armor.png', info: '전신을 완벽하게 보호하는 육중한 갑옷이다.' },
+    { lv: 30, tier: 7, name: '용병 벨트', k: 4.5, p: 30000000, type: 'belt', img: 'mercenary_belt.png', info: '수많은 전장을 누빈 용병 대장의 벨트.' }
+],
 
     ENHANCE_FORMULA: {
         weapon: (base, k, en) => base * k * (1 + 0.2 * Math.pow(en, 1.1)),
@@ -292,6 +305,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
