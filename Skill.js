@@ -101,4 +101,19 @@ const SkillHandlers = {
             return { heal: amount, msg: `+${amount} (${val*100}%)` };
         }
     }
+        
+    // [기존에 추가한 글러브 기본 효과]
+        'gloves': (val, stats) => { return { mul: val, msg: `(장갑 보너스 x${val.toFixed(2)})` }; },
+
+        // ★ [추가] 글러브 전용 스킬 핸들러
+        'combo': (val, stats) => {
+            // 연타: 빠르고 경쾌한 느낌
+            return { mul: val, msg: `🥊(연타 x${val})` };
+        },
+        'weakness': (val, stats) => {
+            // 약점 포착: 묵직한 한방 느낌
+            return { mul: val, msg: `🎯(약점 포착! x${val})` };
+        }
+    },
 };
+
