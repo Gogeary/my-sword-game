@@ -485,7 +485,7 @@ const GameDatabase = {
             { id: 'heal', name: '재생1', turn: 4, val: 0.1, desc: '4턴마다 최대 체력의 10% 회복' },
             { id: 'heal', name: '재생2', turn: 4, val: 0.15, desc: '4턴마다 최대 체력의 15% 회복' },
             { id: 'heal', name: '재생3', turn: 4, val: 0.2, desc: '4턴마다 최대 체력의 20% 회복' }
-        ]
+        ],
        // ★ [추가] 글러브 전용 스킬
         gloves: [
             { id: 'combo', name: '연타1', val: 1.3, turn: 2, desc: '2턴마다 1.3배 피해' },
@@ -540,6 +540,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
