@@ -192,64 +192,61 @@ const MainEngine = {
 
     updateUI: () => {
         if(!data) return;
-        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+        
+        // 1. 레벨업 체크
+        const nextExp = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv || data.level);
         if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
+        // 2. 최종 스탯 계산 (이미 무기, 장갑 강화가 다 적용된 수치)
         const stats = MainEngine.getFinalStats();
-    
-    // 1. [수정] 글러브 증폭도 계산 (강화 수치 반영)
-    let gloveMul = 1.0;
-    if (data.equipment.gloves) {
-        // ★ 중요: 단순히 k값을 가져오는 게 아니라, 공식에 강화 수치(en)를 넣어서 계산해야 합니다.
-        gloveMul = GameDatabase.ENHANCE_FORMULA.gloves(data.equipment.gloves.k, data.equipment.gloves.en);
-    }
+        
+        // 3. [핵심 수정] 장갑 증폭 수치 '계산'해서 보여주기
+        let gloveDisplay = "";
+        let currentMul = 1.0; // 기본 배율
 
-    // 2. 최종 공격력 계산 (stats.atk는 getFinalStats에서 이미 무기강화가 적용된 값)
-    // 만약 getFinalStats에서 이미 장갑 증폭까지 마친 최종값을 반환한다면 
-    // 여기서 또 곱할 필요는 없지만, "무기 x 증폭" 시각화를 위해 따로 계산합니다.
-    const baseAtk = stats.atk / (data.equipment.gloves ? gloveMul : 1); 
-    const finalAtk = stats.atk;
+        if (data.equipment.gloves) {
+            const g = data.equipment.gloves;
+            // ★ DB에 있는 공식(k * (1 + en * 0.02))을 가져와서 현재 수치를 계산합니다.
+            currentMul = GameDatabase.ENHANCE_FORMULA.gloves(g.k, g.en);
+            
+            // UI에 보여줄 텍스트 (예: x 1.44 (증폭))
+            gloveDisplay = ` x <span style="color:#f1c40f; font-weight:bold;">${currentMul.toFixed(2)}</span> <span style="font-size:0.8em; color:#aaa;">(증폭)</span>`;
+        }
 
-    // --- [UI 갱신] ---
-    const infoAtk = document.getElementById('info-atk');
-    if(infoAtk) {
-        // formatNumber와 toFixed를 사용하여 깔끔하게 표시
-        infoAtk.innerHTML = `
-            <span style="color:#ddd;">${MainEngine.formatNumber(baseAtk)}</span> 
-            <span style="color:#aaa; font-size:0.8em;">(무기)</span>
-            x <span style="color:#f1c40f;">${gloveMul.toFixed(2)}</span> 
-            <span style="color:#aaa; font-size:0.8em;">(증폭)</span>
-            <br>= <span style="color:#ff5252; font-size:1.2em;">${MainEngine.formatNumber(finalAtk)}</span>
-        `;
-    }
+        // 4. 공격력 표시 (무기공격력 x 장갑배율 = 최종공격력 형태로 표현)
+        // 역산: 최종공격력 / 장갑배율 = 순수 무기+캐릭터 공격력
+        const baseAtkDisplay = Math.floor(stats.atk / currentMul);
 
-        // 2. 방어력, 체력, 골드 등 (단위 적용)
+        const infoAtk = document.getElementById('info-atk');
+        if (infoAtk) {
+            infoAtk.innerHTML = `
+                <span style="color:#ddd;">${MainEngine.formatNumber(baseAtkDisplay)}</span>
+                ${gloveDisplay}
+                <br>= <span style="color:#ff5252; font-size:1.2em; font-weight:bold;">${MainEngine.formatNumber(stats.atk)}</span>
+            `;
+        }
+
+        // 5. 나머지 정보 갱신
         document.getElementById('info-def').innerText = MainEngine.formatNumber(stats.def);
         document.getElementById('info-hp').innerText = MainEngine.formatNumber(stats.hp);
-        
-        // 골드 표시 (가장 중요!)
         document.getElementById('gold').innerText = MainEngine.formatNumber(data.gold);
-
-        // 체력바 텍스트
+        
+        // 체력바 & 경험치바
         document.getElementById('hp-val').innerText = MainEngine.formatNumber(Math.max(0, data.hp));
         document.getElementById('hp-max').innerText = MainEngine.formatNumber(stats.hp);
         document.getElementById('hp-fill').style.width = ((data.hp / stats.hp * 100) || 0) + '%';
         
-        // 경험치 텍스트
         const expPer = ((data.exp / nextExp * 100) || 0).toFixed(1);
         document.getElementById('exp-fill').style.width = Math.min(100, expPer) + '%';
-        document.getElementById('user-lv').innerText = data.level;
+        document.getElementById('user-lv').innerText = data.lv || data.level;
         document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
 
-        // 포션 개수 계산
+        // 포션 개수 (겹치기 반영)
         const potions = data.inventory.filter(i => i.type === 'potion');
-        const rawTotal = potions.reduce((sum, p) => sum + (p.val || 0), 0);
-        const currentBuffer = data.potionBuffer || 0;
-        const realTotal = Math.max(0, rawTotal - currentBuffer);
-        
-        document.getElementById('potion-val').innerText = MainEngine.formatNumber(realTotal); // 포션 회복량도 단위 적용
-        document.getElementById('potion-cnt').innerText = potions.length;
+        const potionTotalCount = potions.reduce((sum, p) => sum + (p.count || 1), 0);
+        document.getElementById('potion-cnt').innerText = potionTotalCount;
 
+        // 인벤토리 갱신 및 저장
         MainEngine.renderInventory();
         MainEngine.saveGame();
     },
@@ -767,6 +764,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
