@@ -80,7 +80,7 @@ const GameDatabase = {
     // --- [7티어 (Lv.30)] ---
     { lv: 30, tier: 7, name: '은 검', k: 3.5, p: 30000000, type: 'weapon', img: 'silver_sword.png', info: '순은과 마력으로 제련하여 사악한 기운을 벤다.' },
     { lv: 30, tier: 7, name: '강철 갑옷', k: 3.2, p: 30000000, type: 'armor', img: 'plate_armor.png', info: '전신을 완벽하게 보호하는 육중한 갑옷이다.' },
-    { lv: 30, tier: 7, name: '용병 벨트', k: 4.5, p: 30000000, type: 'belt', img: 'mercenary_belt.png', info: '수많은 전장을 누빈 용병 대장의 벨트.' }
+    { lv: 30, tier: 7, name: '용병 벨트', k: 4.5, p: 30000000, type: 'belt', img: 'mercenary_belt.png', info: '수많은 전장을 누빈 용병 대장의 벨트.' },
 
     // --- [8티어 (Lv.35)] - 기사단 세트 ---
     { lv: 35, tier: 8, name: '기사단 장검', k: 4.5, p: 150000000, type: 'weapon', img: 'knight_sword.png', info: '왕실 기사단에게만 지급되는 명예로운 검.' },
@@ -291,7 +291,7 @@ const GameDatabase = {
             2: { name: "👑 쑥 먹는 김용준", hpMult: 4, atkMult: 1.8, goldMult: 7, expMult: 7, img: 'YJ_1.png' }, // 뒷산 동굴 보스
             3: { name: "👑 야근 망령", hpMult: 4.5, atkMult: 2.0, goldMult: 8, expMult: 8, img: 'Overtime_ghost.png' }, // 동네 폐허 보스
             4: { name: "👑 이완기의 환영 (산스장 망령)", hpMult: 8, atkMult: 2.2, goldMult: 5, expMult: 5, img: 'LWG.png' }, // 사기막골 보스
-            5: { name: "👑 소부장의 환영 (기술팀 흑막)", hpMult: 10, atkMult: 2.5, goldMult: 5, expMult: 5, img: 'SSM.png' }  // 회사 보스
+            5: { name: "👑 소부장의 환영 (기술팀 흑막)", hpMult: 10, atkMult: 2.5, goldMult: 5, expMult: 5, img: 'SSM.png' },  // 회사 보스
             // [중반] 사회의 쓴맛 & 던전 입문 (Lv.31 ~ 50)
             6: { name: "👑 폭주한 대표이사", hpMult: 12, atkMult: 3.0, goldMult: 20, expMult: 20, img: 'ceo_berserk.png' }, // 야근하는 사무실
             7: { name: "👑 만원 지하철의 원념", hpMult: 15, atkMult: 3.5, goldMult: 25, expMult: 25, img: 'subway_ghost.png' }, // 지옥철 2호선
@@ -354,7 +354,7 @@ const GameDatabase = {
         { id: 2, name: "뒷산 동굴", minLv: 11, maxLv: 15, cost: 7500 },
         { id: 3, name: "우리동네 폐허", minLv: 16, maxLv: 20, cost: 15000 },
         { id: 4, name: "사기막골", minLv: 21, maxLv: 25, cost: 25000 },
-        { id: 5, name: "회사", minLv: 26, maxLv: 30, cost: 50000 }
+        { id: 5, name: "회사", minLv: 26, maxLv: 30, cost: 50000 },
         // [중반] 현실의 쓴맛 & 던전 진입 (Lv.31 ~ 50)
         // 몬스터 골드: 100만 ~ 5000만 G 구간
         { id: 6, name: "야근하는 사무실", minLv: 31, maxLv: 35, cost: 500000 },     // 50만
@@ -463,6 +463,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
