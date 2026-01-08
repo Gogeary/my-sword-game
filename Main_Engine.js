@@ -231,25 +231,26 @@ const MainEngine = {
         document.getElementById('user-lv').innerText = data.lv || data.level;
         document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
 
-          // 7. 포션 카운트 및 수치 계산 부분
-          const potionItems = data.inventory.map(invItem => {
-              // 기존의 CONSUMABLES.potions -> GameDatabase.CONSUMABLES.potions로 수정됨
-              const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
-              return dbInfo ? { ...dbInfo, count: invItem.count || 0 } : null;
-          }).filter(i => i !== null && i.type === 'potion');
+          // 7. 포션 실시간 잔량 계산
+    if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0; // 버퍼 초기화 확인
 
-             // 계산된 포션 개수를 UI에 반영
-             // ... (계산 코드 아래에 추가)
-            const totalCount = potionItems.reduce((acc, cur) => acc + (cur.count || 0), 0);
-            const totalValue = potionItems.reduce((acc, cur) => acc + (cur.val * (cur.count || 0)), 0);
+    const potionItems = data.inventory.filter(it => it.type === 'potion');
+    const totalCount = potionItems.reduce((acc, cur) => acc + (cur.count || 1), 0);
+    
+    // 전체 물약의 총 회복량 합산
+    const totalMaxPotionsValue = potionItems.reduce((acc, cur) => {
+        const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === cur.id);
+        return acc + (dbInfo ? dbInfo.val * (cur.count || 1) : 0);
+    }, 0);
 
-            // ★ [추가] 화면에 실제 숫자를 넣어주는 코드
-            const potionCntEl = document.getElementById('potion-cnt');
-            const potionValEl = document.getElementById('potion-val');
-       
-            // 실시간으로 남은 개수와 총 회복량 표시
-            if (potionCntEl) potionCntEl.innerText = totalCount;
-            if (potionValEl) potionValEl.innerText = MainEngine.formatNumber(totalValue);
+    // ★ 핵심: 전체 회복량에서 현재 소모 중인 버퍼(potionBuffer)를 뺀 값을 표시
+    const currentRealValue = Math.max(0, totalMaxPotionsValue - data.potionBuffer);
+
+    const potionCntEl = document.getElementById('potion-cnt');
+    const potionValEl = document.getElementById('potion-val');
+
+    if (potionCntEl) potionCntEl.innerText = totalCount;
+    if (potionValEl) potionValEl.innerText = MainEngine.formatNumber(currentRealValue); // 실시간 잔량 표시
 
         // 8. 인벤토리 갱신 및 저장
         MainEngine.renderInventory();
@@ -788,6 +789,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
