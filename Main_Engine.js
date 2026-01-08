@@ -231,29 +231,17 @@ const MainEngine = {
         document.getElementById('user-lv').innerText = data.lv || data.level;
         document.getElementById('exp-text').innerText = `${MainEngine.formatNumber(data.exp)} / ${MainEngine.formatNumber(nextExp)} (${expPer}%)`;
 
-        // 7. [포션 카운트 및 수치 계산]
-        // 인벤토리 아이템에 DB 상세 정보를 연결
-        const potionItems = data.inventory.map(invItem => {
-            const dbInfo = CONSUMABLES.potions.find(p => p.id === invItem.id);
-            return dbInfo ? { ...dbInfo, count: invItem.count || 0 } : null;
-        }).filter(i => i !== null && i.type === 'potion');
+          // 7. 포션 카운트 및 수치 계산 부분
+          const potionItems = data.inventory.map(invItem => {
+              // 기존의 CONSUMABLES.potions -> GameDatabase.CONSUMABLES.potions로 수정됨
+              const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
+              return dbInfo ? { ...dbInfo, count: invItem.count || 0 } : null;
+          }).filter(i => i !== null && i.type === 'potion');
 
-        const totalCount = potionItems.reduce((acc, cur) => acc + cur.count, 0);
-        const totalValue = potionItems.reduce((acc, cur) => acc + (cur.val * cur.count), 0);
-
-        // UI 반영
-        const pValEl = document.getElementById('potion-val');
-        const pCntEl = document.getElementById('potion-cnt');
-        
-        if (pValEl) {
-            const displayVal = Math.max(0, totalValue - (data.potionBuffer || 0));
-            pValEl.innerText = MainEngine.formatNumber(displayVal);
-        }
-        if (pCntEl) {
-            pCntEl.innerText = totalCount;
-            // 0개일 때 색상 변경
-            pCntEl.parentElement.style.color = (totalCount === 0) ? "#ff4d4d" : "var(--mine)";
-        }
+          // 계산된 포션 개수를 UI에 반영
+          const totalPotionCount = potionItems.reduce((acc, cur) => acc + cur.count, 0);
+          const potionEl = document.getElementById('potion-count');
+          if (potionEl) potionEl.innerText = totalPotionCount;
 
         // 8. 인벤토리 갱신 및 저장
         MainEngine.renderInventory();
@@ -792,3 +780,4 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
