@@ -209,8 +209,8 @@ const GameDatabase = {
     { lv: 90, tier: 19, name: '인피니티 건틀릿', k: 25.0, p: 30000000000000, type: 'gloves', img: 'glove_infinity.png', info: '무한한 힘을 다룰 수 있는 전설적인 건틀릿.' },
 
     // --- [20티어 (Lv.95)] ---
-    { lv: 95, tier: 20, name: '갓 핸드', k: 40.0, p: 100000000000000, type: 'gloves', img: 'glove_god.png', info: '신의 손길 그 자체. 만지는 모든 것을 지배한다.' },
-
+    { lv: 95, tier: 20, name: '갓 핸드', k: 40.0, p: 100000000000000, type: 'gloves', img: 'glove_god.png', info: '신의 손길 그 자체. 만지는 모든 것을 지배한다.' }
+],
 
    
     ENHANCE_FORMULA: {
@@ -540,6 +540,7 @@ const GameDatabase = {
     fullStages.push(stages[stages.length - 1]);
     GameDatabase.MONSTER_TABLE = fullStages;
 })();
+
 
 
 
