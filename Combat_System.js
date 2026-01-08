@@ -348,68 +348,72 @@ const CombatSystem = {
     // ─────────────────────────────────────────────────────────────
     // [물약 사용 로직] 10% 제한 적용
     // ─────────────────────────────────────────────────────────────
-   tryAutoPotion: function(pStats) {
-        // 전역 data 변수 사용
-        if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
+   /* Combat_System.js 내 수정 부분 */
+
+tryAutoPotion: function(pStats) {
+    // 1. 초기 설정 및 전역 데이터 확인
+    if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
+    const missingHp = pStats.hp - data.hp;
+
+    // 2. 체력이 가득 찼거나 회복할 필요가 없으면 종료
+    if (missingHp <= 0) return { healed: 0, usedCount: 0 };
+
+    // 3. 인벤토리에서 물약 아이템 필터링 및 오름차순 정렬 (작은 것부터 소모)
+    const potions = data.inventory
+        .map(invItem => {
+            const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
+            return dbInfo ? { ...invItem, ...dbInfo } : null;
+        })
+        .filter(i => i !== null && i.type === 'potion')
+        .sort((a, b) => a.val - b.val);
+
+    if (potions.length === 0) return { healed: 0, usedCount: 0 };
+
+    // 4. 남은 물약 총량 계산
+    const totalPotionsValue = potions.reduce((acc, cur) => acc + (cur.val * (cur.count || 1)), 0);
+    const realRemainingPool = totalPotionsValue - data.potionBuffer;
+
+    if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 };
+
+    // 5. 턴당 최대 회복량 제한 적용 (전체 체력의 10%)
+    const limit = Math.floor(pStats.hp * 0.1);
+    const healAmount = Math.min(missingHp, realRemainingPool, limit);
+
+    data.hp += healAmount;
+    data.potionBuffer += healAmount;
+
+    let usedCount = 0;
+    
+    // 6. 인벤토리 실제 차감 로직
+    while (potions.length > 0) {
+        const smallestPotion = potions[0];
         
-        const missingHp = pStats.hp - data.hp;
-        
-        // 1. 체력이 꽉 찼으면 종료
-        if (missingHp <= 0) return { healed: 0, usedCount: 0 };
+        if (data.potionBuffer >= smallestPotion.val) {
+            data.potionBuffer -= smallestPotion.val;
+            usedCount++;
 
-        // 2. [수정] GameDatabase.CONSUMABLES.potions로 정확히 참조
-        const potions = data.inventory
-            .map(invItem => {
-                const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
-                return dbInfo ? { ...invItem, ...dbInfo } : null;
-            })
-            .filter(i => i !== null && i.type === 'potion')
-            .sort((a, b) => a.val - b.val); 
-
-        if (potions.length === 0) return { healed: 0, usedCount: 0 };
-
-        const totalPotionsValue = potions.reduce((acc, cur) => acc + (cur.val * (cur.count || 1)), 0);
-        const realRemainingPool = totalPotionsValue - data.potionBuffer;
-
-        if (realRemainingPool <= 0) return { healed: 0, usedCount: 0 };
-
-        // 4. [제한] 턴당 최대 회복량은 전체 체력의 10%
-        const limit = Math.floor(pStats.hp * 0.1);
-        const healAmount = Math.min(missingHp, realRemainingPool, limit);
-
-        data.hp += healAmount;
-        data.potionBuffer += healAmount; 
-
-        let usedCount = 0;
-        
-        // 6. 인벤토리 실제 차감 로직
-        while (potions.length > 0) {
-            const smallestPotion = potions[0];
-            
-            if (data.potionBuffer >= smallestPotion.val) {
-                data.potionBuffer -= smallestPotion.val;
-                usedCount++;
-
-                const inventoryIdx = data.inventory.findIndex(i => i.id === smallestPotion.id);
-                if (inventoryIdx !== -1) {
-                    const invItem = data.inventory[inventoryIdx];
-                    if (invItem.count > 1) {
-                        invItem.count--;
-                    } else {
-                        data.inventory.splice(inventoryIdx, 1);
-                        potions.shift(); 
-                    }
+            const inventoryIdx = data.inventory.findIndex(i => i.id === smallestPotion.id);
+            if (inventoryIdx !== -1) {
+                const invItem = data.inventory[inventoryIdx];
+                if (invItem.count > 1) {
+                    invItem.count--;
+                } else {
+                    data.inventory.splice(inventoryIdx, 1);
+                    potions.shift(); 
                 }
-            } else {
-                break; 
             }
+        } else {
+            break; 
         }
-
-        if (typeof MainEngine !== 'undefined' && MainEngine.updateUI) {
-            MainEngine.updateUI();
-        }
-        
-        return { healed: healAmount, usedCount: usedCount };
     }
+
+    // ★ 실시간 UI 반영: 물약이 소모(usedCount > 0)되거나 체력이 변했을 때 즉시 호출
+    if (typeof MainEngine !== 'undefined' && MainEngine.updateUI) {
+        MainEngine.updateUI();
+    }
+    
+    return { healed: healAmount, usedCount: usedCount };
+}
 };
+
 
