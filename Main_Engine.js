@@ -386,12 +386,25 @@ const MainEngine = {
 
 /* --- 시스템 함수 --- */
 function showPage(id) {
+    // 1. 자동화 시스템 중지
     if(typeof UpgradeSystem !== 'undefined') UpgradeSystem.stopAuto();
-    if(id !== 'page-hunt-play' && MainEngine.isAutoHunting) MainEngine.toggleAutoHunt();
+    if (id !== 'page-hunt-play' && MainEngine.isAutoHunting) {
+        MainEngine.toggleAutoHunt();
+    }
+
+    // 2. 페이지 전환
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const target = document.getElementById(id);
     if(target) target.classList.add('active');
-    if(id === 'page-info') MainEngine.renderInventory();
+
+    // ★ [핵심 추가] 사냥터 선택 페이지로 갈 때 목록을 다시 그립니다.
+    if (id === 'page-hunt-select') {
+        renderHuntingZones();
+    }
+
+    if (id === 'page-info') MainEngine.renderInventory();
+    
+    // UI 업데이트
     MainEngine.updateUI();
 }
 
@@ -414,5 +427,6 @@ const GamblingSystem = {
 };
 
 window.onload = MainEngine.init;
+
 
 
