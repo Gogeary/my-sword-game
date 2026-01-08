@@ -340,6 +340,7 @@ if (mHP <= 0) {
         let targetMonsters = [];
         if (zoneId === 0) targetMonsters = [{ name: '슬라임', img: 'slime.png' }, { name: '앞마당 쥐', img: 'rat.png' }];
         else if (zoneId === 1) targetMonsters = [{ name: '화가난 등산객', img: 'hiker.png' }, { name: '고라니', img: 'Elk.png' }];
+        else if (zoneId === 2) targetMonsters = [{ name: '곰', img: 'bear.png' }, { name: '호랑이', img: 'tiger.png' }];
         else targetMonsters = [{ name: '알 수 없는 적', img: 'unknown.png' }];
         
         const pick = targetMonsters[Math.floor(Math.random() * targetMonsters.length)];
@@ -417,6 +418,7 @@ tryAutoPotion: function(pStats) {
     return { healed: healAmount, usedCount: usedCount };
 }
 };
+
 
 
 
