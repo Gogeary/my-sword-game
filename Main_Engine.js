@@ -151,41 +151,40 @@ const MainEngine = {
 
     getFinalStats: () => {
     const stats = GameDatabase.USER_STATS;
-    const lv = data.level || 1; // 레벨이 누락될 경우를 대비해 1로 기본값 설정
+    const formulas = GameDatabase.ENHANCE_FORMULA; // 강화 공식 참조
+    const lv = data.level || 1;
     
-    // 1. DB의 CALC 함수를 사용하여 레벨별 기본 스탯 산출
     let final = {
         atk: stats.CALC_ATK(lv),
         def: stats.CALC_DEF(lv),
         hp: stats.CALC_HP(lv)
     };
 
-    // 2. 장착 중인 아이템 순회 및 강화 수치 반영
     Object.keys(data.equipment).forEach(slot => {
         const item = data.equipment[slot];
         if (item) {
-            // [강화 보너스 공식] 1 + (강화수치 * 0.1) -> +10강이면 2배 효과
-            const enBonus = 1 + ((item.en || 0) * 0.1);
-            
-            // 아이템의 최종 배율 = 기본 배율(k) * 강화 보너스
-            const totalMult = item.k * enBonus;
+            const k = item.k || 1;
+            const en = item.en || 0;
 
-            // 부위별 반영
             if (slot === 'weapon') {
-                final.atk = Math.floor(final.atk * totalMult);
+                // 무기: base * k * (1 + 0.2 * en^1.1)
+                final.atk = Math.floor(formulas.weapon(stats.CALC_ATK(lv), k, en));
             } 
             else if (slot === 'armor') {
-                final.def = Math.floor(final.def * totalMult);
+                // 방어구: base * k * (1 + 0.5 * en)
+                final.def = Math.floor(formulas.armor(stats.CALC_DEF(lv), k, en));
             } 
             else if (slot === 'belt') {
-                final.hp = Math.floor(final.hp * totalMult);
+                // 벨트: base * k * (1 + 0.1 * en^1.25)
+                final.hp = Math.floor(formulas.belt(stats.CALC_HP(lv), k, en));
             } 
             else if (slot === 'gloves') {
-                // 보조 장비는 배율의 증가분만큼만 더함 (너무 강해지는 것 방지)
-                final.atk = Math.floor(final.atk * (1 + (totalMult - 1)));
+                // 장갑: k * (1 + en * 0.02) 배율 적용
+                final.atk = Math.floor(final.atk * formulas.gloves(k, en));
             } 
             else if (slot === 'shoes') {
-                final.def = Math.floor(final.def * (1 + (totalMult - 1)));
+                // 신발: (장갑과 유사한 로직으로 가정하거나 별도 공식이 없다면 k 반영)
+                final.def = Math.floor(final.def * k * (1 + en * 0.02));
             }
         }
     });
@@ -538,6 +537,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
