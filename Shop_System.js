@@ -100,20 +100,17 @@ const ShopSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     },
 
-    // 3. [수정됨] 뽑기 로직 (MainEngine.addItem 사용)
-    playGacha: (type, count) => {
-        if (type !== 'enhance') return;
-        if (!GameDatabase.GACHA || !GameDatabase.GACHA.ENHANCE_BOX) return alert("데이터 오류");
+  // 3. [수정됨] 뽑기 실행 로직 (상자 키 기반)
+    playGacha: (boxKey, count) => {
+        const boxData = GameDatabase.GACHA[boxKey];
+        if (!boxData) return alert("존재하지 않는 뽑기 상자입니다.");
 
-        const config = GameDatabase.GACHA.ENHANCE_BOX;
-        const cost = config.COST * count;
+        const cost = boxData.cost * count;
 
         if (data.gold < cost) return alert(`골드가 부족합니다. (${MainEngine.formatNumber(cost)} G 필요)`);
-        
-        // 인벤토리 여유공간 체크 (겹치기가 되므로 슬롯 체크는 대략적으로만)
         if (data.inventory.length > 100) return alert("인벤토리가 가득 찼습니다!");
 
-        if(!confirm(`${MainEngine.formatNumber(cost)} G를 사용하여 ${count}회 뽑으시겠습니까?`)) return;
+        if(!confirm(`[${boxData.name}]\n${MainEngine.formatNumber(cost)} G를 사용하여 ${count}회 뽑으시겠습니까?`)) return;
 
         data.gold -= cost;
         const logBox = document.getElementById('gacha-log');
@@ -121,49 +118,67 @@ const ShopSystem = {
 
         let results = [];
 
+        // 뽑기 반복 실행
         for (let i = 0; i < count; i++) {
             const rand = Math.random() * 100;
             let currentProb = 0;
             let selectedOption = null;
 
-            for (let rate of config.RATES) {
+            for (let rate of boxData.rates) {
                 currentProb += rate.chance;
                 if (rand < currentProb) {
                     selectedOption = rate;
                     break;
                 }
             }
-            if (!selectedOption) selectedOption = config.RATES[config.RATES.length - 1];
+            // 오차 방지용 안전장치 (맨 마지막 아이템 선택)
+            if (!selectedOption) selectedOption = boxData.rates[boxData.rates.length - 1];
 
+            // 실제 아이템 데이터 찾기 (ID 또는 값으로 매칭)
             let pick = null;
+            
+            // A. 강화권일 경우
             if (selectedOption.type === 'ticket') {
-                const ticketBase = GameDatabase.CONSUMABLES.tickets.find(t => t.val === selectedOption.val);
+                // limitLv까지 체크하여 정확한 강화권 찾기
+                // 예: boxKey가 BOX_30이면 limitLv 30인 티켓을 찾아야 함
+                // boxData.rates에는 limitLv 정보가 없으므로 boxData 이름이나 티켓 목록에서 필터링 필요.
+                // 여기서는 rates에 정의된 val(강화수치)와 box의 레벨대(30,50,70,100)를 기준으로 찾습니다.
+                
+                let targetLv = 30;
+                if (boxKey === 'BOX_50') targetLv = 50;
+                if (boxKey === 'BOX_70') targetLv = 70;
+                if (boxKey === 'BOX_100') targetLv = 100;
+
+                const ticketBase = GameDatabase.CONSUMABLES.tickets.find(t => 
+                    t.val === selectedOption.val && t.limitLv === targetLv
+                );
                 if (ticketBase) pick = { ...ticketBase };
-            } else {
+            } 
+            // B. 주문서일 경우
+            else {
                 const scrollBase = GameDatabase.CONSUMABLES.scrolls.find(s => s.id === selectedOption.id);
                 if (scrollBase) pick = { ...scrollBase };
             }
 
             if (pick) {
-                // 시각적 효과용 속성 추가
                 pick.displayColor = selectedOption.color;
                 pick.displayName = selectedOption.name;
                 pick.count = 1;
                 
-                // ★ 겹치기 적용
                 MainEngine.addItem(pick);
                 results.push(pick);
             } else {
-                results.push({ displayName: "오류 발생", displayColor: "#555" });
+                results.push({ displayName: "오류: 아이템 없음", displayColor: "#555" });
             }
         }
 
+        // 결과 로그 출력
         if(logBox) {
             results.forEach((res, idx) => {
                 const div = document.createElement('div');
                 div.style.padding = "5px";
                 div.style.borderBottom = "1px solid #333";
-                div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.displayColor}; font-weight:bold;">${res.displayName}</span> 획득!`;
+                div.innerHTML = `<span style="color:#888;">#${idx+1}</span> <span style="color:${res.displayColor}; font-weight:bold;">${res.displayName || res.name}</span> 획득!`;
                 logBox.appendChild(div);
             });
             logBox.scrollTop = logBox.scrollHeight;
@@ -218,3 +233,4 @@ const ShopSystem = {
         if (typeof MainEngine !== 'undefined') MainEngine.updateUI();
     }
 };
+
