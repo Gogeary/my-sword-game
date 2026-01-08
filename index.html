@@ -138,6 +138,11 @@
     <div id="page-hunt-play" class="page">
     <h2 id="hunt-title">⚔️ 사냥터</h2>
     <button onclick="CombatSystem.scanHunt()" class="main-menu-btn" style="background:var(--hunt);">📡 몬스터 탐색 (2만G)</button>
+        
+    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+        <button onclick="CombatSystem.scanHunt()" class="main-menu-btn" style="flex: 1; background:var(--hunt);">📡 수동 탐색</button>
+        <button id="btn-auto-hunt" onclick="MainEngine.toggleAutoHunt()" class="main-menu-btn" style="flex: 1; background:#2ecc71;">⚔️ 무한 자동 사냥 시작</button>
+    </div>
     
     <div id="hunt-grid" style="min-height:250px; display:flex; flex-direction:column; justify-content:center; gap:10px;">
         <div style="text-align:center; color:#888; padding:30px;">
@@ -345,6 +350,7 @@
 
 </div> </body>
 </html>
+
 
 
 
