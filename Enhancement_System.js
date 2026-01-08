@@ -332,30 +332,43 @@ const UpgradeSystem = {
     },
 
     startAuto: () => {
-        if (UpgradeSystem.isAuto) { UpgradeSystem.stopAuto(); return; }
-        if (UpgradeSystem.targetIdx === -1) return alert("대상을 선택하세요.");
+        // 1. 대상 장비가 선택되었는지 재확인
+        if (UpgradeSystem.targetIdx === -1 || !data.inventory[UpgradeSystem.targetIdx]) {
+            return alert("강화할 대상을 먼저 선택해주세요.");
+        }
         
-        // 자동 강화 시작 시 보조 아이템 선택 해제 (실수 방지)
+        // 2. 이미 실행 중이면 중지
+        if (UpgradeSystem.isAuto) { 
+            UpgradeSystem.stopAuto(); 
+            return; 
+        }
+
+        // 3. 자동 강화 시작 시 보조 아이템 해제 (안전장치)
         UpgradeSystem.selectedScroll = -1;
         UpgradeSystem.selectedTicket = -1;
         UpgradeSystem.renderUI();
 
         UpgradeSystem.isAuto = true;
-        document.getElementById('auto-btn').innerText = "⏹ 중지";
         
+        // 버튼 텍스트 변경 (엘리먼트가 있을 때만)
+        const btn = document.getElementById('auto-btn');
+        if (btn) btn.innerText = "⏹ 자동 강화 중지";
+        
+        // 4. 인터벌 실행
         UpgradeSystem.autoTimer = setInterval(() => {
+            // 중단 조건 체크
             if (!UpgradeSystem.isAuto || UpgradeSystem.targetIdx === -1) {
                 UpgradeSystem.stopAuto();
                 return;
             }
-            UpgradeSystem.try();
-        }, 100);
+            
+            // 실제 강화 시도
+            try {
+                UpgradeSystem.try();
+            } catch (e) {
+                console.error("강화 중 오류 발생:", e);
+                UpgradeSystem.stopAuto();
+            }
+        }, 150); // 너무 빠르면 브라우저가 멈출 수 있으니 150ms 권장
     },
-
-    stopAuto: () => {
-        UpgradeSystem.isAuto = false;
-        if (UpgradeSystem.autoTimer) clearInterval(UpgradeSystem.autoTimer);
-        const btn = document.getElementById('auto-btn');
-        if(btn) btn.innerText = "자동 강화 시작";
-    }
 };
