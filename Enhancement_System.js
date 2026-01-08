@@ -1,6 +1,6 @@
 /* ==========================================
    [Upgrade_System.js] 
-   강화 시스템 (수정됨: 주문서 레벨 제한 기능 추가)
+   강화 시스템 (수정됨: 주문서 & 강화권 레벨 제한 적용)
    ========================================== */
 
 const UpgradeSystem = {
@@ -10,7 +10,7 @@ const UpgradeSystem = {
     isAuto: false,
     autoTimer: null,
     
-    // 비용 계산 (기존과 동일)
+    // 비용 계산
     calcCost: (item) => {
         if (!item) return 0;
         let baseCost = Math.floor(item.p * 0.1);
@@ -77,7 +77,7 @@ const UpgradeSystem = {
 
         const item = data.inventory[UpgradeSystem.targetIdx];
         const cost = UpgradeSystem.calcCost(item);
-        if(costDisplay) costDisplay.innerText = `${MainEngine.formatNumber(cost)} G`; // 단위 적용
+        if(costDisplay) costDisplay.innerText = `${MainEngine.formatNumber(cost)} G`;
 
         // 2. 보조 아이템 표시 영역 처리
         let supportHtml = `<span style="color:#888">선택된 보조 아이템 없음</span>`;
@@ -87,17 +87,14 @@ const UpgradeSystem = {
         if (UpgradeSystem.selectedScroll !== -1) {
             scroll = data.inventory[UpgradeSystem.selectedScroll];
             if(scroll) {
-                // [★수정] 파괴방지권 유효성 체크 (강화수치 + 레벨제한)
+                // 파괴방지권 유효성 체크
                 let isUsable = true;
                 let warning = "";
 
-                // 1) 강화 수치 체크
                 if (scroll.maxLimit && item.en > scroll.maxLimit) {
                     isUsable = false;
                     warning = ` (불가: +${scroll.maxLimit}강 이하만)`;
-                } 
-                // 2) [신규] 아이템 레벨 체크
-                else if (scroll.limitLv && item.lv > scroll.limitLv) {
+                } else if (scroll.limitLv && item.lv > scroll.limitLv) {
                     isUsable = false;
                     warning = ` (불가: Lv.${scroll.limitLv} 이하만)`;
                 }
@@ -110,7 +107,23 @@ const UpgradeSystem = {
         } else if (UpgradeSystem.selectedTicket !== -1) {
             ticket = data.inventory[UpgradeSystem.selectedTicket];
             if(ticket) {
-                supportHtml = `<span style="color:#f1c40f; font-weight:bold;">🎫 ${ticket.name} (즉시 +${ticket.val}강)</span>`;
+                // [★수정] 강화권 유효성 체크 (수치 + 레벨)
+                let isUsable = true;
+                let warning = "";
+
+                // 1) 수치 체크
+                if (ticket.val <= item.en) {
+                    isUsable = false;
+                    warning = " (수치 낮음)";
+                } 
+                // 2) 레벨 체크
+                else if (ticket.limitLv && item.lv > ticket.limitLv) {
+                    isUsable = false;
+                    warning = ` (불가: Lv.${ticket.limitLv} 이하만)`;
+                }
+
+                const color = isUsable ? '#f1c40f' : '#e74c3c';
+                supportHtml = `<span style="color:${color}; font-weight:bold;">🎫 ${ticket.name}${warning}</span>`;
             } else {
                 UpgradeSystem.selectedTicket = -1;
             }
@@ -128,11 +141,17 @@ const UpgradeSystem = {
             }
             document.getElementById('up-chance').innerText = '100';
             document.getElementById('up-break').innerText = '0';
+            
             if(btnExec) { 
-                if (ticket.val > item.en) {
+                const isLevelOk = !ticket.limitLv || item.lv <= ticket.limitLv;
+                const isValOk = ticket.val > item.en;
+
+                if (isValOk && isLevelOk) {
                     btnExec.disabled = false; btnExec.innerText = "강화권 사용"; 
                 } else {
-                    btnExec.disabled = true; btnExec.innerText = "사용 불가 (레벨 낮음)";
+                    btnExec.disabled = true; 
+                    if(!isValOk) btnExec.innerText = "사용 불가 (수치 낮음)";
+                    else btnExec.innerText = "사용 불가 (레벨 높음)";
                 }
             }
         } 
@@ -143,21 +162,17 @@ const UpgradeSystem = {
             let scrollText = "";
 
             if (scroll) {
-                // 파괴방지권 조건 체크 (강화수치 OR 레벨제한)
                 const isOverEnchant = scroll.maxLimit && item.en > scroll.maxLimit;
                 const isOverLevel = scroll.limitLv && item.lv > scroll.limitLv;
 
                 if (isOverEnchant || isOverLevel) {
-                    // 조건 안 맞으면 파괴확률 그대로 (효과 미적용)
                     destroyRate = rates.destroy;
                 } else {
-                    // 조건 맞으면 파괴확률 0
                     destroyRate = 0;
                     scrollText = `<div style="color:#3498db; font-size:0.9em; margin-top:5px;">🛡️ 파괴 방지 적용중</div>`;
                 }
             }
 
-            // 최대 강화 체크
             if (item.en >= 20) {
                 if(display) display.innerHTML = `<div style="color:#e74c3c; font-weight:bold;">🔥 ${item.name} (+${item.en}) [MAX]</div>`;
                 if(btnExec) { btnExec.disabled = true; btnExec.innerText = "최대 강화 도달"; }
@@ -204,7 +219,13 @@ const UpgradeSystem = {
         // [A] 강화권 사용 실행
         if (UpgradeSystem.selectedTicket !== -1) {
             const ticket = data.inventory[UpgradeSystem.selectedTicket];
+            // 1. 수치 유효성 검사
             if (!ticket || ticket.val <= item.en) return alert("사용할 수 없는 강화권입니다.");
+            
+            // 2. [★수정] 레벨 유효성 검사
+            if (ticket.limitLv && item.lv > ticket.limitLv) {
+                return alert(`[${ticket.name}]은 Lv.${ticket.limitLv} 이하의 장비에만 사용 가능합니다.\n(현재 장비: Lv.${item.lv})`);
+            }
 
             if (confirm(`${ticket.name}을 사용하여 +${ticket.val} 강으로 만드시겠습니까?`)) {
                 item.en = ticket.val;
@@ -243,7 +264,7 @@ const UpgradeSystem = {
                     UpgradeSystem.stopAuto();
                     return alert(`[${scrollItem.name}]은 +${scrollItem.maxLimit}강 이하만 사용 가능합니다.`);
                 }
-                // 2. [★수정] 아이템 레벨 제한 체크
+                // 2. 아이템 레벨 제한 체크
                 if (scrollItem.limitLv && item.lv > scrollItem.limitLv) {
                     UpgradeSystem.stopAuto();
                     return alert(`[${scrollItem.name}]은 Lv.${scrollItem.limitLv} 이하의 장비에만 사용 가능합니다.\n(현재 장비: Lv.${item.lv})`);
