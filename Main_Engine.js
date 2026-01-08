@@ -284,7 +284,7 @@ renderInventory: () => {
         let category = 'etc'; 
         const type = it.type ? it.type.toLowerCase() : ''; // 소문자로 통일해서 비교
 
-        if (['weapon', 'armor', 'belt'].includes(type)) category = 'equip';
+        if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) category = 'equip';
         else if (['potion', 'ticket', 'scroll'].includes(type)) category = 'consume';
 
         // 1. 장착 중인 아이템은 탭 상관없이 무조건 상단
@@ -752,6 +752,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
