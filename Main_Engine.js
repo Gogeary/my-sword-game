@@ -191,6 +191,35 @@ const MainEngine = {
 
     return final;
 },
+   // 1. 이 함수가 MainEngine 안에 있는지 확인
+    exportSaveFile: () => {
+        const saveStr = localStorage.getItem('game_users');
+        if(!saveStr) return alert("데이터 없음");
+        const blob = new Blob([saveStr], {type: "text/plain;charset=utf-8"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `강화하기_Save.txt`;
+        link.click();
+    },
+
+    // 2. 이 함수도 MainEngine 안에 있는지 확인
+    importSaveFile: (input) => {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const loadedStr = e.target.result;
+                const testParse = MainEngine.decrypt(loadedStr);
+                if (testParse && typeof testParse === 'object') {
+                    localStorage.setItem('game_users', loadedStr);
+                    alert("복구 완료!");
+                    location.reload();
+                } else { throw new Error(); }
+            } catch(err) { alert("유효하지 않은 파일입니다."); }
+        };
+        reader.readAsText(file);
+    },
 
     addItem: (newItem) => {
         const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
@@ -560,6 +589,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
