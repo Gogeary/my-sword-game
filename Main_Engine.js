@@ -658,38 +658,27 @@ renderInventory: () => {
    addItem: (newItem) => {
     const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
 
+    // 스택 가능 아이템
     if (stackableTypes.includes(newItem.type)) {
 
-        const existingItem = data.inventory.find(item => {
-            if (item.type !== newItem.type) return false;
-            if (item.name !== newItem.name) return false;
-
-            // ticket: 강화 수치 기준
-            if (newItem.type === 'ticket') {
-                return item.val === newItem.val;
-            }
-
-            // scroll: 종류(id 또는 maxLimit 기준)
-            if (newItem.type === 'scroll') {
-                return item.id === newItem.id;
-            }
-
-            // potion / etc
-            return true;
-        });
+        const existingItem = data.inventory.find(item =>
+            item.type === newItem.type &&
+            item.id === newItem.id   // ★ 핵심: id로만 판별
+        );
 
         if (existingItem) {
             existingItem.count = (existingItem.count || 1) + (newItem.count || 1);
-            return;
+        } else {
+            data.inventory.push({ ...newItem, count: newItem.count || 1 });
         }
-
-        data.inventory.push({ ...newItem, count: newItem.count || 1 });
         return;
     }
 
-    // 장비류 (절대 겹치지 않음)
-    if (!newItem.id) newItem.id = Date.now() + Math.random();
-    data.inventory.push(newItem);
+    // 장비류 (weapon, armor, belt, gloves) → 절대 스택 안 함
+    data.inventory.push({
+        ...newItem,
+        uid: Date.now() + Math.random()   // 개별 장비 식별용
+    });
 },
 
 
@@ -767,6 +756,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
