@@ -1,15 +1,27 @@
-/* ==========================================
-   [Main_Engine.js] 
-   로그인 오류 방지 및 암호화 안정화 버전
-   ========================================== */
-
-var currentUser = null, data = null, upIdx = -1, autoTimer = null;
-const SECRET_KEY = "my_super_secret_game_key_v1.8";
-
 const MainEngine = {
     // --- [중요] 모든 변수와 함수는 이 중괄호 { } 안에 있어야 합니다 ---
     invCurrentTab: 'equip', // 기본값을 '장비' 탭으로 설정
+    isAutoHunting: false,   // [추가!] 자동 사냥 상태를 기억하는 변수
 
+    // 자동 사냥 켜기/끄기 함수도 여기에 있으면 좋아
+    toggleAutoHunt: () => {
+        MainEngine.isAutoHunting = !MainEngine.isAutoHunting;
+        const btn = document.getElementById('btn-auto-hunt');
+        
+        if (MainEngine.isAutoHunting) {
+            if (btn) {
+                btn.innerText = "🛑 자동 사냥 중지";
+                btn.style.background = "#c0392b";
+            }
+            // 즉시 첫 탐색 시작 (전투 중이 아닐 때만)
+            if (!CombatSystem.isEncounter) CombatSystem.scanHunt();
+        } else {
+            if (btn) {
+                btn.innerText = "⚔️ 무한 자동 사냥 시작";
+                btn.style.background = "#2ecc71";
+            }
+        }
+    },
     setInvTab: (tab) => {
         MainEngine.invCurrentTab = tab;
         MainEngine.renderInventory();
@@ -468,6 +480,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
