@@ -349,7 +349,7 @@ const CombatSystem = {
     // [물약 사용 로직] 10% 제한 적용
     // ─────────────────────────────────────────────────────────────
    tryAutoPotion: function(pStats) {
-        const data = this.data; // 데이터 참조
+        // 전역 data 변수 사용
         if (typeof data.potionBuffer === 'undefined') data.potionBuffer = 0;
         
         const missingHp = pStats.hp - data.hp;
@@ -357,19 +357,17 @@ const CombatSystem = {
         // 1. 체력이 꽉 찼으면 종료
         if (missingHp <= 0) return { healed: 0, usedCount: 0 };
 
-        // 2. 인벤토리 아이템에 DB의 포션 상세 정보(val, type)를 매핑하고 포션만 필터링
+        // 2. [수정] GameDatabase.CONSUMABLES.potions로 정확히 참조
         const potions = data.inventory
             .map(invItem => {
-                // CONSUMABLES 데이터베이스에서 상세 정보 찾기
-                const dbInfo = CONSUMABLES.potions.find(p => p.id === invItem.id);
+                const dbInfo = GameDatabase.CONSUMABLES.potions.find(p => p.id === invItem.id);
                 return dbInfo ? { ...invItem, ...dbInfo } : null;
             })
             .filter(i => i !== null && i.type === 'potion')
-            .sort((a, b) => a.val - b.val); // 낮은 수치 포션부터 사용
+            .sort((a, b) => a.val - b.val); 
 
         if (potions.length === 0) return { healed: 0, usedCount: 0 };
 
-        // 3. 현재 소지한 모든 포션의 총 회복량 계산
         const totalPotionsValue = potions.reduce((acc, cur) => acc + (cur.val * (cur.count || 1)), 0);
         const realRemainingPool = totalPotionsValue - data.potionBuffer;
 
@@ -377,16 +375,14 @@ const CombatSystem = {
 
         // 4. [제한] 턴당 최대 회복량은 전체 체력의 10%
         const limit = Math.floor(pStats.hp * 0.1);
-
-        // 5. 실제 회복할 양 결정 (최대 체력까지만, 버퍼 고려, 10% 제한 고려)
         const healAmount = Math.min(missingHp, realRemainingPool, limit);
 
         data.hp += healAmount;
-        data.potionBuffer += healAmount; // 사용된 회복 에너지를 버퍼에 누적
+        data.potionBuffer += healAmount; 
 
         let usedCount = 0;
         
-        // 6. 버퍼에 쌓인 양만큼 인벤토리의 실제 포션 개수 차감
+        // 6. 인벤토리 실제 차감 로직
         while (potions.length > 0) {
             const smallestPotion = potions[0];
             
@@ -394,23 +390,21 @@ const CombatSystem = {
                 data.potionBuffer -= smallestPotion.val;
                 usedCount++;
 
-                // 실제 data.inventory에 있는 원본 아이템 찾기
                 const inventoryIdx = data.inventory.findIndex(i => i.id === smallestPotion.id);
-                const invItem = data.inventory[inventoryIdx];
-
-                if (invItem.count > 1) {
-                    invItem.count--;
-                } else {
-                    // 수량이 1개뿐이면 인벤토리에서 제거
-                    data.inventory.splice(inventoryIdx, 1);
-                    potions.shift(); // 작업 완료된 포션은 리스트에서 제거
+                if (inventoryIdx !== -1) {
+                    const invItem = data.inventory[inventoryIdx];
+                    if (invItem.count > 1) {
+                        invItem.count--;
+                    } else {
+                        data.inventory.splice(inventoryIdx, 1);
+                        potions.shift(); 
+                    }
                 }
             } else {
-                break; // 버퍼가 포션 1개분도 안 남았으면 중단
+                break; 
             }
         }
 
-        // UI 업데이트 및 결과 반환
         if (typeof MainEngine !== 'undefined' && MainEngine.updateUI) {
             MainEngine.updateUI();
         }
@@ -418,3 +412,4 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
