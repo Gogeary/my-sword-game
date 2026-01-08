@@ -96,8 +96,8 @@ const CombatSystem = {
         const borderColor = m.isBoss ? 'border:3px solid #f1c40f;' : 'border:2px solid var(--hunt);';
         const bossTag = m.isBoss ? '<span style="font-size:0.8em; display:block; color:#f1c40f;">[STAGE BOSS]</span>' : '';
         
-        // [수정] 보스일 때 이미지 크기를 150px로 확대
-        const imgSize = m.isBoss ? "150px" : "100px"; 
+        // [수정] 보스일 때 이미지 크기를 250px로 확대
+        const imgSize = m.isBoss ? "250px" : "200px"; 
 
         grid.innerHTML = `
             <div style="width:100%; padding:20px; text-align:center; ${borderColor} border-radius:10px; background:rgba(0,0,0,0.2);">
@@ -343,6 +343,7 @@ const CombatSystem = {
         return { healed: healAmount, usedCount: usedCount };
     }
 };
+
 
 
 
