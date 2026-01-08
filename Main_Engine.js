@@ -249,9 +249,9 @@ const MainEngine = {
 
     getFinalStats: () => {
         if(typeof GameDatabase === 'undefined') return { atk:10, def:2, hp:100 };
-        let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
-        let bDef = GameDatabase.USER_STATS.CALC_DEF(data.level);
-        let bHP = GameDatabase.USER_STATS.CALC_HP(data.level);
+        let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.lv);
+        let bDef = GameDatabase.USER_STATS.CALC_DEF(data.lv);
+        let bHP = GameDatabase.USER_STATS.CALC_HP(data.lv);
         let fAtk = bAtk, fDef = bDef, fHP = bHP;
         const eq = data.equipment;
         if(eq.weapon) fAtk = GameDatabase.ENHANCE_FORMULA.weapon(bAtk, eq.weapon.k, eq.weapon.en);
@@ -493,13 +493,13 @@ renderInventory: () => {
 
     checkLevelUp: () => {
     let leveledUp = false;
-    let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+    let next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv);
 
     while (data.exp >= next) {
         data.exp -= next;
-        data.level++;
+        data.lv++;
         leveledUp = true;
-        next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.level);
+        next = GameDatabase.USER_STATS.GET_NEXT_EXP(data.lv);
     }
 
    if (leveledUp) {
@@ -687,6 +687,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
