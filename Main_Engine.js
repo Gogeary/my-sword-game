@@ -187,50 +187,59 @@ const MainEngine = {
         return { atk: fAtk, def: fDef, hp: fHP };
     },
     
-    renderInventory: () => {
-        const eqList = document.getElementById('equipped-list');
-        const invList = document.getElementById('inventory-list');
-        if(!eqList || !invList) return;
+    보내주신 createItemHTML 함수 코드는 로직상 완벽합니다. return div;도 잘 포함되어 있네요.
 
-        eqList.innerHTML = ''; 
-        invList.innerHTML = '';
+그렇다면 문제는 **"인벤토리를 그릴 때 이 함수를 사용하는 renderInventory 함수 내부의 필터링 조건"**이나 **"데이터베이스의 type 값과 코드상의 type 값이 일치하지 않는 문제"**일 가능성이 매우 높습니다.
 
-        if (!data.inventory || data.inventory.length === 0) {
-            invList.innerHTML = '<div style="color:#666; padding:20px;">가방이 비어있습니다.</div>';
-            eqList.innerHTML = '<div style="color:#666; padding:10px;">장착된 장비가 없습니다.</div>';
-            return;
+가장 의심되는 부분들을 하나씩 해결해 보죠.
+
+1. renderInventory의 카테고리 판정 로직 확인
+현재 인벤토리는 MainEngine.invCurrentTab 값에 따라 아이템을 보여줍니다. 만약 데이터베이스의 type이 소문자가 아니거나, 분류가 잘못되어 있다면 아이템이 필터링되어 보이지 않습니다.
+
+Main_Engine.js의 renderInventory 함수를 아래 코드로 완전히 교체해서 테스트해 보세요. (디버깅용 로그를 추가했습니다.)
+
+JavaScript
+
+renderInventory: () => {
+    const invList = document.getElementById('inventory-list');
+    const eqList = document.getElementById('equipped-list');
+    if (!invList || !eqList) return;
+
+    invList.innerHTML = '';
+    eqList.innerHTML = '';
+
+    console.log("--- 인벤토리 렌더링 시작 ---");
+    console.log("현재 가방 아이템 수:", data.inventory.length);
+    console.log("현재 선택된 탭:", MainEngine.invCurrentTab);
+
+    if (!data.inventory || data.inventory.length === 0) {
+        invList.innerHTML = '<div style="color:#888; padding:20px;">가방이 비어있습니다.</div>';
+        return;
+    }
+
+    data.inventory.forEach((it, idx) => {
+        const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
+        
+        // 카테고리 판정
+        let category = 'etc'; 
+        const type = it.type ? it.type.toLowerCase() : ''; // 소문자로 통일해서 비교
+
+        if (['weapon', 'armor', 'belt'].includes(type)) category = 'equip';
+        else if (['potion', 'ticket', 'scroll'].includes(type)) category = 'consume';
+
+        // 1. 장착 중인 아이템은 탭 상관없이 무조건 상단
+        if (isEquipped) {
+            eqList.appendChild(MainEngine.createItemHTML(it, idx, true));
+        } 
+        // 2. 장착 안 된 아이템은 현재 탭과 일치할 때만 하단
+        else if (MainEngine.invCurrentTab === category) {
+            invList.appendChild(MainEngine.createItemHTML(it, idx, false));
+        } else {
+            // 여기에 걸리면 탭이 맞지 않아서 안 보이는 것입니다.
+            console.log(`아이템 '${it.name}'은(는) 탭이 맞지 않아 숨겨짐 (카테고리: ${category})`);
         }
-
-        let equippedCount = 0;
-        let visibleItemCount = 0;
-
-        // 원본 배열(data.inventory)을 돌면서 HTML을 생성합니다.
-        data.inventory.forEach((it, idx) => {
-            const isEquipped = (data.equipment[it.type] && data.equipment[it.type].id === it.id);
-            
-            // 탭 분류 로직
-            let category = 'etc'; 
-            if (['weapon', 'armor', 'belt'].includes(it.type)) category = 'equip';
-            else if (['potion', 'ticket', 'scroll'].includes(it.type)) category = 'consume';
-
-            // 1. 장착 중인 아이템 표시
-            if (isEquipped) {
-                // [중요] idx를 그대로 넘겨서 나중에 판매/강화 시 해당 위치를 정확히 참조하게 합니다.
-                const div = MainEngine.createItemHTML(it, idx, true);
-                eqList.appendChild(div);
-                equippedCount++;
-            } 
-            // 2. 현재 선택된 탭에 맞는 아이템 표시
-            else if (MainEngine.invCurrentTab === category) {
-                const div = MainEngine.createItemHTML(it, idx, false);
-                invList.appendChild(div);
-                visibleItemCount++;
-            }
-        });
-
-        if (equippedCount === 0) eqList.innerHTML = '<div style="color:#555; font-size:0.9em; padding:10px;">장착된 장비가 없습니다.</div>';
-        if (visibleItemCount === 0) invList.innerHTML = `<div style="color:#666; padding:30px; font-size:0.9em;">해당 카테고리에 아이템이 없습니다.</div>`;
-    },
+    });
+}
 
     // [추가] 아이템 카드 HTML 생성을 담당하는 보조 함수
     createItemHTML: (it, idx, isEquipped) => {
@@ -410,6 +419,7 @@ function showPage(id) {
 }
 
 window.onload = MainEngine.init;
+
 
 
 
