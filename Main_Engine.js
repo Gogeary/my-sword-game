@@ -2,21 +2,24 @@
    [Main_Engine.js] 최종 온라인 통합 관리 시스템
    ========================================== */
 
-// 1. Firebase 설정
+// 1. Firebase 라이브러리 불러오기 (CDN 방식)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+// 2. 보내주신 Firebase 설정 적용
 const firebaseConfig = {
-  apiKey: "AIzaSyDwGNiPszzc_Og_75QunUveUXX60m_oq2Q",
-  authDomain: "orbisrpg123.firebaseapp.com",
-  projectId: "orbisrpg123",
-  storageBucket: "orbisrpg123.firebasestorage.app",
-  messagingSenderId: "132359346538",
-  appId: "1:132359346538:web:0cc860de9863e7d251ed13",
-  measurementId: "G-X2Z69E79VT"
+    apiKey: "AIzaSyAxR-oBND3fWbHUuq_LgjfgIayiFRrKGO8",
+    authDomain: "orbisrpg-962b3.firebaseapp.com",
+    projectId: "orbisrpg-962b3",
+    storageBucket: "orbisrpg-962b3.firebasestorage.app",
+    messagingSenderId: "164223155724",
+    appId: "1:164223155724:web:4408795def32952eac7829",
+    measurementId: "G-6J3M1T531B"
 };
 
-// 2. Firebase 초기화
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();    
-const rtdb = firebase.database();
+// 3. Firebase 초기화
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // 전역 변수 설정
 var currentUser = null, data = null, upIdx = -1, autoTimer = null;
@@ -366,3 +369,4 @@ const GamblingSystem = {
 };
 
 window.onload = MainEngine.init;
+
