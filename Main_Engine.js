@@ -196,25 +196,32 @@ const MainEngine = {
         if(data.exp >= nextExp) { MainEngine.checkLevelUp(); return; }
 
         const stats = MainEngine.getFinalStats();
-        
-        // 글러브 증폭도 계산
-        let gloveMul = 1.0;
-        if (data.equipment.gloves) gloveMul = data.equipment.gloves.k;
-        const finalAtk = Math.floor(stats.atk * gloveMul);
+    
+    // 1. [수정] 글러브 증폭도 계산 (강화 수치 반영)
+    let gloveMul = 1.0;
+    if (data.equipment.gloves) {
+        // ★ 중요: 단순히 k값을 가져오는 게 아니라, 공식에 강화 수치(en)를 넣어서 계산해야 합니다.
+        gloveMul = GameDatabase.ENHANCE_FORMULA.gloves(data.equipment.gloves.k, data.equipment.gloves.en);
+    }
 
-        // --- [UI 갱신: formatNumber 적용] ---
-        
-        // 1. 공격력 표시 (단위 적용)
-        const infoAtk = document.getElementById('info-atk');
-        if(infoAtk) {
-            infoAtk.innerHTML = `
-                <span style="color:#ddd;">${MainEngine.formatNumber(stats.atk)}</span> 
-                <span style="color:#aaa; font-size:0.8em;">(무기)</span>
-                x <span style="color:#f1c40f;">${gloveMul.toFixed(2)}</span> 
-                <span style="color:#aaa; font-size:0.8em;">(증폭)</span>
-                <br>= <span style="color:#ff5252; font-size:1.2em;">${MainEngine.formatNumber(finalAtk)}</span>
-            `;
-        }
+    // 2. 최종 공격력 계산 (stats.atk는 getFinalStats에서 이미 무기강화가 적용된 값)
+    // 만약 getFinalStats에서 이미 장갑 증폭까지 마친 최종값을 반환한다면 
+    // 여기서 또 곱할 필요는 없지만, "무기 x 증폭" 시각화를 위해 따로 계산합니다.
+    const baseAtk = stats.atk / (data.equipment.gloves ? gloveMul : 1); 
+    const finalAtk = stats.atk;
+
+    // --- [UI 갱신] ---
+    const infoAtk = document.getElementById('info-atk');
+    if(infoAtk) {
+        // formatNumber와 toFixed를 사용하여 깔끔하게 표시
+        infoAtk.innerHTML = `
+            <span style="color:#ddd;">${MainEngine.formatNumber(baseAtk)}</span> 
+            <span style="color:#aaa; font-size:0.8em;">(무기)</span>
+            x <span style="color:#f1c40f;">${gloveMul.toFixed(2)}</span> 
+            <span style="color:#aaa; font-size:0.8em;">(증폭)</span>
+            <br>= <span style="color:#ff5252; font-size:1.2em;">${MainEngine.formatNumber(finalAtk)}</span>
+        `;
+    }
 
         // 2. 방어력, 체력, 골드 등 (단위 적용)
         document.getElementById('info-def').innerText = MainEngine.formatNumber(stats.def);
@@ -751,6 +758,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
