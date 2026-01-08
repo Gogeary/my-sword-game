@@ -150,17 +150,33 @@ const MainEngine = {
     },
 
     getFinalStats: () => {
-        let bAtk = GameDatabase.USER_STATS.CALC_ATK(data.level);
-        let bDef = GameDatabase.USER_STATS.CALC_DEF(data.level);
-        let bHP = GameDatabase.USER_STATS.CALC_HP(data.level);
-        let fAtk = bAtk, fDef = bDef, fHP = bHP;
-        const eq = data.equipment;
-        if(eq.weapon) fAtk = GameDatabase.ENHANCE_FORMULA.weapon(bAtk, eq.weapon.k, eq.weapon.en);
-        if(eq.armor)  fDef = GameDatabase.ENHANCE_FORMULA.armor(bDef, eq.armor.k, eq.armor.en);
-        if(eq.belt)   fHP  = GameDatabase.ENHANCE_FORMULA.belt(bHP, eq.belt.k, eq.belt.en);
-        if(eq.gloves) fAtk *= GameDatabase.ENHANCE_FORMULA.gloves(eq.gloves.k, eq.gloves.en);
-        return { atk: fAtk, def: fDef, hp: fHP };
-    },
+    // 1. 기본 유저 스태트 (레벨에 따른 기본값)
+    const base = GameDatabase.USER_STATS.GET_BASE(data.level);
+    let final = {
+        atk: base.atk,
+        def: base.def,
+        hp: base.hp
+    };
+
+    // 2. 장착한 아이템의 능력치 합산
+    // equipment 객체에 저장된 부위별(weapon, armor 등) 아이템을 순회합니다.
+    Object.keys(data.equipment).forEach(slot => {
+        const item = data.equipment[slot];
+        if (item) {
+            // 장비의 능력치 배율(k)과 강화 수치(en)를 반영
+            // 예: 공격력 = 기본공격력 * (아이템배율 + 강화보너스)
+            const bonus = 1 + (item.en * 0.1); // 1강당 10% 보너스 가정
+            
+            if (slot === 'weapon') final.atk = Math.floor(final.atk * item.k * bonus);
+            if (slot === 'armor') final.def = Math.floor(final.def * item.k * bonus);
+            if (slot === 'belt') final.hp = Math.floor(final.hp * item.k * bonus);
+            if (slot === 'gloves') final.atk = Math.floor(final.atk * (1 + (item.k - 1) * bonus));
+            if (slot === 'shoes') final.def = Math.floor(final.def * (1 + (item.k - 1) * bonus));
+        }
+    });
+
+    return final;
+},
 
     addItem: (newItem) => {
         const stackableTypes = ['etc', 'potion', 'scroll', 'ticket'];
@@ -502,6 +518,7 @@ const GamblingSystem = {
 
 
 window.onload = MainEngine.init;
+
 
 
 
