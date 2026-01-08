@@ -266,7 +266,7 @@ renderInventory: () => {
             div.style.background = 'rgba(46, 204, 113, 0.1)'; 
         }
 
-        // 이미지 처리 (없으면 📦 아이콘)
+        // 이미지 처리
         const imgTag = it.img ? 
             `<img src="image/${it.img}" class="item-icon" onerror="this.replaceWith(document.createElement('div')); this.className='item-icon'; this.innerText='📦';">` 
             : '<div class="item-icon">📦</div>';
@@ -285,14 +285,39 @@ renderInventory: () => {
             `; 
         }
 
-        // 아이템 정보 텍스트 결정
+        // ─────────────────────────────────────────────────────────────
+        // ★ [핵심] 장비 능력치 텍스트 결정 로직
+        // ─────────────────────────────────────────────────────────────
         let subText = "";
-        if (it.info) subText = it.info;
-        else if (it.type === 'potion') subText = `회복량: ${it.val.toLocaleString()}`;
-        else if (it.type === 'ticket') subText = `확정 강화 +${it.val}`;
-        else if (it.p) subText = `티어 ${Math.floor(it.p/1000)}`;
+        const type = it.type;
 
-        // 개수 배지 (2개 이상일 때만 표시)
+        if (it.info) {
+            // 1. 커스텀 설명이 있으면 최우선 표시 (특수 아이템 등)
+            subText = it.info;
+        } 
+        else if (['weapon', 'armor', 'belt', 'gloves', 'shoes'].includes(type)) {
+            // 2. 장비류: 타입별 능력치 표시
+            let statName = "능력";
+            let statIcon = "⭐";
+            
+            // 타입에 따른 텍스트 설정
+            switch(type) {
+                case 'weapon': statName = "공격력"; statIcon = "⚔️"; break;
+                case 'armor':  statName = "방어력"; statIcon = "🛡️"; break;
+                case 'belt':   statName = "생명력"; statIcon = "❤️"; break;
+                case 'gloves': statName = "증폭도"; statIcon = "🥊"; break;
+                case 'shoes':  statName = "민첩성"; statIcon = "👟"; break;
+            }
+
+            // 수치 표시 (k값이 배율인 경우 'x' 붙임)
+            // 예: 1.5 -> "x1.5", 100 -> "+100" (상황에 따라 다름, 여기선 배율(k)로 가정)
+            subText = `${statIcon} ${statName}: x${it.k}`;
+        }
+        else if (type === 'potion') subText = `🧪 회복량: ${it.val.toLocaleString()}`;
+        else if (type === 'ticket') subText = `🎫 확정 강화 +${it.val}`;
+        else if (it.p) subText = `💰 가치: Lv.${Math.floor(it.p/1000)}`;
+
+        // 개수 배지
         const countBadge = (it.count && it.count > 1) ? ` <span style="color:#f1c40f; font-weight:bold;">x${it.count}</span>` : '';
 
         // 최종 HTML 조립
@@ -636,6 +661,7 @@ function closeModal(id) {
     }
 }
 window.onload = MainEngine.init;
+
 
 
 
