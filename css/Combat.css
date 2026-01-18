@@ -921,3 +921,27 @@
     opacity: 0; /* 초기엔 안 보임 */
     animation: lootSlideIn 0.4s ease-out forwards;
 }
+
+
+
+
+/* =========================================================
+   [Mobile Optimization] 모바일 전용 UI 조정 (맨 아래 추가)
+   ========================================================= */
+
+/* 모바일 화면(너비 768px 이하)에서는 로그창 숨김 */
+@media (max-width: 768px) {
+    .tactical-log-box {
+        display: none !important; /* 로그박스 제거 */
+    }
+
+    /* 로그박스가 사라진 만큼 전투 스테이지를 더 넓게 활용 */
+    .battle-stage-container {
+        flex: 100 !important; /* 남은 공간 전부 차지 */
+    }
+    
+    /* 몬스터 이미지도 조금 더 키워서 시원하게 보여줌 */
+    .visual-anim-wrapper img {
+        transform: scale(1.2); 
+    }
+}
