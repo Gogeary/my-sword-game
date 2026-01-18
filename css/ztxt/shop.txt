@@ -1,0 +1,132 @@
+/* =========================================
+   [1] 상점 메인 (Shop Select)
+   ========================================= */
+.shop-container { padding: 5px; }
+
+.shop-grid {
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+    padding-bottom: 20px;
+}
+
+.shop-card {
+    display: flex; align-items: center; padding: 20px;
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px; cursor: pointer; transition: transform 0.2s, background 0.2s;
+    animation: fadeInUpCard 0.4s ease-out forwards; opacity: 0;
+}
+.shop-card:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.08); }
+
+@keyframes fadeInUpCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 상점별 테마 */
+.shop-equip { border-left: 4px solid #ff4757; }
+.shop-potion { border-left: 4px solid #00d2d3; }
+.shop-gacha { border-left: 4px solid #ffa502; }
+.shop-synth { border-left: 4px solid #2ed573; }
+
+.shop-name { font-size: 1.1em; font-weight: bold; color: #fff; margin-bottom: 5px; }
+.shop-desc { font-size: 0.85em; color: #aaa; }
+
+/* 야간업소(도박장) 특수 카드 */
+.night-life-card {
+    background: linear-gradient(135deg, #2d0036 0%, #0c0014 100%);
+    border: 1px solid #e056fd; box-shadow: 0 0 10px rgba(224, 86, 253, 0.2);
+}
+.neon-sign {
+    color: #e056fd; text-shadow: 0 0 5px #e056fd, 0 0 10px #ff00de;
+    font-weight: 800; font-style: italic;
+}
+
+/* =========================================
+   [2] 아이템 목록 (Shop Detail List)
+   ========================================= */
+.shop-item-row {
+    display: flex; align-items: center; padding: 12px;
+    background: rgba(0, 0, 0, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px; margin-bottom: 8px;
+}
+.shop-item-img {
+    width: 40px; height: 40px; margin-right: 15px;
+    background: rgba(0,0,0,0.3); border-radius: 6px; padding: 2px;
+}
+.shop-item-info { flex: 1; }
+.shop-item-name { font-weight: bold; color: #ecf0f1; font-size: 0.95em; }
+.shop-item-cost { color: #f1c40f; font-size: 0.85em; margin-top: 3px; }
+.btn-buy {
+    background: var(--point); color: #fff; border: none; padding: 8px 16px;
+    border-radius: 6px; font-weight: bold; font-size: 0.85em; cursor: pointer;
+}
+.btn-buy:active { transform: scale(0.95); }
+
+/* =========================================
+   [3] 도박장 (Casino)
+   ========================================= */
+.gamble-board {
+    background: #202020; border-radius: 15px; padding: 20px;
+    border: 2px solid #f1c40f; text-align: center; margin-top: 10px;
+}
+.gamble-wallet {
+    background: #000; border-radius: 10px; padding: 10px;
+    margin-bottom: 20px; border: 1px solid #333;
+}
+.wallet-label { color: #888; font-size: 0.8em; display: block; margin-bottom: 5px; }
+.wallet-value { color: #f1c40f; font-size: 1.4em; font-weight: 900; }
+
+.betting-input-group { margin-bottom: 20px; }
+.bet-input {
+    width: 100%; background: #333; border: 1px solid #555; color: #fff;
+    padding: 12px; font-size: 1.2em; text-align: center; border-radius: 8px;
+    margin-bottom: 10px; font-weight: bold;
+}
+.bet-quick-btns { display: flex; gap: 5px; justify-content: center; }
+.bet-quick-btns button {
+    flex: 1; background: #444; border: none; color: #ccc;
+    padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em;
+}
+
+.bet-action-area { display: flex; gap: 10px; height: 80px; }
+.bet-btn {
+    flex: 1; border: none; border-radius: 10px; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: transform 0.1s;
+}
+.bet-btn.odd { background: #3498db; color: white; box-shadow: 0 4px 0 #2980b9; }
+.bet-btn.even { background: #e74c3c; color: white; box-shadow: 0 4px 0 #c0392b; }
+.bet-btn:active { transform: translateY(4px); box-shadow: none !important; }
+
+.bet-type { font-size: 1.2em; font-weight: 900; }
+.bet-rate { font-size: 0.8em; opacity: 0.8; margin-top: 5px; }
+
+.gamble-history-log {
+    height: 100px; background: rgba(0,0,0,0.3); border-radius: 8px;
+    margin-top: 15px; padding: 10px; text-align: left; font-size: 0.85em; color: #aaa;
+    border: 1px solid #333;
+}
+
+/* =========================================
+   [4] 주식 (Stock Market)
+   ========================================= */
+.stock-summary-card {
+    background: linear-gradient(135deg, #1e272e, #111);
+    border-radius: 12px; padding: 15px; margin-bottom: 15px;
+    border-left: 4px solid #2ecc71;
+}
+.stock-list-header {
+    display: flex; justify-content: space-between; padding: 8px 12px;
+    background: #333; font-size: 0.8em; color: #aaa; font-weight: bold;
+    border-radius: 6px 6px 0 0;
+}
+.stock-scroll-area {
+    height: 300px; overflow-y: auto; background: rgba(0,0,0,0.2);
+    border: 1px solid #333; border-top: none; border-radius: 0 0 6px 6px;
+}
+
+.stock-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stock-name { font-weight: bold; color: #fff; display: block; }
+.stock-price { color: #aaa; font-size: 0.9em; margin-top: 2px; display: block; }
+.stock-change { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
+.stock-up { color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+.stock-down { color: #3498db; background: rgba(52, 152, 219, 0.1); }

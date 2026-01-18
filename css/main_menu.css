@@ -1,0 +1,394 @@
+/* =========================================
+   [SYSTEM ROOT] 컬러 변수 및 초기화
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+
+:root {
+    --bg-deep: #0b1120;
+    --panel-bg: rgba(15, 23, 42, 0.85);
+    --primary-blue: #3b82f6;
+    --accent-gold: #eab308;
+    --danger-red: #ef4444;
+    --safe-green: #10b981;
+
+    /* 버튼 테마 컬러 */
+    --color-adventure: #ff4b4b;
+    --color-life: #00ff9d;
+    --color-village: #d946ef;
+    --color-info: #ffd700;
+}
+
+/* =========================================
+   [GLOBAL] 배경 및 공통 레이아웃
+   ========================================= */
+body {
+    background-color: var(--bg-deep);
+    background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #f1f5f9;
+    font-family: 'Noto Sans KR', sans-serif;
+    margin: 0; padding: 0;
+    animation: bgPulse 10s ease-in-out infinite alternate;
+}
+
+.desktop-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    animation: zoomInMain 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 페이지 공통 설정 (상/하단바 여백 고정) */
+.page {
+    display: none;
+    padding: 100px 20px 100px 20px !important; /* 상단 HUD + 하단 NAV 여백 */
+    box-sizing: border-box;
+}
+.page.active { display: block; }
+
+/* =========================================
+   [HUD & DECO] 상단 장식 및 스캔라인
+   ========================================= */
+.scanline-effect {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(59, 130, 246, 0.03) 51%, transparent 52%);
+    background-size: 100% 4px;
+    animation: scanMove 20s linear infinite;
+    pointer-events: none;
+    z-index: 900;
+}
+
+.deco-line {
+    height: 2px;
+    flex-grow: 1;
+    background: linear-gradient(90deg, transparent, var(--primary-blue));
+    max-width: 60px;
+}
+.deco-line.left { transform: scaleX(-1); }
+
+.screen-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 15px var(--primary-blue);
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+/* =========================================
+   [FINAL] 슬림 하이테크 비저 배너 CSS
+   ========================================= */
+
+/* 1. 배너가 시작되는 페이지 여백 설정 (HUD 가려짐 방지) */
+#page-main.page {
+    /* 슬림해진 HUD 높이에 맞춰 최적화된 수치입니다 */
+    padding-top: 125px !important; 
+    padding-bottom: 100px !important;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* 2. 배너 메인 컨테이너 */
+.holo-visor-banner {
+    position: relative;
+    width: 100% !important;
+    height: 80px !important; /* 높이 90px 고정 */
+    margin: 5px 0 10px 0 !important;
+    background: #000;
+    overflow: hidden;
+
+    /* 하이테크 사이버 컷 디자인 (각진 모서리) */
+    clip-path: polygon(
+        0 10px, 10px 0, 
+        calc(100% - 10px) 0, 100% 10px, 
+        100% calc(100% - 10px), calc(100% - 10px) 100%, 
+        10px 100%, 0 calc(100% - 10px)
+    );
+    
+    /* HUD와 통일된 블루 네온 테두리 */
+    border: 1px solid rgba(59, 130, 246, 0.5) !important;
+    box-shadow: 
+        0 0 15px rgba(59, 130, 246, 0.2),
+        inset 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+/* 3. 이미지 레이어: 선명도 및 위치 보정 */
+.visor-img-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+}
+
+.town-bg-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center 40% !important; /* 이미지 중심을 살짝 위로 */
+    filter: brightness(0.8) contrast(1.2) saturate(1.1);
+    opacity: 0.7;
+}
+
+/* 4. 중앙 UI 콘텐츠 (텍스트 디자인) */
+.visor-ui-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+    width: 100%;
+}
+
+.ui-label-sm {
+    font-size: 0.55rem;
+    color: #3b82f6;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+}
+
+.ui-title-lg {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 5px;
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+}
+
+.ui-deco-line {
+    width: 30px; height: 2px;
+    background: #3b82f6;
+    margin: 5px auto 0;
+    box-shadow: 0 0 8px #3b82f6;
+}
+
+/* 5. 디지털 효과 및 장식 */
+.visor-scanline-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 1px,
+        rgba(59, 130, 246, 0.05) 2px
+    );
+    z-index: 2;
+    pointer-events: none;
+}
+
+.corner-accent {
+    position: absolute;
+    width: 8px; height: 8px;
+    border: 1.5px solid #3b82f6;
+    z-index: 6;
+    filter: drop-shadow(0 0 5px #3b82f6);
+}
+.corner-accent.top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
+.corner-accent.top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
+.corner-accent.bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
+.corner-accent.bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+/* 다른 버튼들과 규격을 완벽히 맞춘 설정 버튼 스타일 */
+.btn-settings { 
+    --theme-color: #00d2d3; /* 청록색 포인트 컬러 */
+    --bg-glow: rgba(0, 210, 211, 0.15); 
+}
+
+/* 하단 라인 효과 강제 적용 (이미지에서 누락된 부분) */
+.btn-settings::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--theme-color);
+    opacity: 0.5;
+    transition: 0.3s;
+}
+
+/* 호버 시 라인 두꺼워지는 효과 */
+.btn-settings:hover::after {
+    height: 5px;
+    opacity: 1;
+}
+
+/* 아이콘 회전 애니메이션 */
+.btn-settings:hover .btn-icon {
+    transform: rotate(90deg) scale(1.2);
+    filter: drop-shadow(0 0 10px #00d2d3);
+}
+
+/* =========================================
+   [BUTTONS] 하이테크 시스템 카드
+   ========================================= */
+.main-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; position: relative; z-index: 1; }
+
+.main-btn {
+    position: relative;
+    height: 110px;
+    background: linear-gradient(160deg, #1e293b, #0f172a);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+
+.btn-combat { --theme-color: var(--color-adventure); --bg-glow: rgba(255, 75, 75, 0.15); }
+.btn-life   { --theme-color: var(--color-life); --bg-glow: rgba(0, 255, 157, 0.15); }
+.btn-town   { --theme-color: var(--color-village); --bg-glow: rgba(217, 70, 239, 0.15); }
+.btn-info   { --theme-color: var(--color-info); --bg-glow: rgba(255, 215, 0, 0.15); }
+
+.btn-bg-anim {
+    position: absolute; top: 50%; left: 50%; width: 150%; height: 150%;
+    background: radial-gradient(circle, var(--bg-glow) 0%, transparent 60%);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.5; transition: 0.5s; z-index: 0;
+}
+
+.main-btn:hover .btn-bg-anim { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+
+.btn-content { position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 0 15px; height: 100%; }
+.text-group { display: flex; flex-direction: column; align-items: flex-start; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px; }
+.kor-text { font-size: 1.1rem; font-weight: 800; color: #fff; }
+.eng-text { font-size: 0.65rem; color: var(--theme-color); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+
+.main-btn::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--theme-color); opacity: 0.5; transition: 0.3s; }
+.main-btn:hover { transform: translateY(-3px); border-color: var(--theme-color); box-shadow: 0 0 15px var(--bg-glow); }
+.main-btn:hover::after { height: 5px; opacity: 1; }
+
+/* =========================================
+   [CHAT] 시스템 로그 콘솔
+   ========================================= */
+.mobile-simple-chat.system-log {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 20px;
+    position: relative;
+}
+
+.mobile-simple-chat.system-log::before {
+    content: 'SYSTEM LOG'; position: absolute; top: -10px; left: 20px;
+    background: var(--primary-blue); color: #fff; padding: 2px 8px;
+    font-size: 0.5rem; font-weight: 900; border-radius: 4px;
+}
+
+.simple-chat-log { height: 80px; overflow-y: auto; font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px; mask-image: linear-gradient(to bottom, transparent, black 15%); }
+.simple-chat-input { display: flex; gap: 8px; }
+.simple-chat-input input { flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 10px; color: #fff; outline: none; }
+.chat-send-icon-btn { background: var(--primary-blue); border: none; color: #fff; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+
+/* =========================================
+   [INTRO] 로딩 오버레이
+   ========================================= */
+#intro-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #05050a; z-index: 9999; display: flex; align-items: center; justify-content: center;
+    transition: opacity 1s, visibility 1s;
+}
+#intro-overlay.fade-out { opacity: 0; visibility: hidden; }
+.intro-logo { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: 8px; text-shadow: 0 0 20px var(--primary-blue); animation: pulseGlow 2s infinite alternate; }
+.intro-loader { width: 200px; height: 2px; background: rgba(255, 255, 255, 0.1); margin: 20px auto; position: relative; overflow: hidden; }
+.loader-bar { position: absolute; width: 0; height: 100%; background: var(--primary-blue); box-shadow: 0 0 10px var(--primary-blue); animation: loadProgress 2.5s ease-in-out forwards; }
+
+/* =========================================
+   [ANIMATIONS] 핵심 애니메이션
+   ========================================= */
+@keyframes bgPulse { 0% { background-size: 40px 40px; } 100% { background-size: 45px 45px; } }
+@keyframes scanMove { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+@keyframes pulseGlow { from { transform: scale(0.95); opacity: 0.7; } to { transform: scale(1); opacity: 1; } }
+@keyframes loadProgress { 0% { width: 0; } 100% { width: 100%; } }
+@keyframes zoomInMain { from { transform: scale(1.1); filter: blur(10px); } to { transform: scale(1); filter: blur(0); } }
+
+/* 스크롤바 커스텀 */
+.custom-scroll::-webkit-scrollbar { width: 3px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+/* 인트로 전체 화면 */
+#intro-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #05050a;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1s;
+}
+
+/* 로딩이 끝났을 때 적용할 클래스 */
+#intro-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.intro-content {
+    text-align: center;
+}
+
+.intro-logo {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 10px;
+    text-shadow: 0 0 20px rgba(224, 86, 253, 0.8);
+    margin-bottom: 30px;
+    animation: pulseGlow 2s infinite alternate;
+}
+
+.intro-loader {
+    width: 200px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 auto 15px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.loader-bar {
+    position: absolute;
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #e056fd, #be2edd);
+    box-shadow: 0 0 10px #e056fd;
+    animation: loadProgress 2.5s ease-in-out forwards;
+}
+
+.intro-text {
+    font-size: 0.8rem;
+    color: #444;
+    letter-spacing: 2px;
+}
+
+/* 애니메이션 정의 */
+@keyframes pulseGlow {
+    from { transform: scale(0.95); opacity: 0.7; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes loadProgress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* 메인 화면 등장 애니메이션 (기존 페이지에 적용) */
+.desktop-wrapper {
+    animation: zoomInMain 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes zoomInMain {
+    from { transform: scale(1.1); filter: blur(10px); }
+    to { transform: scale(1); filter: blur(0); }
+}
+

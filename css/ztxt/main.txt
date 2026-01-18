@@ -1,0 +1,121 @@
+/* =========================================
+   [1] 로그인 & 배너
+   ========================================= */
+#login-container {
+    max-width: 400px; margin: 40px auto; padding: 25px;
+    background: rgba(22, 33, 62, 0.8); border: 2px solid var(--point);
+    border-radius: 15px; box-shadow: 0 0 20px rgba(233, 69, 96, 0.2);
+}
+.login-input {
+    width: 100%; padding: 14px; margin: 8px 0;
+    border-radius: 8px; border: 1px solid #444;
+    background: #0f172a; color: white;
+}
+.login-btn {
+    width: 100%; padding: 14px; margin-top: 15px;
+    background: var(--point); color: white;
+    border: none; border-radius: 8px; font-weight: 900; font-size: 1.1em;
+    cursor: pointer; box-shadow: 0 4px 0 #c0392b;
+}
+.login-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #c0392b; }
+
+/* 메인 배너 */
+.rpg-banner-card {
+    position: relative; width: 100%; height: 110px;
+    border-radius: 16px; overflow: hidden; margin-bottom: 20px;
+    background: #080810; border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex; align-items: center; justify-content: center;
+}
+.banner-bg-anim {
+    position: absolute; width: 100%; height: 100%;
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.2), transparent);
+    animation: pulseGlow 3s infinite;
+}
+.town-bg-img {
+    position: relative; max-width: 90%; max-height: 80%;
+    object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+    z-index: 2;
+}
+@keyframes pulseGlow { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* =========================================
+   [2] 메인 메뉴 그리드
+   ========================================= */
+.main-menu-grid {
+    display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;
+}
+
+.menu-card {
+    display: flex; flex-direction: column; justify-content: center;
+    min-height: 100px; padding: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+    cursor: pointer; transition: transform 0.2s;
+    position: relative; overflow: hidden;
+}
+.menu-card:active { transform: scale(0.98); }
+
+.menu-title { font-size: 1.3em; font-weight: 900; color: #fff; margin-bottom: 5px; }
+.menu-desc { font-size: 0.9em; color: #aaa; }
+
+/* 카드별 테마 */
+.card-earn { border-left: 5px solid #3498db; }
+.card-shop { border-left: 5px solid #f1c40f; }
+.card-upgrade { border-left: 5px solid #e74c3c; }
+.card-info { border-left: 5px solid #1abc9c; }
+
+/* =========================================
+   [3] 메인 액션 버튼 (치료/동냥)
+   ========================================= */
+.main-actions-container {
+    display: flex; gap: 10px; margin-top: 20px;
+}
+.main-action-btn {
+    flex: 1; padding: 25px 10px; font-size: 1.8em; font-weight: 900;
+    border-radius: 16px; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    cursor: pointer; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    transition: transform 0.1s;
+}
+.btn-heal {
+    background: linear-gradient(135deg, #e94560, #c0392b);
+    box-shadow: 0 5px 0 #922b21;
+}
+.btn-begging {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    box-shadow: 0 5px 0 #d68910;
+}
+.main-action-btn:active { transform: translateY(3px); box-shadow: none !important; }
+
+/* =========================================
+   [4] Earn Page (가로형 카드)
+   ========================================= */
+.earn-header { margin-bottom: 20px; padding-left: 5px; }
+.earn-main-title { font-size: 1.8em; font-weight: 900; color: #fff; margin: 0; }
+.earn-sub-title { color: #888; font-size: 0.9em; }
+
+.earn-mode-grid-horizontal { display: flex; flex-direction: column; gap: 15px; }
+
+.earn-card-v2 {
+    display: flex; align-items: center; padding: 20px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; cursor: pointer; position: relative; overflow: hidden;
+}
+.earn-card-v2:active { background: rgba(255,255,255,0.08); }
+
+.card-center-info { flex: 1; }
+.card-tag-row { margin-bottom: 8px; }
+.tag-badge-neon {
+    font-size: 0.7em; font-weight: bold; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid; margin-right: 5px;
+}
+.tag-badge-neon.red { color: #e94560; border-color: #e94560; background: rgba(233,69,96,0.1); }
+.tag-badge-neon.green { color: #2ecc71; border-color: #2ecc71; background: rgba(46,204,113,0.1); }
+
+.card-main-title { font-size: 1.3em; font-weight: 900; color: #fff; margin-bottom: 5px; }
+.card-description { font-size: 0.85em; color: #aaa; margin: 0 0 10px 0; }
+
+.card-reward-tags span {
+    font-size: 0.7em; background: rgba(0,0,0,0.3); padding: 4px 8px;
+    border-radius: 4px; color: #ccc; margin-right: 4px;
+}

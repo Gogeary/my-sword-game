@@ -1,0 +1,703 @@
+/* ==========================================
+   1. 전역 스타일 및 변수 설정
+   ========================================== */
+:root {
+    --bg-dark: #0a0a14;
+    --card-bg: rgba(20, 20, 35, 0.8);
+    --point-purple: #e056fd;
+    --point-gold: #f1c40f;
+    --point-red: #ff4757;
+    --point-green: #2ecc71;
+    --text-main: #ecf0f1;
+    --text-dim: #bdc3c7;
+    --border-light: rgba(255, 255, 255, 0.1);
+    --neon-shadow: 0 0 15px rgba(224, 86, 253, 0.3);
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Pretendard', -apple-system, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* 스크롤바 커스텀 */
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--point-purple); border-radius: 10px; }
+
+/* ==========================================
+   2. 레이아웃 구조 (데스크톱/모바일 겸용)
+   ========================================== */
+.desktop-wrapper {
+    max-width: 480px; /* 갤럭시 S24 비율 기준 */
+    margin: 0 auto;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+}
+
+@media (min-width: 1024px) {
+    .desktop-wrapper {
+        max-width: 500px; /* 데스크톱에서도 폰 화면처럼 집중도 있게 표시 */
+        border-left: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+    }
+}
+
+.page {
+    display: none;
+    padding: 20px;
+    padding-top: 80px; /* 상단바 공간 확보 */
+    animation: fadeIn 0.4s ease-out;
+}
+
+.page.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   3. 상단 리소스 바 (Top Bar)
+   ========================================== */
+.top-bar-container {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    max-width: inherit;
+    z-index: 1000;
+    background: rgba(10, 10, 20, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-light);
+    padding: 10px 15px;
+}
+
+.resource-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.res-badge {
+    background: rgba(0,0,0,0.5);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.gold-badge { border-color: var(--point-gold); color: var(--point-gold); }
+
+/* HP/EXP 바 스타일 */
+.bar-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.bar-frame {
+    flex: 1;
+    height: 12px;
+    background: #222;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.3s ease-in-out;
+}
+
+.hp-fill-style { background: linear-gradient(90deg, #ff4757, #ff6b81); box-shadow: 0 0 10px rgba(255, 71, 87, 0.5); }
+.exp-fill-style { background: linear-gradient(90deg, #2ecc71, #55efc4); }
+
+.bar-text-overlay {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 12px;
+    top: 0;
+}
+
+/* ==========================================
+   4. 메인 메뉴 카드 및 그리드
+   ========================================== */
+.main-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.menu-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 15px;
+    padding: 20px 15px;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-card:active { transform: scale(0.95); background: rgba(224, 86, 253, 0.1); }
+
+.menu-title { font-weight: bold; font-size: 1.1em; margin-bottom: 4px; }
+.menu-desc { font-size: 0.8em; color: var(--text-dim); }
+
+/* 네온 포인트 효과 */
+.card-earn { border-bottom: 3px solid var(--point-red); }
+.card-info { border-bottom: 3px solid var(--point-purple); }
+.card-upgrade { border-bottom: 3px solid var(--point-gold); }
+.card-shop { border-bottom: 3px solid var(--point-green); }
+
+/* ==========================================
+   5. 인벤토리 및 아이템 카드 (중요)
+   ========================================== */
+.item-card {
+    display: flex;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    align-items: center;
+    gap: 15px;
+}
+
+.item-image-box {
+    width: 50px;
+    height: 50px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.item-name { font-weight: bold; font-size: 1em; }
+.item-desc { font-size: 0.8em; color: var(--text-dim); margin-top: 2px; }
+
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    font-size: 0.8em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ==========================================
+   6. 전투 화면 (Immersive Stage)
+   ========================================== */
+.immersive-stage {
+    background: rgba(0,0,0,0.4);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--point-purple);
+    box-shadow: var(--neon-shadow);
+    text-align: center;
+    position: relative;
+}
+
+.stage-monster-visual {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.stage-monster-visual img {
+    max-height: 150px;
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
+}
+
+.monster-hit {
+    animation: shake 0.2s ease-in-out;
+    filter: brightness(2) sepia(1) saturate(5) hue-rotate(-50deg) !important;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}
+
+/* ==========================================
+   7. 버튼 디자인 (RPG 스타일)
+   ========================================== */
+.rpg-btn {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    transition: 0.2s;
+}
+
+.rpg-btn:active { transform: translateY(2px); box-shadow: none; }
+
+.btn-auto-battle { background: linear-gradient(135deg, #e17055, #fab1a0); }
+
+/* ==========================================
+   8. 애니메이션 효과
+   ========================================== */
+@keyframes monsterFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.is-boss-img { animation: bossGlow 2s infinite alternate; }
+
+@keyframes bossGlow {
+    from { filter: drop-shadow(0 0 5px #e74c3c); }
+    to { filter: drop-shadow(0 0 20px #e74c3c); }
+}
+
+/* 전역 변수 설정: 네온 다크 판타지 컨셉 */
+:root {
+    --bg-main: #0a0a14;           /* 배경: 깊은 심연색 */
+    --panel-bg: rgba(20, 20, 35, 0.7); /* 판넬: 반투명 글래스 */
+    --neon-purple: #e056fd;       /* 포인트: 아티팩트 및 마력 */
+    --neon-gold: #f1c40f;         /* 포인트: 골드 및 레전드 등급 */
+    --neon-red: #ff4757;          /* 포인트: HP 및 경고 */
+    --neon-blue: #3498db;         /* 포인트: MP 및 하이테크 */
+    --text-primary: #ffffff;      /* 메인 텍스트 */
+    --text-secondary: #bdc3c7;    /* 보조 설명 */
+    --border-glow: 0 0 10px rgba(224, 86, 253, 0.3); /* 은은한 네온 빛 */
+}
+
+/* 기본 바디 설정 (S24 및 데스크톱 대응) */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    margin: 0;
+    font-family: 'Pretendard', sans-serif;
+    display: flex;
+    justify-content: center; /* 데스크톱에서 중앙 정렬 */
+}
+
+.desktop-wrapper {
+    width: 100%;
+    max-width: 480px; /* 갤럭시 S24 해상도 비율 */
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0d0d1a 0%, #05050a 100%);
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    overflow-x: hidden;
+}
+
+/* 로그인 컨테이너 메인 스타일 */
+#login-container {
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    animation: fadeInDown 0.8s ease-out; /* 등장 애니메이션 */
+}
+
+/* 🏰 이모지 및 타이틀 발광 효과 */
+#login-container div[style*="font-size: 3em"] {
+    filter: drop-shadow(0 0 15px var(--point-purple));
+    margin-bottom: 10px !important;
+    animation: float 3s ease-in-out infinite;
+}
+
+#login-container h2 {
+    font-size: 2.2em;
+    letter-spacing: 4px;
+    font-weight: 900;
+    margin-bottom: 30px !important;
+    color: #fff !important;
+    text-shadow: 0 0 10px var(--point-purple), 0 0 20px var(--point-purple);
+}
+
+/* 입력창 박스 (글래스모피즘 적용) */
+#login-container > div[style*="background:rgba(0,0,0,0.3)"] {
+    background: rgba(15, 15, 25, 0.8) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(224, 86, 253, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 340px;
+    padding: 30px !important;
+    border-radius: 20px !important;
+}
+
+/* 공통 입력창 스타일링 */
+.login-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    color: #fff;
+    font-size: 0.95em;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.login-input:focus {
+    background: rgba(224, 86, 253, 0.1);
+    border-color: var(--point-purple);
+    box-shadow: 0 0 10px rgba(224, 86, 253, 0.2);
+}
+
+/* 로그인 버튼 (네온 버튼) */
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #e056fd, #be2edd);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.1em;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(224, 86, 253, 0.4);
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(224, 86, 253, 0.6);
+    filter: brightness(1.1);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* 애니메이션 정의 */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@상단바@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+
+/* [UPGRADE] 하이테크 슬림 HUD - 정밀 정렬 버전 */
+.top-bar-container {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    max-width: 480px;
+    z-index: 1000;
+    background: rgba(10, 10, 20, 0.95);
+    backdrop-filter: blur(15px);
+    border-bottom: 2px solid rgba(59, 130, 246, 0.5); /* 더 뚜렷한 시스템 라인 */
+    padding: 10px 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* 리소스 배지 행 (골드/포션) */
+.resource-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.res-badge {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 게이지 영역 (HP, EXP 길이 일치 핵심) */
+.bars-area {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bar-group {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 아이콘 박스와 게이지 사이 간격 */
+}
+
+/* [핵심] 왼쪽 아이콘/라벨 박스 너비 고정 */
+.bar-icon-box {
+    min-width: 55px; /* 길이를 맞추기 위해 너비 고정 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.hp-icon { color: #ff4757; text-shadow: 0 0 8px rgba(255, 71, 87, 0.6); }
+.lv-badge { 
+    background: #3b82f6; 
+    color: white; 
+    border-radius: 2px; 
+    padding: 1px 4px;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+/* 게이지 프레임 (시스템 패널 느낌) */
+.bar-frame {
+    flex: 1; /* 남은 공간을 모두 차지하여 HP/EXP 길이 통일 */
+    height: 14px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2px; /* 각진 테마 유지 */
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* 바 공통 애니메이션: 에너지가 흐르는 느낌 */
+.bar-fill {
+    height: 100%;
+    position: relative;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 빗금 무늬 레이어 추가 (데코레이션) */
+.bar-fill::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 200%; height: 100%;
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 0px,
+        rgba(255, 255, 255, 0.15) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    animation: energyFlow 20s linear infinite;
+}
+
+@keyframes energyFlow {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* HP 바: 붉은색 강렬한 네온 */
+.hp-fill-style {
+    background: linear-gradient(90deg, #991b1b, #ef4444);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+
+/* EXP 바: 골드/사이언 조합 네온 */
+.exp-fill-style {
+    background: linear-gradient(90deg, #065f46, #10b981);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+/* 텍스트 오버레이 */
+.bar-text-overlay {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 14px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    letter-spacing: 1px;
+}
+
+/* =========================================
+   [SYSTEM] 레이아웃 간섭 없는 토스트 UI
+   ========================================= */
+
+.toast-popup {
+    /* 1. 절대 좌표 고정: 기존 레이아웃 공간을 차지하지 않음 */
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* 2. 레이어 최상단 이동 */
+    z-index: 11000; 
+    
+    /* 3. 너비 고정: 부모 요소를 옆으로 밀지 않게 함 */
+    width: auto;
+    max-width: 320px; /* S24 너비 안쪽으로 제한 */
+    min-width: 250px;
+    
+    /* 4. 클릭 방해 금지 */
+    pointer-events: none;
+    
+    /* 등장 애니메이션 */
+    animation: toastPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast-content {
+    background: rgba(10, 10, 20, 0.98);
+    border: 1px solid #3b82f6; /* HUD 블루 테마 통일 */
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+    padding: 15px 25px;
+    border-radius: 12px; /* 버튼들과 각진 느낌 통일 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.toast-text {
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    white-space: nowrap; /* 글자가 길어져도 줄바꿈으로 찌그러지지 않게 함 */
+}
+
+@keyframes toastPop {
+    from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.toast-popup.fade-out {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.9);
+    transition: 0.5s;
+}
+
+/* =========================================
+   [GLOBAL] 하단 컨트롤 바 (하이테크 듀얼 디자인)
+   ========================================= */
+
+/* 컨테이너 기본 설정 (기존 유지 + 패딩 추가) */
+#game-controls {
+    position: fixed;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    height: 70px; /* 높이 약간 증가 */
+    /* 배경을 더 진하게 */
+    background: rgba(10, 15, 30, 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.7);
+    z-index: 1100;
+    display: flex; justify-content: center; align-items: center;
+    padding: 0 10px; /* 좌우 패딩 추가 */
+    box-sizing: border-box;
+}
+
+/* 버튼 그룹 컨테이너 */
+.dual-btn-group {
+    display: flex;
+    width: 100%;
+    height: 50px; /* 버튼 실제 높이 */
+    gap: 10px; /* 버튼 사이 간격 */
+}
+
+/* 공통 버튼 스타일 */
+.control-half-btn {
+    flex: 1; /* 1:1 분할 */
+    border: none;
+    border-radius: 12px; /* 둥근 모서리 */
+    cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+}
+
+/* 텍스트 및 아이콘 스타일 */
+.btn-text {
+    font-size: 0.85rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #cbd5e1; /* 기본 밝은 회색 */
+}
+.btn-icon { font-size: 1.2rem; }
+
+
+/* --- [스타일 1] 뒤로 가기 버튼 (차분한 택티컬 스타일) --- */
+.btn-back {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-color: #334155;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.btn-back:hover {
+    background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+    border-color: #475569;
+    transform: translateY(-2px);
+}
+.btn-back:active { transform: translateY(1px); filter: brightness(0.8); }
+
+
+/* --- [스타일 2] 메인 메뉴 버튼 (강렬한 네온 스타일) --- */
+.btn-main {
+    /* 게임 테마색(파랑) 강조 */
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.btn-main .btn-text, .btn-main .btn-icon { color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+
+.btn-main:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+.btn-main:active { transform: translateY(1px); filter: brightness(1.1); }
+
+
+/* [로직] 메인 페이지일 때 버튼 숨기기 (기존 유지) */
+body:has(#page-main.active) .dual-btn-group { display: none; }
+body:has(#page-main.active) .home-empty-slot { display: flex; }
+
+/* [기존 유지] 홈 빈 슬롯 스타일 */
+.home-empty-slot {
+    display: none; width: 100%; height: 100%;
+    justify-content: center; align-items: center;
+}
+.deco-bar {
+    width: 80px; height: 4px;
+    background: #1e293b;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}

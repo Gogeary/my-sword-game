@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오르비스RPG v1.5.0</title>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+
+
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/main_menu.css">
+    <link rel="stylesheet" href="css/Village_menu.css">
+    <link rel="stylesheet" href="css/Combat_menu.css">
+    <link rel="stylesheet" href="css/Combat.css">
+
+
+
+    <script src="js/Database.js"></script>
+    <script src="js/Stock_System.js"></script>
+    <script src="js/Chat_System.js"></script>
+    <script src="js/Skill.js"></script>
+    <script src="js/mine.js"></script>
+    <script src="js/Shop_System.js"></script>
+    <script src="js/Main_Engine.js"></script>
+    <script src="js/Artifact_System.js"></script>
+    <script src="js/Combat_System.js"></script>
+    <script src="js/Enhancement_System.js"></script>
+    <script src="js/Toast.js"></script>
+
+
+</head>
+<body>
+
+
+<div class="desktop-wrapper">
+
+
+<div class="center-area">
+
+
+<div id="login-container" style="text-align:center; margin-top: 50px;">
+            <div style="font-size: 3em; margin-bottom: 20px;">🏰</div>
+            <h2 style="color:var(--point); margin-bottom:20px; text-shadow:0 0 10px var(--point);">ORBIS RPG</h2>
+
+            <div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:15px; border:1px solid rgba(255,255,255,0.1);">
+                <input type="text" id="login-id" class="login-input" placeholder="아이디 입력">
+                <input type="password" id="login-pw" class="login-input" placeholder="비밀번호 입력">
+                <input type="text" id="invite-code" class="login-input" placeholder="초대코드 (신규가입 시 필요)">
+
+                <div style="text-align:left; margin:15px 5px;">
+                    <input type="checkbox" id="auto-login" style="transform:scale(1.2); margin-right:5px;">
+                    <label for="auto-login" style="color:#ccc; cursor:pointer;">자동 출근</label>
+                </div>
+
+                <button class="login-btn" onclick="MainEngine.handleLogin()">🚀 회사 접속</button>
+            </div>
+
+            <p style="color:#666; font-size:0.8em; margin-top:20px;">
+                서버 상태: <span style="color:#2ecc71">정상영업</span>
+            </p>
+</div>
+
+
+<div class="top-bar-container" id="top-bar" style="display: none;">
+            <div class="resource-row">
+
+                <div class="res-badge gold-badge">
+                    <span class="res-icon">💰</span>
+                    <span class="res-text"><span id="gold">0</span> G</span>
+                </div>
+                <div class="res-badge potion-badge">
+                    <span class="res-icon">🧪</span>
+                    <span class="res-text"><span id="potion-val">0</span> / <span id="potion-max">10</span></span>
+                </div>
+            </div>
+
+            <div class="bars-area">
+                <div class="bar-group">
+                    <div class="bar-icon-box hp-icon">❤️HP</div>
+                    <div class="bar-frame">
+                        <div id="hp-fill" class="bar-fill hp-fill-style"></div>
+                        <div class="bar-text-overlay">
+                            <span id="hp-val">0</span> / <span id="hp-max">100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-icon-box lv-badge">
+                        <small>Lv.</small><span id="user-lv">1</span>
+                    </div>
+                    <div class="bar-frame">
+                        <div id="exp-fill" class="bar-fill exp-fill-style"></div>
+                        <div class="bar-text-overlay" id="exp-text">0%</div>
+                    </div>
+                </div>
+            </div>
+</div>
+
+
+<div id="page-main" class="page">
+    <div class="scanline-effect"></div>
+
+    <div class="rpg-banner-card holo-visor-banner">
+        <div class="visor-img-layer">
+            <img id="banner-bg" src="image/bg_town.png" class="town-bg-img"
+                 onerror="this.src='https://via.placeholder.com/600/0a0a14/3b82f6?text=ORBIS+SYSTEM+READY'">
+        </div>
+        <div class="visor-scanline-overlay"></div>
+        <div class="visor-ui-content">
+            <div class="ui-label-sm">SYSTEM // VIEWPORT</div>
+            <h2 class="ui-title-lg">ORBIS WORLD</h2>
+        </div>
+        <div class="corner-accent top-left"></div>
+        <div class="corner-accent top-right"></div>
+        <div class="corner-accent bottom-left"></div>
+        <div class="corner-accent bottom-right"></div>
+    </div>
+
+<div class="main-menu-grid">
+    <div class="main-btn btn-combat" onclick="showPage('page-earn')">
+        <div class="btn-bg-anim"></div>
+        <div class="btn-content">
+            <span class="btn-icon">⚔️</span>
+            <div class="text-group">
+                <span class="kor-text">모험 떠나기</span>
+                <span class="eng-text">ADVENTURE</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-btn btn-life" onclick="showPage('page-collection-center')">
+        <div class="btn-bg-anim"></div>
+        <div class="btn-content">
+            <span class="btn-icon">🌿</span>
+            <div class="text-group">
+                <span class="kor-text">생활</span>
+                <span class="eng-text">LIFE SKILL</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-btn btn-town" onclick="showPage('page-village')">
+        <div class="btn-bg-anim"></div>
+        <div class="btn-content">
+            <span class="btn-icon">🏰</span>
+            <div class="text-group">
+                <span class="kor-text">마을 광장</span>
+                <span class="eng-text">VILLAGE HUB</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-btn btn-info" onclick="showPage('page-info')">
+        <div class="btn-bg-anim"></div>
+        <div class="btn-content">
+            <span class="btn-icon">📜</span>
+            <div class="text-group">
+                <span class="kor-text">내 정보</span>
+                <span class="eng-text">USER DATA</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-btn btn-locked" onclick="Toast.show('현재 개발 중인 구역입니다.')">
+    <div class="btn-bg-anim"></div>
+    <div class="btn-content">
+        <span class="btn-icon">🔒</span>
+        <div class="text-group">
+            <span class="kor-text">준비 중</span>
+            <span class="eng-text">PREPARING</span>
+        </div>
+    </div>
+</div>
+
+    <div class="main-btn btn-settings" onclick="Toast.show('아직 설정할게없다.')">
+        <div class="btn-bg-anim"></div>
+        <div class="btn-content">
+            <span class="btn-icon">⚙️</span>
+            <div class="text-group">
+                <span class="kor-text">시스템 설정</span>
+                <span class="eng-text">SETTINGS</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="mobile-simple-chat system-log">
+        <div id="chat-log-mobile" class="simple-chat-log custom-scroll"></div>
+        <div class="simple-chat-input">
+            <input type="text" id="chat-input-mobile" placeholder="메시지 입력..." onkeypress="if(event.keyCode==13) window.ChatSystem.sendMobile()">
+            <button class="chat-send-icon-btn" onclick="window.ChatSystem.sendMobile()">▲</button>
+        </div>
+    </div>
+</div>
+
+
+<div id="page-village" class="page no-banner no-chat">
+    <div class="scanline-effect"></div>
+
+    <div class="main-menu-grid">
+        <div class="main-btn btn-upgrade" data-id="DISTRICT-01" onclick="showPage('page-upgrade')">
+            <div class="btn-bg-anim"></div>
+            <div class="btn-content">
+                <span class="btn-icon">🔥</span>
+                <div class="text-group">
+                    <span class="kor-text">대장간</span>
+                    <span class="eng-text">THE FORGE</span>
+                </div>
+            </div>
+            <div class="overlay-info">
+                <div class="overlay-effect fire-particles"></div>
+                <p class="overlay-desc">"궁극의 장비를 향한<br>뜨거운 망치질이 시작된다."</p>
+            </div>
+        </div>
+
+        <div class="main-btn btn-shop" data-id="DISTRICT-02" onclick="showPage('page-shop-select')">
+            <div class="btn-bg-anim"></div>
+            <div class="btn-content">
+                <span class="btn-icon">⚖️</span>
+                <div class="text-group">
+                    <span class="kor-text">상점 거리</span>
+                    <span class="eng-text">MARKET STREET</span>
+                </div>
+            </div>
+            <div class="overlay-info">
+                <div class="overlay-effect gold-rain"></div>
+                <p class="overlay-desc">"없는 것 빼고 다 있는<br>기회의 거리."</p>
+            </div>
+        </div>
+
+        <div class="main-btn btn-synth" data-id="DISTRICT-03" onclick="showPage('page-synthesis')">
+            <div class="btn-bg-anim"></div>
+            <div class="btn-content">
+                <span class="btn-icon">⚗️</span>
+                <div class="text-group">
+                    <span class="kor-text">연금술 길드</span>
+                    <span class="eng-text">ALCHEMY HALL</span>
+                </div>
+            </div>
+            <div class="overlay-info">
+                <div class="overlay-effect magic-swirl"></div>
+                <p class="overlay-desc">"미지의 힘을 조합하여<br>새로운 가능성을 창조하라."</p>
+            </div>
+        </div>
+
+        <div class="main-btn btn-locked" data-id="RESTRICTED">
+            <div class="btn-bg-anim"></div>
+            <div class="btn-content">
+                <span class="btn-icon">🔒</span>
+                <div class="text-group">
+                    <span class="kor-text">미개척 구역</span>
+                    <span class="eng-text">UNKNOWN AREA</span>
+                </div>
+            </div>
+            </div>
+    </div>
+</div>
+
+
+<div id="page-earn" class="page">
+    <div class="page-header-box theme-shop">
+        <h2 class="page-title-text">QUEST BOARD</h2>
+        <div class="page-header-divider"></div>
+    </div>
+
+    <div class="ob-sel-grid">
+        <div class="ob-sel-card mode-hunt" onclick="showPage('page-hunt-select'); if(window.CombatSystem) CombatSystem.renderZoneList();">
+            <div class="ob-card-accent"></div>
+            <div class="ob-card-body">
+                <div class="ob-card-tags">
+                    <span class="ob-tag-neon red">BATTLE</span>
+                    <span class="ob-tag-diff">난이도: ★☆☆</span>
+                </div>
+                <div class="ob-card-title">⚔️ 몬스터 사냥</div>
+                <p class="ob-card-desc">마물을 처단하고 전리품을 챙기십시오.</p>
+                <div class="ob-card-loot">
+                    <span class="ob-loot-item">Lv.1~</span>
+                    <span class="ob-loot-item">🔥 EXP</span>
+                    <span class="ob-loot-item">💰 GOLD</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ob-sel-card mode-bounty locked" onclick="Toast.show('현상 수배 전단지를 작성 중입니다.');">
+            <div class="ob-card-accent"></div>
+            <div class="ob-card-body">
+                <div class="ob-card-tags">
+                    <span class="ob-tag-neon orange">BOUNTY</span>
+                    <span class="ob-tag-diff">난이도: ★★☆</span>
+                </div>
+                <div class="ob-card-title">🎯 현상 수배</div>
+                <p class="ob-card-desc">특수 타겟을 추적하여 처단하십시오.</p>
+                <div class="ob-card-loot">
+                    <span class="ob-loot-item">Lv.20~</span>
+                    <span class="ob-loot-item">💎 MATS</span>
+                </div>
+            </div>
+            <div class="ob-lock-overlay"><span>🔒 PREPARING</span></div>
+        </div>
+
+        <div class="ob-sel-card mode-rift locked" onclick="Toast.show('차원의 틈새가 아직 불안정합니다.');">
+            <div class="ob-card-accent"></div>
+            <div class="ob-card-body">
+                <div class="ob-card-tags">
+                    <span class="ob-tag-neon blue">RIFT</span>
+                    <span class="ob-tag-diff">난이도: ★★★</span>
+                </div>
+                <div class="ob-card-title">🌀 차원의 균열</div>
+                <p class="ob-card-desc">쏟아지는 차원의 괴물을 저지하십시오.</p>
+                <div class="ob-card-loot">
+                    <span class="ob-loot-item">Lv.40~</span>
+                    <span class="ob-loot-item">✨ ARTIFACT</span>
+                </div>
+            </div>
+            <div class="ob-lock-overlay"><span>🔒 PREPARING</span></div>
+        </div>
+
+        <div class="ob-sel-card mode-tower locked" onclick="Toast.show('탑의 상층부가 구름에 가려져 있습니다.');">
+            <div class="ob-card-accent"></div>
+            <div class="ob-card-body">
+                <div class="ob-card-tags">
+                    <span class="ob-tag-neon purple">TOWER</span>
+                    <span class="ob-tag-diff">난이도: Variable</span>
+                </div>
+                <div class="ob-card-title">🗼 무한의 탑</div>
+                <p class="ob-card-desc">자신의 한계를 돌파하여 정점에 도달하세요.</p>
+                <div class="ob-card-loot">
+                    <span class="ob-loot-item">Lv.30~</span>
+                    <span class="ob-loot-item">🏅 HONOR</span>
+                </div>
+            </div>
+            <div class="ob-lock-overlay"><span>🔒 PREPARING</span></div>
+        </div>
+
+        <div class="ob-sel-card mode-expedition locked" onclick="Toast.show('탐사대원이 아직 복귀하지 않았습니다.');">
+            <div class="ob-card-accent"></div>
+            <div class="ob-card-body">
+                <div class="ob-card-tags">
+                    <span class="ob-tag-neon green">EXPLORE</span>
+                    <span class="ob-tag-diff">난이도: ☆☆☆</span>
+                </div>
+                <div class="ob-card-title">🧭 자원 탐사</div>
+                <p class="ob-card-desc">안전한 구역에서 필수 자원을 채집합니다.</p>
+                <div class="ob-card-loot">
+                    <span class="ob-loot-item">Lv.10~</span>
+                    <span class="ob-loot-item">🌿 HERB</span>
+                    <span class="ob-loot-item">🧪 POTION</span>
+                </div>
+            </div>
+            <div class="ob-lock-overlay"><span>🔒 PREPARING</span></div>
+        </div>
+
+        <div class="ob-sel-card mode-boss locked" onclick="Toast.show('강력한 기운에 압도되어 진입할 수 없습니다.');">
+            <div class="ob-card-accent"></div>
+            <div class="ob-card-body">
+                <div class="ob-card-tags">
+                    <span class="ob-tag-neon gray">LOCKED</span>
+                    <span class="ob-tag-diff purple">난이도: HELL</span>
+                </div>
+                <div class="ob-card-title">💀 슈퍼 보스</div>
+                <p class="ob-card-desc">불합리한 싸움을 준비하세요.</p>
+                <div class="ob-card-loot">
+                    <span class="ob-loot-item">Lv.???</span>
+                    <span class="ob-loot-item">🏆 RANK</span>
+                    <span class="ob-loot-item">✨ 神器</span>
+                </div>
+            </div>
+            <div class="ob-lock-overlay"><span>🔒 PREPARING</span></div>
+        </div>
+    </div>
+</div>
+
+
+<div id="page-hunt-select" class="page hunt-select-container">
+    <div class="page-header-box theme-hunt combined-header">
+        <div class="header-left">
+            <h2 class="page-title-text">ZONE SELECTION</h2>
+            <div class="page-subtitle-text">적정 CP 구역을 선택하십시오.</div>
+        </div>
+        
+        <div class="header-right-cp">
+            <span class="cp-mini-label">MY STATUS</span>
+            <div class="cp-display-mini">
+                <span id="select-page-my-cp" class="cp-num">0</span>
+                <span id="select-page-my-rank" class="rank-chip">F</span>
+            </div>
+        </div>
+        <div class="page-header-divider"></div>
+    </div>
+
+    <div id="hunting-zone-list" class="hunt-zone-grid custom-scroll">
+        </div>
+</div>
+
+
+<div id="page-hunt-play" class="page combat-play-container">
+    <div class="hunt-header-card hud-style">
+        <div class="header-info">
+            <h2 id="hunt-title" class="hud-title">⚔️ 탐색 구역</h2>
+            <span class="hunt-status-badge">SYSTEM STANDBY</span>
+        </div>
+        <div class="header-deco-line"></div>
+    </div>
+
+    <div class="battle-stage-container">
+        <div class="stage-grid-bg"></div>
+        
+        <div id="hunt-grid" class="hunt-grid-area">
+            <div class="empty-stage-state">
+                <div class="radar-circle">
+                    <div class="radar-sweep"></div>
+                </div>
+                <p class="radar-text">SCANNING FOR ENTITIES...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tactical-log-box">
+        <div class="log-header">
+            <span class="log-title">📟 BATTLE TELEMETRY</span>
+            <span class="log-status">REC</span>
+        </div>
+        <div id="battle-log" class="custom-scroll">READY FOR ENCOUNTER...</div>
+    </div>
+
+    <div class="battle-controls-wrapper">
+        <div id="controls-explore" class="battle-controls">
+            <button onclick="CombatSystem.scanHunt()" class="rpg-btn btn-scan">📡 AREA SCAN</button>
+            <button id="btn-auto-hunt" onclick="MainEngine.toggleAutoHunt()" class="rpg-btn btn-auto-battle">⚔️ AUTO HUNT</button>
+        </div>
+
+        <div id="controls-battle" class="battle-controls" style="display: none;">
+            <button id="btn-manual-attack" onclick="CombatSystem.startBattle()" class="rpg-btn btn-attack">⚔️ ENGAGE</button>
+            <button id="btn-manual-run" onclick="CombatSystem.runAway()" class="rpg-btn btn-run">🏃 WITHDRAW</button>
+
+            <button id="btn-auto-stop"
+                    onclick="MainEngine.toggleAutoHunt(); CombatSystem.toggleBattleButtons();"
+                    class="rpg-btn btn-stop"
+                    style="display: none;">
+                🛑 ABORT AUTO-HUNT
+            </button>
+        </div>
+    </div>
+
+    </div>
+
+
+
+
+
+<div id="page-mine-select" class="page">
+    <div class="page-header-box theme-stock">
+        <h2 class="page-title-text">MINING DISTRICT</h2>
+        <div class="page-header-divider"></div>
+    </div>
+
+    <div id="mine-list-container" class="mine-list-scroll custom-scroll">
+        </div>
+</div>
+
+
+
+<div id="page-mine-play" class="page">
+    <div class="hunt-header-card">
+        <h2 id="mine-title">⛏️ 광산 탐사 중...</h2>
+        <span class="hunt-status-badge">채굴 가능</span>
+    </div>
+
+    <div id="mine-grid" class="grid-4"></div>
+
+    <div id="mine-refresh-container" class="refresh-section" style="display:none;">
+        <button id="mine-refresh" class="btn-refresh-ultra" onclick="MiningSystem.refreshOre()">
+            <span class="refresh-glow-layer"></span>
+            <span class="refresh-content">
+                <span class="refresh-icon">💎</span>
+                <span class="refresh-text-group">
+                    <span class="main-text">새로운 광맥 탐색</span>
+                    <span class="sub-text">전용 열쇠 1개 소모</span>
+                </span>
+            </span>
+        </button>
+        <p class="refresh-notice-premium">✨ 심연의 기운이 감도는 새로운 층으로 이동합니다.</p>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="game-controls">
+    <div id="nav-buttons-container" class="dual-btn-group">
+        <button class="control-half-btn btn-back" onclick="goBack()">
+            <span class="btn-icon">↩️</span>
+            <span class="btn-text">BACK</span>
+        </button>
+
+        <button class="control-half-btn btn-main" onclick="showPage('page-main')">
+            <span class="btn-icon">🏠</span>
+            <span class="btn-text">MAIN MENU</span>
+        </button>
+    </div>
+
+    <div class="home-empty-slot">
+        <div class="deco-bar"></div>
+    </div>
+</div>
+
+
+
+
+</body>
+</html>

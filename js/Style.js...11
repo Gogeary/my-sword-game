@@ -1,0 +1,5484 @@
+/* Style.js - 게임의 모든 디자인(CSS)을 담당하는 파일입니다. */
+
+(function applyGameStyles() {
+    // 1. CSS 내용을 문자열로 정의
+    const cssContent = `
+    /* =========================================
+       [1] 기본 설정 (Reset & Base)
+       ========================================= */
+    * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg: #1a1a2e; --panel: #16213e; --point: #e94560; --text: #ecf0f1;
+            --money: #f1c40f; --mine: #2ecc71; --hunt: #3498db; --hp: #ff4d4d; --exp: #9b59b6;
+        }
+        body {
+            background-color: var(--bg);   /* 배경색도 변수에서 가져오기 (#1a1a2e) */
+            color: var(--text);            /* 글자색을 변수에서 가져오기 (#ecf0f1) */
+
+            /* 폰트나 여백 등 기본 설정 */
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+    /* 1. IE, Edge, Firefox */
+    * {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none;    /* Firefox */
+    }
+
+    /* 2. Chrome, Safari, Opera */
+    *::-webkit-scrollbar {
+        display: none;
+    }
+
+    
+/* =========================================
+   [3] 공통 UI 컴포넌트 (버튼, 모달, 토스트) - 리마스터
+   ========================================= */
+
+/* 1. 네비게이션 버튼 (메인으로, 뒤로가기 등) */
+.btn-nav {
+    /* 배경: 묵직한 다크 메탈 그라데이션 */
+    background: linear-gradient(to bottom, #3a4050, #252a35);
+    color: #e0e0e0;
+
+    margin-top: 8px;
+    padding: 12px;
+    width: 100%;
+
+    border: 1px solid #4a5060;
+    border-bottom: 3px solid #1a1e25; /* 입체감용 하단 테두리 */
+    border-radius: 8px;
+
+    font-weight: 800;
+    font-size: 0.95em;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    transition: all 0.1s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.btn-nav:hover {
+    background: linear-gradient(to bottom, #454d60, #2c3340);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-nav:active {
+    border-bottom: 1px solid #1a1e25; /* 눌렸을 때 테두리 축소 */
+    transform: translateY(2px);
+    background: #252a35;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); /* 내부 그림자 */
+}
+
+/* 2. RPG 스타일 버튼 (전투, 행동 등) */
+.rpg-btn {
+    border: none;
+    border-radius: 8px;
+    font-weight: 900;
+    color: white;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+
+    /* 입체적인 테두리 빛 효과 */
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.3), /* 하단 그림자 (입체감) */
+        inset 0 1px 0 rgba(255,255,255,0.2), /* 상단 하이라이트 */
+        inset 0 -1px 0 rgba(0,0,0,0.2); /* 하단 음영 */
+
+    transition: transform 0.1s, filter 0.1s;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rpg-btn:hover {
+    filter: brightness(1.1); /* 밝게 */
+    transform: translateY(-1px);
+}
+
+.rpg-btn:active {
+    transform: translateY(3px); /* 꾹 눌림 */
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3); /* 그림자 줄어듦 */
+}
+
+.rpg-btn:disabled {
+    background: #444 !important;
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    filter: grayscale(100%);
+}
+
+/* 3. 토스트 메시지 (알림) */
+#toast-container {
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    width: auto;
+    max-width: 90%;
+}
+
+.toast-msg {
+    /* 유리 질감 배경 */
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 0.95em;
+    font-weight: bold;
+
+    /* 네온 글로우 테두리 */
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.5),
+        0 0 10px rgba(52, 152, 219, 0.2); /* 은은한 푸른 빛 */
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+
+    opacity: 0;
+    transform: translateY(20px);
+    animation: toastSlideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+               toastFadeOut 0.5s 2.5s forwards;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@keyframes toastSlideUp { to { opacity: 1; transform: translateY(0); } }
+@keyframes toastFadeOut { to { opacity: 0; transform: translateY(-15px); } }
+
+/* 1. 배경 레이어: z-index를 최상위로 유지하되, 블러 효과가 너무 강한지 확인하세요 */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px); /* 사파리 대응 */
+    z-index: 10000; /* 기존 9999보다 더 높게 설정 가능 */
+    display: none; /* JS에서 .style.display = 'flex' 로 열어야 함 */
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+/* 2. 구형 및 신형 클래스 통합: 내용이 비어있으면 안 보입니다! */
+.custom-modal, .game-theme-modal {
+    position: relative;
+    background: #1a1a2e; /* 배경색 명시 */
+    border: 2px solid var(--point);
+    border-radius: 20px;
+    padding: 20px;
+    width: 90%;
+    max-width: 450px;
+    min-height: 200px; /* 최소 높이 부여 */
+    color: #fff;
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+    display: flex;
+    flex-direction: column;
+    z-index: 10001;
+}
+
+
+/* 닫기 버튼 전용 스타일 */
+.btn-close {
+    background: linear-gradient(to bottom, #c0392b, #a93226) !important;
+    width: auto !important;
+    min-width: 100px;
+    padding: 10px 20px !important;
+    box-shadow: 0 4px 0 #7b241c !important;
+    border: none !important;
+}
+.btn-close:active {
+    box-shadow: 0 1px 0 #7b241c !important;
+    transform: translateY(3px) !important;
+}
+
+    /* 로그인 화면 */
+    #login-container { max-width: 400px; margin: 40px auto; padding: 20px; background: var(--panel); border: 2px solid var(--point); border-radius: 12px; }
+    .login-input { width: 100%; padding: 12px; margin: 6px 0; border-radius: 6px; border: 1px solid #555; background: #0f3460; color: white; }
+    .login-btn { width: 100%; padding: 12px; background: var(--point); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1.1em; }
+
+ /* =========================================
+   [4] 상단 상태바 & 레이아웃 설정
+   ========================================= */
+
+/* [핵심] 상단바: 게임창 최상단 고정 및 유리 질감 */
+.top-bar-container {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 2000;
+    
+    /* 디자인: 깊이감 있는 네이비 유리 질감 */
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    
+    /* 레이아웃 고정 */
+    flex-shrink: 0; 
+}
+
+/* 리소스 정보 (골드, 포션) */
+.resource-row { 
+    display: flex; 
+    justify-content: space-between; 
+    gap: 10px; 
+    margin-bottom: 12px; 
+}
+
+.res-badge {
+    flex: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.gold-badge { border-color: rgba(241, 196, 15, 0.3); color: #f1c40f; }
+.potion-badge { border-color: rgba(46, 204, 113, 0.3); color: #2ecc71; }
+.res-icon { margin-right: 6px; font-size: 1.1em; }
+.res-text { font-weight: bold; font-size: 0.95em; white-space: nowrap; }
+
+/* 상태 바 영역 (HP, EXP) */
+.bars-area { display: flex; flex-direction: column; gap: 8px; }
+.bar-group { display: flex; align-items: center; gap: 8px; }
+
+.bar-icon-box {
+    width: 36px; 
+    height: 24px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    border-radius: 5px; 
+    font-weight: bold; 
+    flex-shrink: 0; 
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 0.6em;
+}
+
+.hp-icon { background: rgba(231, 76, 60, 0.2); border: 1px solid #c0392b; }
+.lv-badge { background: rgba(155, 89, 182, 0.2); border: 1px solid #8e44ad; color: #fff; line-height: 1; }
+.lv-badge small { font-size: 0.6em; margin-right: 2px; color: #d7bde2; }
+
+/* 게이지 프레임 공통 */
+.bar-frame {
+    flex: 1; 
+    height: 20px; 
+    background: #111; 
+    border-radius: 10px; 
+    position: relative;
+    overflow: hidden; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* 게이지 내부 채우기 및 애니메이션 */
+.bar-fill { 
+    height: 100%; 
+    width: 0%; 
+    transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+    position: relative; 
+    border-radius: 10px; 
+}
+
+.hp-fill-style { background: linear-gradient(to bottom, #ff7675, #c0392b); box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+.exp-fill-style { background: linear-gradient(to bottom, #a569bd, #8e44ad); box-shadow: 0 0 10px rgba(155, 89, 182, 0.5); }
+
+/* 게이지 위 텍스트 오버레이 */
+.bar-text-overlay {
+    position: absolute; 
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 0.75em;
+    font-weight: bold; 
+    color: #fff; 
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); 
+    z-index: 2; 
+    letter-spacing: 0.5px;
+}
+
+/* 게이지 상단 광택 효과 */
+.bar-frame::after {
+    content: ''; 
+    position: absolute; 
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+    border-radius: 10px 10px 0 0; 
+    pointer-events: none;
+}
+
+/* [콘텐츠 영역] 상단바를 제외한 나머지 공간 스크롤 */
+.page {
+    flex: 1;
+    overflow-y: auto; 
+    padding: 20px;
+    box-sizing: border-box;
+    display: none;
+    scrollbar-width: none; /* 스크롤바 숨김 */
+}
+
+.page::-webkit-scrollbar { display: none; }
+.page.active { display: block; }
+
+/* =========================================
+   [채팅창 디자인 - 통합 및 유동형 최적화]
+   ========================================= */
+
+/* 1. PC용 메인 챗박스 (말풍선 스타일) */
+#chat-box, .main-chat-box {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 2. 모바일 전용 심플 챗박스 (디자인 최적화) */
+.mobile-simple-chat {
+    display: none; /* 기본 숨김 (미디어쿼리에서 활성화) */
+    background: rgba(10, 15, 25, 0.6); /* 배경색을 약간 더 진하게 하여 가독성 확보 */
+    border-radius: 10px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 모바일 로그 영역: 높이를 유동적으로 가져가되 최소값 보장 */
+.simple-chat-log {
+    height: 100px; /* 80px에서 100px로 소폭 상향 (3~4줄 확보) */
+    overflow-y: auto;
+    font-size: 0.85em;
+    padding: 5px;
+    color: #ecf0f1; /* 글자색을 명확한 흰색계열로 */
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    scrollbar-width: none;
+}
+.simple-chat-log::-webkit-scrollbar { display: none; }
+
+/* 메시지별 구분선 */
+.simple-chat-log div {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 3px 0;
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+/* 모바일 입력 영역 */
+.simple-chat-input {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.simple-chat-input input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #444;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    outline: none;
+}
+
+.simple-chat-input input:focus {
+    border-color: var(--point);
+}
+
+.simple-chat-input button {
+    background: var(--point); /* 버튼에 포인트 컬러 적용하여 시인성 강화 */
+    color: white;
+    border: none;
+    padding: 0 15px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+/* =========================================
+   [1] 사냥터 리스트 그리드 (반응형 레이아웃)
+   ========================================= */
+.hunt-zone-grid {
+    display: grid;
+    /* 기본 1열 (모바일 우선), 600px 이상에서 자동으로 2열 전환 */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+    gap: 15px;
+    padding: 15px;
+    width: 100%;
+    /* 내부 스크롤 허용 (부모 설정과 연동) */
+    overflow-y: auto;
+}
+
+/* =========================================
+   [2] 사냥터 카드 공통 디자인 (유동형)
+   ========================================= */
+.hunt-card {
+    position: relative;
+    border-radius: 16px;
+    padding: 18px; /* 여백 소폭 조정 */
+    cursor: pointer;
+    overflow: hidden; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    /* 높이를 고정하지 않고 내용에 따라 유동적으로 (최소높이만 보장) */
+    min-height: 100px;
+    height: auto !important;
+
+    /* 유리 질감 & 입체감 */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.3); /* 상단 하이라이트 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    z-index: 1;
+}
+
+/* 은은한 상단 그라데이션 코팅 */
+.hunt-card::before {
+    content: ''; 
+    position: absolute; 
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
+    pointer-events: none; 
+    z-index: -1;
+}
+
+/* 마우스 호버/터치 시 빛이 지나가는 효과 (쉬머) */
+.hunt-card::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -150%;
+    width: 100%; height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%, 
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* [애니메이션] 호버 효과 */
+.hunt-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: 
+        0 12px 25px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* 호버 시 쉬머 실행 */
+.hunt-card:hover::after {
+    animation: shimmerMove 0.8s ease-in-out;
+}
+
+@keyframes shimmerMove {
+    0% { left: -150%; opacity: 0; }
+    50% { opacity: 1; }
+    100% { left: 150%; opacity: 0; }
+}
+
+
+
+
+/* =========================================
+   [개쩔게 리뉴얼된 메인 메뉴 그리드] - 보강형
+   ========================================= */
+
+.main-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px; /* 간격도 살짝 넓히면 더 시원해 보입니다 */
+    margin-bottom: 20px;
+}
+
+/* 메뉴 카드 본체 */
+.menu-card {
+    position: relative;
+    display: flex;
+    /* 세로 배열로 변경하여 높이감을 강조 (원하시면 가로 유지도 가능) */
+    flex-direction: column;
+    align-items: flex-start; /* 왼쪽 정렬 */
+    justify-content: center; /* 세로 중앙 정렬 */
+
+    /* [핵심] 높이 설정: 기존보다 훨씬 큼직하게 */
+    min-height: 100px;
+
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px; /* 높이가 커진 만큼 곡률도 살짝 조정 */
+    padding: 20px; /* 내부 여유 공간 확대 */
+
+    cursor: pointer;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 텍스트 영역 레이아웃 보정 */
+.menu-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    z-index: 2;
+    margin-top: 8px; /* 아이콘과의 간격 */
+}
+
+.menu-title {
+    font-size: 1.25em; /* 폰트도 조금 더 키움 */
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+/* 호버 시 발광 및 부상 효과 */
+.menu-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--menu-color);
+    /* 변수를 활용한 동적 네온 광채 */
+    box-shadow: 0 12px 24px var(--menu-glow), inset 0 0 10px var(--menu-glow);
+}
+
+/* 클릭 시 눌림 효과 */
+.menu-card:active {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+}
+
+/* --- 카드별 테마 컬러 설정 --- */
+.card-earn {
+    --menu-color: #3498db;
+    --menu-glow: rgba(52, 152, 219, 0.4);
+    border-left: 5px solid var(--menu-color);
+}
+.card-shop {
+    --menu-color: #f1c40f;
+    --menu-glow: rgba(241, 196, 15, 0.4);
+    border-left: 5px solid var(--menu-color);
+}
+.card-upgrade {
+    --menu-color: #e74c3c;
+    --menu-glow: rgba(231, 76, 60, 0.4);
+    border-left: 5px solid var(--menu-color);
+}
+.card-info {
+    --menu-color: #1abc9c;
+    --menu-glow: rgba(26, 188, 156, 0.4);
+    border-left: 5px solid var(--menu-color);
+}
+
+/* 텍스트 영역 레이아웃 보정 */
+.menu-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    z-index: 2;
+    margin-top: 8px; /* 아이콘과의 간격 */
+}
+
+.menu-title {
+    font-size: 1.3em; /* 폰트도 조금 더 키움 */
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.menu-desc {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* 쉬머(Shimmer) 애니메이션 */
+.menu-card::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -150%;
+    width: 100%; height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.menu-card:hover::after {
+    animation: menuShimmer 1s ease-in-out forwards;
+}
+
+@keyframes menuShimmer {
+    0% { left: -150%; }
+    100% { left: 150%; }
+}
+
+/* [1] 슬림 배너 영역 */
+.rpg-banner-card {
+    position: relative;
+    width: 100%;
+    height: 105px;
+    border-radius: 22px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    background: #080810;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* 로고 이미지 및 강렬한 네온 효과 */
+.town-bg-img {
+    max-width: 85%;
+    height: 75%;
+    object-fit: contain;
+    /* 다층 그림자로 로고 발광 효과 강화 */
+    filter:
+        drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))
+        drop-shadow(0 0 15px rgba(52, 152, 219, 0.6));
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 2;
+}
+
+.rpg-banner-card:hover .town-bg-img {
+    transform: scale(1.1) rotate(-1deg);
+    filter:
+        drop-shadow(0 0 12px rgba(255, 255, 255, 0.6))
+        drop-shadow(0 0 25px rgba(52, 152, 219, 0.8));
+}
+
+/* 배경 맥동 광채 */
+.banner-bg-anim {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.2) 0%, transparent 75%);
+    z-index: 1;
+    animation: glowPulse 4s infinite alternate ease-in-out;
+}
+
+@keyframes glowPulse {
+    from { opacity: 0.3; transform: scale(0.8); }
+    to { opacity: 0.7; transform: scale(1.2); }
+}
+
+/* =========================================
+   [5] 치료 시스템 & 메인 액션 버튼 스타일
+   ========================================= */
+
+/* 1. 버튼 컨테이너 (치료/동냥 버튼 나란히 배치) */
+.main-actions-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* 버튼 사이 간격 */
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+/* 2. 공통 액션 버튼 스타일 */
+.main-action-btn {
+    flex: 1;
+    border: none;
+    border-radius: 20px; /* 둥글기 더 부드럽게 */
+
+    /* ★ [핵심 수정] 글자 크기를 2.4배로 키움 (기존 1.8em -> 2.4em) */
+    font-size: 2.4em;
+
+    /* 버튼 내부 여백 (글자가 커졌으므로 패딩은 적당히 유지) */
+    padding: 30px 10px;
+
+    font-weight: 900;     /* 가장 굵은 폰트 */
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 15px;            /* 아이콘과 글자 사이 간격도 늘림 */
+    text-shadow: 0 3px 6px rgba(0,0,0,0.6); /* 그림자 더 진하게 */
+
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 2px;  /* 글자 사이 간격을 넓혀서 답답함 해소 */
+}
+
+/* 마우스 올렸을 때 효과 */
+.main-action-btn:hover {
+    transform: translateY(-5px) scale(1.02); /* 더 높이 떠오름 */
+    filter: brightness(1.15);
+}
+.main-action-btn:active {
+    transform: scale(0.97);
+}
+
+/* 3. 치료하기 버튼 (핑크/레드 계열 - 생명력 상징) */
+.btn-heal {
+    background: linear-gradient(135deg, #e94560, #c0392b);
+    box-shadow:
+        0 4px 15px rgba(233, 69, 96, 0.4),
+        inset 0 1px 1px rgba(255,255,255,0.2);
+    border: 1px solid rgba(233, 69, 96, 0.5);
+}
+.btn-heal:hover {
+    box-shadow:
+        0 8px 25px rgba(233, 69, 96, 0.6),
+        0 0 15px rgba(233, 69, 96, 0.4);
+}
+
+/* 4. 동냥하기 버튼 (골드/오렌지 계열) */
+.btn-begging {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    box-shadow:
+        0 4px 15px rgba(241, 196, 15, 0.4),
+        inset 0 1px 1px rgba(255,255,255,0.2);
+    border: 1px solid rgba(241, 196, 15, 0.5);
+}
+
+/* 하트 아이콘 두근두근 애니메이션 */
+.pulse-icon {
+    display: inline-block;
+    animation: heartBeat 1.5s infinite;
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.3); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.3); }
+    70% { transform: scale(1); }
+}
+
+/* =========================================
+   [통합] 치료의 샘 & 공통 모달 시스템
+   ========================================= */
+
+/* 1. 모달 배경 (오버레이) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* 배경 어둡게 */
+    backdrop-filter: blur(8px);    /* 배경 블러 처리 */
+    display: none;                 /* 기본 숨김 (JS에서 flex로 활성화) */
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* 2. 모달 본체 (데스크탑/모바일 통합) */
+.custom-modal, .game-theme-modal {
+    position: relative;
+    background: #1a1a1a;
+    width: 95%;           /* 모바일: 화면의 95% */
+    max-width: 550px;     /* 데스크탑: 최대 550px로 제한 (레이아웃 안정화) */
+    min-width: 320px;
+    border-radius: 20px;
+    padding: 35px;
+    text-align: center;
+    border: 2px solid #2ecc71; /* 치료의 샘 포인트 컬러 */
+    box-shadow: 0 0 30px rgba(46, 204, 113, 0.2);
+    
+    /* [중요] 데스크탑에서 요소가 튀어나가지 않도록 내부 정렬 강제 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+    
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 모달 뒤 은은한 광채 */
+.modal-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 110%; height: 110%;
+    background: radial-gradient(circle, rgba(46, 204, 113, 0.25) 0%, transparent 70%);
+    z-index: -1;
+    filter: blur(25px);
+    pointer-events: none;
+}
+
+/* 3. 모달 내부 텍스트 요소 */
+.modal-title {
+    width: 100%;
+    font-size: 1.8em;      /* 제목 크기 확대 */
+    font-weight: 900;
+    color: #2ecc71;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.modal-body {
+    width: 100%;
+    font-size: 1.15em;
+    color: #ecf0f1;
+    line-height: 1.7;
+    margin-bottom: 30px;
+    word-break: keep-all; /* 한글 단어 잘림 방지 */
+}
+
+/* 4. 모달 버튼 그룹 (데스크탑에서 가로 일렬 정렬 보장) */
+.modal-actions {
+    display: flex !important;
+    flex-direction: row !important; /* 무조건 가로 정렬 */
+    width: 100%;
+    gap: 15px;
+    justify-content: center;
+}
+
+.modal-btn {
+    flex: 1;               /* 버튼 너비 균등 분배 */
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 확인 버튼 (초록색 입체 효과) */
+.modal-btn.confirm {
+    background: linear-gradient(to bottom, #2ecc71, #27ae60);
+    color: #1a1a1a;
+    box-shadow: 0 4px 0 #196f3d;
+}
+
+.modal-btn.confirm:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 6px 0 #196f3d;
+}
+
+.modal-btn.confirm:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #196f3d;
+}
+
+/* 취소 버튼 (다크 메탈) */
+.modal-btn.cancel {
+    background: linear-gradient(to bottom, #34495e, #2c3e50);
+    color: #bdc3c7;
+    box-shadow: 0 4px 0 #1a252f;
+}
+
+.modal-btn.cancel:hover {
+    color: #fff;
+    background: #2c3e50;
+}
+
+/* 5. 애니메이션 정의 */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { 
+    from { transform: scale(0.85); opacity: 0; } 
+    to { transform: scale(1); opacity: 1; } 
+}
+
+
+
+
+
+/* =========================================
+   [6] 하단 액션 & 채팅 & 시스템 영역
+   ========================================= */
+
+/* [1] 메인 액션 버튼 그룹 */
+.main-action-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* 2. 공통 액션 버튼 스타일 (크기 대폭 확대) */
+.main-action-btn {
+    flex: 1;
+    border: none;
+    border-radius: 18px; /* 둥글기도 조금 더 추가 */
+
+    /* [수정] 크기 및 여백 확대 */
+    padding: 25px 10px;   /* 상하 여백을 더 늘림 (버튼이 두꺼워짐) */
+    font-size: 1.8em;     /* ★ 글자 크기: 1.5em -> 1.8em (훨씬 큼) */
+
+    font-weight: 900;     /* 두께: 아주 굵게 */
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;            /* 아이콘과 글자 사이 간격 넓힘 */
+    text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 1px;  /* 자간을 살짝 띄워서 가독성 확보 */
+}
+
+/* 공통 액션 버튼 베이스: 입체감 있는 메탈 질감 */
+.main-action-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 54px; /* 높이를 키워 터치감 개선 */
+    border-radius: 16px;
+    font-size: 1em;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: none; /* 기본 숨김 */
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+    animation: fadeIn 0.3s ease;
+}
+
+.custom-modal {
+    position: relative;
+    background: #1a1a1a;
+
+    /* 크기 설정 (유지) */
+    width: 95%;
+    max-width: 700px;
+    min-width: 360px;
+    min-height: 400px; /* 높이가 커진 상태 */
+
+    padding: 40px;
+    border-radius: 30px;
+    border: 3px solid #2ecc71;
+
+    /* ★ [핵심] 내부 내용물 강제 중앙 배치 ★ */
+    display: flex;
+    flex-direction: column;    /* 세로로 배치 */
+    justify-content: center;   /* 세로 방향 중앙 정렬 (이게 빠져서 위에 붙음) */
+    align-items: center;       /* 가로 방향 중앙 정렬 */
+
+    text-align: center;
+    box-shadow:
+        0 0 50px rgba(46, 204, 113, 0.3),
+        inset 0 0 30px rgba(46, 204, 113, 0.05);
+
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* [추가] 모달 내부 콘텐츠 래퍼가 꽉 차도록 보정 */
+.custom-modal .modal-content {
+    width: 100%; /* 부모 너비에 맞춤 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+/* 1. 배경 광원 효과 (은은하게 유지) */
+.modal-glow {
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(46, 204, 113, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* 2. 모달 제목 (크기 대폭 확대) */
+.modal-title {
+    font-size: 2.2em;       /* 1.4em -> 2.2em (훨씬 큼) */
+    font-weight: 900;
+    color: #2ecc71;         /* 테두리 색과 깔맞춤 (흰색보다 눈에 띔) */
+    text-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+
+    /* 중요: 부모(custom-modal)에서 이미 gap: 50px을 줬으므로 margin 불필요 */
+    margin: 0;
+    z-index: 1;
+}
+
+/* 3. 모달 본문 (박스 형태로 디자인 강화) */
+.modal-body {
+    width: 100%;            /* 너비 꽉 채움 */
+    background: rgba(0, 0, 0, 0.3); /* 내용물 뒤에 어두운 배경 추가 */
+    border-radius: 15px;    /* 둥근 모서리 */
+    padding: 30px 10px;     /* 내부 여백 추가 */
+
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.8;
+    font-size: 1.1em;       /* 글자 크기 확대 */
+
+    /* 부모 gap 설정으로 인해 margin 제거 */
+    margin: 0;
+    z-index: 1;
+}
+
+/* 4. 버튼 그룹 컨테이너 */
+.modal-actions {
+    display: flex;
+    gap: 20px;              /* 버튼 사이 간격 넓힘 (10px -> 20px) */
+    width: 100%;
+    z-index: 1;
+}
+
+/* 5. 버튼 공통 스타일 (크기 확대) */
+.modal-btn {
+    flex: 1;
+    padding: 18px;          /* 버튼 두께 확대 (12px -> 18px) */
+    border-radius: 15px;
+    border: none;
+    font-size: 1.2em;       /* 버튼 글씨 확대 */
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    letter-spacing: 1px;
+}
+
+/* 확인 버튼 */
+.modal-btn.confirm {
+    background: #2ecc71;
+    color: #1a1a1a;         /* 배경이 밝으므로 글자는 어둡게 */
+    box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+}
+.modal-btn.confirm:hover {
+    background: #27ae60;
+    transform: translateY(-3px);
+}
+
+/* 취소 버튼 */
+.modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #bdc3c7;
+    border: 1px solid rgba(255,255,255,0.1); /* 얇은 테두리 추가 */
+}
+.modal
+
+
+
+
+
+
+/* [2] 모바일 심플 챗박스: 개쩌는 투명 유리 질감 */
+.mobile-simple-chat {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 12px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.simple-chat-log {
+    height: 120px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    color: #eee;
+    text-align: left;
+    padding: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 챗 로그 스크롤바 커스텀 */
+.simple-chat-log::-webkit-scrollbar { width: 4px; }
+.simple-chat-log::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+.simple-chat-input {
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simple-chat-input input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 8px 10px;
+    outline: none;
+    font-size: 0.95em;
+}
+
+.simple-chat-input button {
+    background: #3498db;
+    color: #fff;
+    border: none;
+    padding: 0 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* [3] 시스템 로그아웃 영역 */
+.logout-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+#btn-logout {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#btn-logout:hover {
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.5);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+
+
+
+/* =========================================
+   [개쩔게 리뉴얼된 가로형 Earn Page]
+   ========================================= */
+
+.earn-header { margin-bottom: 25px; text-align: left; padding-left: 5px; }
+.earn-main-title { font-size: 1.8em; font-weight: 900; margin: 0; color: #fff; letter-spacing: -1px; }
+.earn-sub-title { font-size: 0.9em; color: #888; margin-top: 4px; }
+
+.earn-mode-grid-horizontal {
+    display: flex;
+    flex-direction: column; /* 모바일/PC 공통 세로로 쌓되 카드가 가로로 김 */
+    gap: 15px;
+}
+
+/* 카드 본체: 가로 레이아웃 */
+.earn-card-v2 {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 20px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.earn-card-v2:hover {
+    transform: translateX(8px); /* 옆으로 슥 밀리는 효과 */
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--card-color);
+    box-shadow: -5px 0 20px var(--card-glow);
+}
+
+/* 카드 테마 색상 */
+.mode-hunt { --card-color: #e94560; --card-glow: rgba(233, 69, 96, 0.2); }
+.mode-mine { --card-color: #2ecc71; --card-glow: rgba(46, 204, 113, 0.2); }
+
+/* 왼쪽 아이콘 */
+.card-left-icon {
+    font-size: 2.8em;
+    margin-right: 20px;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+}
+
+/* 중앙 정보 */
+.card-center-info { flex: 1; text-align: left; }
+
+.tag-badge {
+    font-size: 0.65em;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+.tag-badge.red { background: rgba(233, 69, 96, 0.2); color: #e94560; border: 1px solid #e94560; }
+.tag-badge.green { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+
+.card-main-title { font-size: 1.4em; font-weight: 900; color: #fff; margin-bottom: 4px; }
+.card-description { font-size: 0.85em; color: #aaa; margin: 0 0 12px 0; line-height: 1.4; }
+
+/* 보상 태그 */
+.card-reward-tags { display: flex; gap: 6px; }
+.card-reward-tags span {
+    font-size: 0.7em;
+    background: rgba(0,0,0,0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #eee;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* 오른쪽 액션 화살표 */
+.card-right-action {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-arrow {
+    font-size: 1.2em;
+    color: var(--card-color);
+    transition: transform 0.3s;
+}
+.earn-card-v2:hover .action-arrow { transform: translateX(5px); }
+
+/* 하단 버튼 */
+.earn-footer { margin-top: 30px; }
+.btn-back-main {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 1px solid #333;
+    color: #777;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-back-main:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: #666; }
+
+
+
+/* 사냥터 리스트 컨테이너 */
+#hunting-zone-list {
+    display: grid;
+    /* PC에서는 2열, 모바일에서는 1열로 유동적 배치 */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 10px;
+}
+
+/* 사냥터 카드 메인 스타일 (클릭 가능한 칸) */
+.hunt-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px; /* 여백 소폭 확대 */
+    border-radius: 24px;
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    min-height: 130px; /* 높이 최적화 */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* [효과] 카드 호버 시: 살짝 떠오르며 밝아짐 */
+.hunt-card:not(.locked):hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    filter: brightness(1.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* [효과] 카드 클릭 시: 실제로 눌리는 듯한 피드백 */
+.hunt-card:not(.locked):active {
+    transform: scale(0.96) translateY(-2px);
+    filter: brightness(0.9);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* 상단 영역 배치 */
+.hunt-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 2;
+}
+
+.hunt-name {
+    display: block;
+    font-size: 1.4em;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    text-align: left;
+}
+
+.hunt-difficulty {
+    display: block;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+/* 우측 상단 레벨 배지 */
+.hunt-lv-badge {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 6px 14px;
+    border-radius: 12px;
+    color: #f1c40f;
+    font-weight: 800;
+    font-size: 0.9em;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+/* 하단 영역 배치 */
+.hunt-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    z-index: 2;
+}
+
+/* 좌측 하단 비용 배지 */
+.hunt-cost {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 7px 14px;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 0.95em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* [신규] 우측 하단 입장 안내 텍스트 */
+.hunt-enter-guide {
+    font-size: 1em;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    animation: arrowPulse 1.5s infinite;
+}
+
+@keyframes arrowPulse {
+    0%, 100% { transform: translateX(0); opacity: 0.8; }
+    50% { transform: translateX(5px); opacity: 1; }
+}
+
+/* 잠긴 카드 처리 */
+.hunt-card.locked {
+    background: linear-gradient(135deg, #2c3e50 0%, #000000 100%) !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.hunt-card.locked .hunt-enter-guide {
+    display: none; /* 잠기면 입장안내 숨김 */
+}
+
+/* 잠금 오버레이 아이콘 */
+.lock-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    z-index: 3;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+
+
+
+
+/* =========================================
+   [3] 내부 요소 디테일 - ✨ 하이엔드 네온 & 입체감 ✨
+   ========================================= */
+
+/* 헤더 레이아웃: 그림자 깊이 보강 */
+.hunt-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 18px;
+    z-index: 2;
+    position: relative;
+}
+
+/* 왼쪽 텍스트 그룹 */
+.hunt-header-text {
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left;
+}
+
+/* 사냥터 이름 (네온 가독성 강화) */
+.hunt-name {
+    font-size: 1.1em; 
+    font-weight: 900; 
+    color: #fff;
+    /* 텍스트 자체에 은은한 외곽선 효과와 광채 부여 */
+    text-shadow: 
+        0 2px 4px rgba(0,0,0,0.8), 
+        0 0 15px rgba(255,255,255,0.3);
+    margin-bottom: 4px; 
+    line-height: 1.2; 
+    word-break: keep-all;
+    letter-spacing: -0.5px;
+}
+
+/* 난이도 텍스트 (작지만 선명하게) */
+.hunt-difficulty {
+    font-size: 0.6em; 
+    font-weight: 600; 
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 1.5px; 
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.2);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+/* ★ 레벨 배지 (보석 커팅 & 황금 발광 효과) ★ */
+.hunt-lv-badge {
+    background: linear-gradient(145deg, #1a1a1a, #000);
+    color: #ffd700;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 0.9em; 
+    font-weight: 900;
+
+    /* 황금빛 테두리와 다층 광채 효과 */
+    border: 1.5px solid rgba(255, 215, 0, 0.6);
+    box-shadow:
+        inset 0 0 12px rgba(255, 215, 0, 0.15),
+        0 4px 8px rgba(0,0,0,0.5),
+        0 0 15px rgba(255, 215, 0, 0.2); /* 외부 황금 광채 */
+
+    white-space: nowrap; 
+    flex-shrink: 0; 
+    margin-left: 12px;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 배지 반짝임 효과 추가 */
+.hunt-lv-badge::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,215,0,0.3), transparent);
+    transform: rotate(45deg);
+    animation: badgeShine 3s infinite;
+}
+
+@keyframes badgeShine {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+/* 하단 푸터 */
+.hunt-card-footer {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%; 
+    margin-top: auto; 
+    z-index: 2;
+}
+
+/* 입장 비용 (다크 글래스 디자인) */
+.hunt-cost {
+    font-size: 0.75em; 
+    color: #fff; 
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 7px 10px; 
+    border-radius: 12px;
+    display: flex; 
+    align-items: center; 
+    gap: 6px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+
+.btn-enter-zone:hover {
+    transform: translateY(-3px) scale(1.03);
+    background: #fff;
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.5), 
+        0 0 15px rgba(255,255,255,0.4);
+}
+
+/* =========================================
+   [4] 테마 색상 (깊이감 강화 버전)
+   ========================================= */
+/* 신병 훈련소 (-1) */
+.zone-theme-newbie { 
+    background: radial-gradient(circle at 20% 30%, #2ecc71 0%, #1b5e20 100%) !important; 
+    box-shadow: inset 0 0 30px rgba(46, 204, 113, 0.3);
+}
+
+/* 주요 테마들 (입체적인 색감으로 보정) */
+.zone-theme-0 { background: linear-gradient(135deg, #f0932b, #eb4d4b) !important; }
+.zone-theme-1 { background: linear-gradient(135deg, #0984e3, #6c5ce7) !important; }
+.zone-theme-2 { background: linear-gradient(135deg, #eb4d4b, #b71540) !important; }
+.zone-theme-3 { background: linear-gradient(135deg, #2f3640, #191919) !important; }
+.zone-theme-4 { background: linear-gradient(135deg, #27ae60, #145a32) !important; } /* 깊은 숲 */
+.zone-theme-5 { background: linear-gradient(135deg, #2980b9, #154360) !important; } /* 푸른 동굴 */
+.zone-theme-6 { background: linear-gradient(135deg, #8e44ad, #4a235a) !important; } /* 마법의 늪 */
+
+/* 7 ~ 10: 중반 지역 (황무지, 고성, 화산) */
+.zone-theme-7 { background: linear-gradient(135deg, #d35400, #5e2700) !important; } /* 붉은 황무지 */
+.zone-theme-8 { background: linear-gradient(135deg, #7f8c8d, #2c3e50) !important; } /* 차가운 요새 */
+.zone-theme-9 { background: linear-gradient(135deg, #c0392b, #4d0500) !important; } /* 불타는 성문 */
+.zone-theme-10 { background: linear-gradient(135deg, #16a085, #0b5345) !important; } /* 비취 광산 */
+
+/* 11 ~ 14: 고수 지역 (심연, 영혼, 그림자) */
+.zone-theme-11 { background: linear-gradient(135deg, #2c3e50, #000000) !important; } /* 그림자 묘지 */
+.zone-theme-12 { background: linear-gradient(135deg, #f39c12, #7e5109) !important; } /* 황금 사막 */
+.zone-theme-13 { background: linear-gradient(135deg, #4b6cb7, #182848) !important; } /* 차원 균열 */
+.zone-theme-14 { background: linear-gradient(135deg, #61045f, #200122) !important; } /* 보랏빛 저주 */
+
+/* 15 ~ 17: 정예 지역 (천공, 공허, 지옥) */
+.zone-theme-15 { background: linear-gradient(135deg, #485563, #29323c) !important; } /* 강철 기지 */
+.zone-theme-16 { background: linear-gradient(135deg, #ff4d4d, #000000) !important; } /* 지옥의 끝 */
+.zone-theme-17 { background: linear-gradient(135deg, #00d2ff, #3a7bd5) !important; } /* 얼어붙은 호수 */
+
+/* 18 ~ 20: 전설 지역 (신전, 카오스, 레전드) */
+.zone-theme-18 { background: linear-gradient(135deg, #000000, #434343) !important; } /* 어둠의 신전 */
+.zone-theme-19 { background: linear-gradient(135deg, #f1c40f, #000000) !important; } /* 신들의 무덤 */
+.zone-theme-20 { background: radial-gradient(circle, #e94560 0%, #000000 100%) !important; } /* ★ 최종 카오스 지역 */
+
+/* 공통 카드 효과 보강 (유리막 효과) */
+.hunt-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* [추가] 카드 전체 인터랙션 강화 */
+.hunt-card {
+    cursor: pointer; /* 마우스 올리면 손가락 모양 */
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* 마우스 올렸을 때 살짝 떠오름 */
+.hunt-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+/* 클릭했을 때 살짝 눌리는 느낌 */
+.hunt-card:active {
+    transform: scale(0.98);
+}
+
+/* =========================================
+   [7] 사냥터 전투력 & 헤더 전용 스타일
+   ========================================= */
+
+/* 1. 상단 '내 전투력' 표시 박스 (높이 축소) */
+.cp-info-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    /* 배경 및 테두리 유지 */
+    background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+
+    /* [수정] 여백을 대폭 줄임 */
+    padding: 4px 0;      /* 위아래 10px -> 4px */
+    margin-top: 2px;     /* 위쪽 간격 5px -> 2px */
+    margin-bottom: 5px;  /* 아래쪽 간격 추가 */
+}
+
+/* CP 라벨 (MY CP) */
+.cp-label {
+    color: #95a5a6;
+    font-size: 0.8em;    /* 글자 크기 소폭 축소 */
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* CP 숫자 값 */
+.cp-value {
+    font-family: 'Verdana', sans-serif;
+    font-size: 1.2em;    /* 1.4em -> 1.2em (부담스럽지 않게) */
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+/* 2. 사냥터 카드 내부 - 권장 전투력 박스 */
+.hunt-rec-box {
+    margin-top: auto;      /* 카드의 중간 빈 공간을 밀어내고 하단에 위치 */
+    margin-bottom: 8px;    /* 비용과의 간격 */
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3); /* 반투명 검은 배경으로 가독성 확보 */
+    border-radius: 8px;    /* 둥근 모서리 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 라벨은 왼쪽, 숫자는 오른쪽 정렬 */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(2px); /* 배경 흐림 효과 */
+}
+
+.hunt-rec-label {
+    font-size: 0.85em;
+    color: #bdc3c7;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hunt-rec-val {
+    font-size: 1.1em;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* (옵션) 전투력이 부족할 때 흔들리는 효과 */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-1px); }
+    100% { transform: translateX(0); }
+}
+.cp-warning {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* 페이지 제목 (BATTLE ZONE) - 필요 시 CSS에서 강제 조절 */
+#page-hunt-select .page-title-text {
+    font-size: 1.2em;    /* 제목 크기도 살짝 줄임 */
+    margin-bottom: 0;    /* 제목 아래 여백 제거 */
+    padding-bottom: 0;
+}
+
+/* 헤더 구분선 (공간 차지하므로 숨김 처리하거나 얇게 변경) */
+#page-hunt-select .page-header-divider {
+    display: none;       /* 공간 절약을 위해 구분선 삭제 */
+}
+
+
+/* =========================================
+   [Desktop] 전투/사냥 (Hunt Play) 스타일
+   ========================================= */
+
+/* [0] 애니메이션 (공통) */
+@keyframes radarSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes monsterSpawn { 0% { opacity: 0; transform: scale(0.8) translateY(30px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes bossWarningSiren { 0% { opacity: 0.6; } 100% { opacity: 1; transform: scale(1.02); } }
+@keyframes pulseRed { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
+@keyframes nameSlide { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes monsterFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes bossVibration { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+/* [1] 헤더 및 컨테이너 레이아웃 */
+.hunt-header-card {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,0.4); padding: 12px 20px; border-radius: 8px;
+    border-bottom: 2px solid var(--hunt); margin-bottom: 20px;
+    max-width: 600px; margin-left: auto; margin-right: auto;
+}
+.hunt-status-badge { font-size: 0.9em; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 4px; color: #aaa; cursor: help; }
+
+/* PC 높이 (460px) */
+.battle-stage-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px; 
+    height: 500px;    
+    margin: 0 auto 20px auto;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.stage-grid-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 25px 25px;
+    pointer-events: none;
+}
+
+.hunt-grid-area {
+    position: relative; z-index: 2; padding: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 15px; width: 100%; flex: 1;
+}
+
+/* [2] 하단 컨트롤 버튼 영역 */
+.battle-controls-wrapper {
+    width: 100%; max-width: 600px; margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-top: 1px solid #334155;
+    z-index: 10;
+    border-radius: 0 0 12px 12px;
+}
+
+.battle-controls, .battle-actions {
+    display: flex; gap: 15px; width: 100%; justify-content: center;
+}
+
+/* [3] 버튼 스타일 (PC) */
+.rpg-btn {
+    flex: 1; height: 55px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-weight: 900; color: white; cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3);
+}
+
+.rpg-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 10px rgba(0,0,0,0.4);
+    filter: brightness(1.1);
+}
+.rpg-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.btn-scan { background: linear-gradient(to bottom, #3498db, #2980b9); }
+.btn-auto-battle { background: linear-gradient(to bottom, #7f8c8d, #34495e); }
+.btn-attack { background: linear-gradient(to bottom, #e74c3c, #c0392b); }
+.btn-run { background: linear-gradient(to bottom, #2ecc71, #27ae60); }
+.btn-list-go { background: linear-gradient(to bottom, #9b59b6, #8e44ad); box-shadow: 0 5px #71368a; }
+.btn-home-go { background: linear-gradient(to bottom, #f39c12, #e67e22); box-shadow: 0 5px #d35400; }
+.btn-heal-mini { background: linear-gradient(to bottom, #ff4757, #e84118); box-shadow: 0 5px #c23616; }
+
+/* [4] 레이더 효과 (PC) */
+.empty-stage-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #666; height: 100%;
+}
+.radar-circle {
+    width: 120px; height: 120px;
+    border: 2px solid #3498db; border-radius: 50%;
+    position: relative; margin-bottom: 20px;
+    background: radial-gradient(circle, rgba(15, 23, 42, 0.9), #0f172a);
+    box-shadow: 0 0 25px rgba(52, 152, 219, 0.4);
+    overflow: hidden;
+}
+.radar-circle::before { content: ''; position: absolute; width: 1px; height: 100%; left: 50%; top: 0; background: rgba(52, 152, 219, 0.3); transform: translateX(-50%); }
+.radar-circle::after { content: ''; position: absolute; width: 100%; height: 1px; top: 50%; left: 0; background: rgba(52, 152, 219, 0.3); transform: translateY(-50%); }
+.radar-sweep {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(52, 152, 219, 0.8) 360deg);
+    animation: radarSpin 1.5s linear infinite;
+}
+
+/* [5] 몬스터 카드 (PC) */
+.monster-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+    padding: 20px; border-radius: 16px; border: 2px solid #475569;
+    width: 380px; height: 380px;
+    margin: 0 auto; position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05);
+    animation: monsterSpawn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+}
+
+.monster-card:hover { border-color: #64748b; transform: scale(1.01); transition: 0.3s; }
+
+.boss-warning {
+    position: absolute; top: 0; left: 0; width: 100%; height: 35px;
+    background: linear-gradient(to bottom, rgba(255, 0, 0, 0.4), transparent);
+    color: #ff3e3e; font-weight: 900; font-size: 0.9em;
+    text-align: center; line-height: 35px; letter-spacing: 3px; z-index: 25;
+    animation: bossWarningSiren 0.6s infinite alternate;
+}
+.boss-bg-style::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 16px; box-shadow: inset 0 0 30px rgba(255, 0, 0, 0.5);
+    animation: pulseRed 1.5s infinite; z-index: 1; pointer-events: none;
+}
+
+.monster-name {
+    position: absolute; top: 20px; left: 0; width: 100%; text-align: center; z-index: 25;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    animation: nameSlide 0.5s ease-out both;
+}
+.boss-bg-style .monster-name { top: 40px; }
+
+.monster-lv-tag {
+    background: rgba(0, 0, 0, 0.7); color: #f1c40f;
+    font-size: 0.8em; padding: 3px 12px; border-radius: 12px;
+    border: 1px solid rgba(241, 196, 15, 0.4);
+}
+.monster-name-text {
+    font-size: 1.5em !important; font-weight: 900; color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+}
+.boss-bg-style .monster-name-text { font-size: 1.8em !important; color: #ff3e3e; text-shadow: 0 0 20px rgba(255, 62, 62, 0.8); }
+
+.monster-image-area {
+    margin-top: 80px; margin-bottom: 70px; display: flex; align-items: center; justify-content: center; flex: 1;
+}
+.monster-card img {
+    width: auto; max-width: 200px; height: 170px; object-fit: contain;
+    filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.7)); z-index: 10;
+    animation: monsterFloat 3.5s ease-in-out infinite;
+}
+.boss-img-style {
+    max-width: 250px !important; height: 210px !important;
+    animation: bossVibration 4s ease-in-out infinite, monsterFloat 3s ease-in-out infinite !important;
+}
+
+.monster-stats-panel {
+    position: absolute; bottom: 0; left: 0; width: 100%; min-height: 80px;
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+    padding: 30px 0 20px 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+    z-index: 20;
+}
+.boss-quote { position: absolute; bottom: 60px; width: 100%; text-align: center; color: #bdc3c7; font-style: italic; font-size: 0.9em; }
+
+.hp-bar-container {
+    width: 85%; height: 20px; background: #111; border-radius: 5px;
+    position: relative; overflow: hidden; border: 1px solid #666; margin-bottom: 5px;
+}
+.hp-bar-fill { height: 100%; background: linear-gradient(90deg, #ff7675, #c0392b); transition: width 0.3s ease-out; }
+.hp-text {
+    position: absolute; width: 100%; text-align: center; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); font-size: 11px; color: white; font-weight: 900; z-index: 25;
+}
+
+.tactical-log-box {
+    background: #000; border: 1px solid #333; border-radius: 6px;
+    padding: 10px; margin-bottom: 20px; max-width: 600px; margin: 0 auto 15px auto;
+}
+#battle-log { height: 120px; overflow-y: auto; font-size: 0.9em; }
+
+
+
+/* =========================================
+   [Desktop] 강화 페이지 스타일 (PC 최적화)
+   ========================================= */
+
+/* [0] 공통 애니메이션 */
+@keyframes shine { 100% { left: 200%; } }
+
+/* [1] 강화 슬롯 (아이템 꽂는 곳) */
+.upgrade-slot {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px dashed #555;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px; /* PC는 조금 더 크게 */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+/* 슬롯 활성화 (아이템 선택됨) */
+.upgrade-slot.active {
+    border: 2px solid var(--point);
+    background: rgba(233, 69, 96, 0.15);
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.2);
+}
+.upgrade-slot:hover {
+    border-color: #777;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 보조 슬롯 (주문서/티켓) */
+.support-slot {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 0.9em;
+    color: #aaa;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.support-slot:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+.divider-line { height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0; }
+
+/* [2] RPG 버튼 공통 스타일 (PC) */
+.rpg-btn {
+    border: none;
+    border-radius: 8px;
+    font-weight: 900; /* 굵게 */
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.3); /* 깊은 그림자 */
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* PC 호버 효과 */
+.rpg-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.rpg-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+.rpg-btn:disabled {
+    background: #444 !important; color: #888;
+    cursor: not-allowed; box-shadow: none; transform: none;
+}
+
+/* 버튼 색상 테마 */
+.btn-select { background: linear-gradient(to bottom, #3498db, #2980b9); width: 100%; height: 45px; font-size: 1em; }
+.btn-sub { background: linear-gradient(to bottom, #9b59b6, #8e44ad); width: 100%; height: 40px; font-size: 0.95em; }
+.btn-cancel { background: #444; width: 60px; font-size: 1.2em; border-bottom: 3px solid #222; }
+
+/* [3] 메인 강화 버튼 (하이라이트) */
+.btn-upgrade-main {
+    background: linear-gradient(to bottom, #e74c3c, #c0392b);
+    width: 100%;
+    height: 60px; /* 큼직하게 */
+    font-size: 1.4em;
+    margin: 15px 0;
+    border-bottom: 5px solid #922b21; /* 아주 두꺼운 그림자 */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    letter-spacing: 1px;
+}
+
+/* 광택 효과 */
+.btn-shine {
+    position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: shine 3s infinite;
+    pointer-events: none;
+}
+
+/* [4] 정보 박스 */
+.upgrade-info-box {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 15px 0;
+}
+.info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 1em; color: #ddd; }
+.info-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 0; }
+
+/* [5] 자동 강화 & 컨트롤 */
+.auto-upgrade-control {
+    display: flex; gap: 15px; align-items: center;
+    background: rgba(255,255,255,0.03);
+    padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);
+}
+.btn-auto {
+    flex: 1; height: 50px;
+    background: linear-gradient(to bottom, #27ae60, #1e8449);
+    border-bottom: 4px solid #145a32;
+    font-size: 1.1em;
+}
+
+.safe-mode-toggle {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 8px;
+    cursor: pointer; transition: 0.2s;
+    border: 1px solid transparent;
+}
+.safe-mode-toggle:hover { border-color: rgba(255,255,255,0.3); }
+.safe-mode-toggle label { text-align: left; font-size: 0.9em; line-height: 1.3; cursor: pointer; }
+.safe-mode-toggle span { display: block; color: #fff; font-weight: bold; }
+.safe-mode-toggle small { color: #aaa; }
+.safe-mode-toggle input { width: 20px; height: 20px; accent-color: var(--point); cursor: pointer; }
+
+/* 판매 버튼 (빨강) */
+.btn-sell-red {
+   background-color: #e74c3c; color: white;
+   border: none; border-radius: 4px;
+   padding: 5px 10px; font-size: 13px; font-weight: bold;
+   cursor: pointer; transition: 0.2s;
+}
+.btn-sell-red:hover { background-color: #c0392b; transform: scale(1.05); }
+
+/* ==========================================
+       [수정본] 장착 장비 및 인벤토리 목록 & 탭 디자인
+       ========================================== */
+
+    /* 1. 장착 장비 및 인벤토리 목록 공통 컨테이너 */
+    .equip-grid, 
+    .inventory-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;                 /* 간격을 넓혀 가독성 향상 */
+        
+        background: rgba(15, 23, 42, 0.7);    /* 배경 투명도 조절로 깊이감 부여 */
+        padding: 15px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+        
+        min-height: 200px;                    /* 모바일 대응을 위해 최소 높이 조정 */
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.3s ease;            /* 부드러운 전환 효과 */
+    }
+
+    /* 2. 인벤토리 전용 설정 (스크롤 및 탭 연결) */
+    .inventory-container {
+        background: #0f172a;                  /* 다크 블루 톤 */
+        border-top: none !important;          /* 상단 탭과의 경계 제거 */
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        
+        max-height: 50vh;                     /* 세로 스크롤 영역 제한 */
+        overflow-y: auto;
+        overflow-x: hidden;                   /* 가로 스크롤 방지 */
+        
+        /* 파이어폭스 스크롤바 */
+        scrollbar-width: thin;
+        scrollbar-color: #3b82f6 transparent;
+    }
+
+    /* 커스텀 스크롤바 (Webkit - 크롬, 사파리 등) */
+    .inventory-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .inventory-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .inventory-container::-webkit-scrollbar-thumb {
+        background: #334155;                  /* 스크롤바 핸들 색상 */
+        border-radius: 10px;
+    }
+    .inventory-container::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+    }
+
+    /* 3. 내부 아이템 카드 보정 (부모 flex 영향 방지) */
+    .item-card {
+        flex-shrink: 0;                       /* 아이템이 찌그러지지 않도록 고정 */
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* 4. 인벤토리 탭 디자인 */
+    .tab-container {
+        display: flex; 
+        gap: 4px; 
+        margin-bottom: -1px; /* 컨테이너와 1px 겹치게 하여 경계선 제거 */
+        padding: 0 5px; 
+        z-index: 10;
+        position: relative;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 14px 10px;
+        background: rgba(31, 41, 55, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        color: #6b7280;
+        font-weight: 800;
+        cursor: pointer;
+        font-size: 0.95em;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+
+    .tab-btn:hover { 
+        background: #374151; 
+        color: #fff; 
+    }
+
+    .tab-btn.active {
+        background: #0f172a;                  /* 인벤토리 컨테이너 배경색과 일치 (#0f172a) */
+        color: #fff;
+        border-top: 3px solid var(--point);   /* 포인트 컬러 강조 */
+        border-left: 1px solid rgba(255,255,255,0.1);
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 18px;                 /* 활성화 시 위로 들리는 효과 */
+        box-shadow: 0 -5px 15px rgba(233, 69, 96, 0.2);
+        z-index: 11;                          /* 컨테이너보다 위로 */
+    }
+
+    /* 5. 섹션 타이틀 (장착 중인 장비 등) */
+    .section-title {
+        text-align: left; 
+        font-size: 1.15em; 
+        color: #f3f4f6;
+        margin: 30px 0 15px 5px; 
+        font-weight: 900;
+        border-left: 4px solid var(--point); 
+        padding-left: 12px;
+        letter-spacing: -0.5px;
+    }
+
+
+/* =========================================
+   [Global] 화려한 리스트형 상점 스타일 리마스터
+   ========================================= */
+
+@keyframes slideDownFade {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUpCard {
+    0% { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes borderGlow {
+    0%, 100% { border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 5px rgba(255, 255, 255, 0.05); }
+    50% { border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); }
+}
+
+/* 상점 리스트 컨테이너 */
+.shop-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+    padding: 10px;
+}
+
+/* 아이템 리스트 카드 공통 - 화려한 베이스 */
+.item-card {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 100%);
+    backdrop-filter: blur(10px); /* 글래스모피즘 효과 */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 카드 내 반짝이는 광택 효과 */
+.item-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: skewX(-25deg);
+    transition: 0.5s;
+}
+.item-card:hover::before { left: 150%; }
+
+/* 아이콘 박스 글로우 */
+.item-image-box {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================
+   🖥️ [Desktop] PC 버전 (고급스러운 호버)
+   ========================================= */
+@media (min-width: 769px) {
+    .shop-grid {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .item-card {
+        min-height: 80px;
+        padding: 15px 25px;
+        border-radius: 12px;
+    }
+
+    .item-image-box {
+        width: 50px;
+        height: 50px;
+        margin-right: 20px;
+    }
+
+    .item-name { 
+        font-size: 1.2em; 
+        font-weight: bold; 
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    .item-desc { font-size: 0.9em; color: rgba(255, 255, 255, 0.6); }
+
+    /* 호버 시 화려한 변화 */
+    .item-card:hover {
+        transform: translateX(10px);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    }
+}
+
+
+
+
+/* =========================================
+   [Common] 디자인 상세 설정 리마스터 (전체)
+   ========================================= */
+
+/* 애니메이션 및 공통 설정 */
+@keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-20px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInUpCard { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes neonFlicker { 0%, 100% { opacity: 1; text-shadow: 0 0 10px #e056fd, 0 0 20px #ff00de; } 50% { opacity: 0.8; text-shadow: 0 0 5px #e056fd; } }
+
+/* 상점 리스트 컨테이너 */
+.shop-grid { display: flex !important; flex-direction: column !important; gap: 14px; padding: 10px; }
+
+/* 1. 상점 카드 공통 베이스 (유리 질감 + 빗살무늬) */
+.item-card {
+    position: relative; display: flex; align-items: center;
+    cursor: pointer; overflow: hidden;
+    background: rgba(30, 35, 45, 0.6);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1; width: 100%; box-sizing: border-box;
+}
+
+/* 카드 내부 빛 효과 및 빗살무늬 광택 */
+.item-card::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 60%);
+    z-index: -1;
+}
+.item-card::after {
+    content: ""; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    transform: skewX(-25deg); z-index: -1; transition: left 0.5s;
+}
+
+/* 아이콘 박스 (글로우 적용) */
+.item-image-box {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-name { color: #ffffff !important; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.item-desc { color: #b0b0b0 !important; font-weight: 500; }
+
+/* 2. 테마별 상점 색상 (Bright Neon) */
+.shop-equip { background: linear-gradient(135deg, rgba(220, 20, 60, 0.15), rgba(255, 50, 50, 0.25)); border-left: 4px solid #ff4757; }
+.shop-potion { background: linear-gradient(135deg, rgba(0, 100, 255, 0.15), rgba(0, 180, 255, 0.25)); border-left: 4px solid #00d2d3; }
+.shop-gacha { background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(255, 200, 0, 0.25)); border-left: 4px solid #ffa502; }
+.shop-synth { background: linear-gradient(135deg, rgba(0, 180, 80, 0.15), rgba(50, 220, 100, 0.25)); border-left: 4px solid #2ed573; }
+
+/* 3. 유흥 지구 & 도박장 (Luxury & Neon) */
+.night-life-card {
+    background: linear-gradient(135deg, rgba(140, 20, 252, 0.15), rgba(255, 0, 128, 0.15));
+    border: 1px solid rgba(224, 86, 253, 0.4);
+    box-shadow: 0 0 15px rgba(142, 68, 173, 0.2);
+}
+.neon-sign {
+    font-weight: 900; color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #e056fd, 0 0 40px #ff00de;
+    animation: neonFlicker 3s infinite alternate;
+}
+
+/* =========================================
+   🖥️ [Desktop] PC 버전 (아이콘 70px)
+   ========================================= */
+@media (min-width: 769px) {
+    .item-card { min-height: 100px; padding: 15px 30px; border-radius: 15px; }
+    .item-card:hover { transform: translateX(10px); background: rgba(255, 255, 255, 0.1); }
+    .item-card:hover::after { left: 150%; transition: left 0.7s ease-in-out; }
+
+    .item-image-box { width: 70px; height: 70px; margin-right: 25px; }
+    .item-image-box span { font-size: 3em; }
+    .item-name { font-size: 1.3em; }
+}
+
+
+
+/* =========================================
+   [Header] 헤더 디자인 리메이크 (통합)
+   ========================================= */
+
+@keyframes expandWidthSmall {
+    0% { width: 0; opacity: 0; }
+    100% { width: 60px; opacity: 1; }
+}
+
+.page-header-box {
+    text-align: center; margin-bottom: 20px; padding: 15px 0 10px;
+    position: relative; overflow: hidden;
+}
+
+/* 타이틀 텍스트 (그라데이션 & 선명도 보강) */
+.page-title-text {
+    font-size: 1.8em; 
+    font-weight: 900; 
+    margin: 0; 
+    letter-spacing: 2px;
+    text-transform: uppercase; 
+    display: inline-block;
+
+    /* [수정] 선명한 그라데이션 적용 */
+    background: linear-gradient(to bottom, #ffffff 30%, #e056fd 100%);
+    background-clip: text; 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+
+    /* [추가] 글자 외곽선을 잡아주는 드롭 쉐도우 (그라데이션 가독성 보완) */
+    filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.8));
+
+    /* 기존 애니메이션 유지 */
+    animation: slideDownFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    
+    /* 흐림 현상 방지 */
+    -webkit-font-smoothing: antialiased;
+    backface-visibility: hidden;
+}
+
+/* 애니메이션 정의 (없을 경우를 대비해 추가) */
+@keyframes slideDownFade {
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.page-subtitle-text {
+    font-size: 0.9em; margin-top: 5px; font-weight: 500;
+    opacity: 0; animation: fadeInUpCard 0.6s ease forwards 0.2s;
+}
+
+.page-header-divider {
+    width: 60px; height: 3px; margin: 10px auto 0; border-radius: 2px;
+    opacity: 0; animation: expandWidthSmall 0.6s ease forwards 0.3s;
+}
+
+/* -----------------------------------------
+   테마별 헤더 색상 설정
+   ----------------------------------------- */
+
+/* [SHOP] 골드 & 옐로우 테마 */
+.theme-shop .page-title-text {
+    background-image: linear-gradient(135deg, #ffffff 0%, #f1c40f 60%, #b7950b 100%);
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(241, 196, 15, 0.6));
+}
+.theme-shop .page-subtitle-text { color: #fcf3cf; text-shadow: 0 0 5px rgba(241, 196, 15, 0.3); }
+.theme-shop .page-header-divider { 
+    background: linear-gradient(90deg, transparent, #f1c40f, transparent); 
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.8); 
+}
+
+/* [CASINO] 퍼플 & 네온 테마 */
+.theme-casino .page-title-text {
+    background-image: linear-gradient(135deg, #ff00cc 0%, #333399 100%);
+    text-shadow: 0 0 10px rgba(224, 86, 253, 0.8); 
+    filter: drop-shadow(0 0 15px #e056fd);
+}
+.theme-casino .page-subtitle-text { color: #e0aaff; font-style: italic; text-shadow: 0 0 5px #e056fd; }
+.theme-casino .page-header-divider { 
+    background: linear-gradient(90deg, transparent, #e056fd, transparent); 
+    box-shadow: 0 0 15px #be2edd; 
+}
+
+/* [GAMBLE] 레드 & 웜 테마 */
+.theme-gamble .page-title-text {
+    background-image: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    filter: drop-shadow(0 0 10px rgba(255, 62, 62, 0.8));
+}
+.theme-gamble .page-subtitle-text { color: #ffcccc; text-shadow: 0 0 8px rgba(255, 0, 0, 0.5); }
+.theme-gamble .page-header-divider { 
+    background: linear-gradient(90deg, transparent, #ff4757, transparent); 
+    box-shadow: 0 0 15px #ff4757; 
+}
+
+/* [STOCK] 그린 & 블루 테마 */
+.theme-stock .page-title-text {
+    background-image: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+}
+.theme-stock .page-subtitle-text { 
+    color: #a2ded0; font-family: 'Consolas', monospace; 
+    text-shadow: 0 0 5px rgba(46, 204, 113, 0.5); 
+}
+.theme-stock .page-header-divider { 
+    background: linear-gradient(90deg, transparent, #00f260, #3498db, transparent); 
+    box-shadow: 0 0 15px rgba(0, 242, 96, 0.6); 
+}
+
+
+/* =========================================
+   [Synthesis] 합성 시스템 전용 스타일
+   ========================================= */
+
+/* 합성소 전용 에메랄드 테마 헤더 */
+.theme-synth .page-title-text {
+    background-image: linear-gradient(135deg, #ffffff 0%, #2ecc71 60%, #27ae60 100%);
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(46, 204, 113, 0.6));
+}
+.theme-synth .page-subtitle-text { color: #a3e4d7; text-shadow: 0 0 5px rgba(46, 204, 113, 0.3); }
+.theme-synth .page-header-divider { 
+    background: linear-gradient(90deg, transparent, #2ecc71, transparent); 
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.8); 
+}
+
+/* 합성 카드 특수 효과 (에메랄드 네온) */
+.shop-synth {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.2)) !important;
+    border-left: 4px solid #2ecc71 !important;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+/* 재료 부족 시 스타일 */
+.synth-disabled {
+    filter: grayscale(0.8) opacity(0.6);
+    cursor: not-allowed !important;
+}
+
+
+
+/* =========================================
+   [Global] 공통 애니메이션 및 기본 설정
+   ========================================= */
+
+/* 애니메이션 정의 (충돌 방지용 키프레임) */
+@keyframes slideDownFade {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUpCard {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUpPremium {
+    0% { opacity: 0; transform: translateY(40px) scale(0.9); filter: blur(5px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes expandWidth {
+    0% { width: 0%; opacity: 0; }
+    100% { width: 85%; opacity: 1; }
+}
+@keyframes expandWidthSmall {
+    0% { width: 0; opacity: 0; }
+    100% { width: 60px; opacity: 1; }
+}
+@keyframes neonFlicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 20px #e056fd; }
+    20%, 24%, 55% { opacity: 0.8; text-shadow: none; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* 컨테이너 공통 */
+.shop-container { padding: 10px; }
+.shop-section-title {
+    text-align: left; color: #ffffff; font-size: 1.1em; font-weight: 900;
+    margin-bottom: 15px; padding-bottom: 8px; padding-left: 5px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); letter-spacing: 1px;
+}
+
+/* =========================================
+   🖥️ [Desktop] PC 버전 (넓은 화면, 호버 효과)
+   ========================================= */
+@media (min-width: 769px) {
+
+    /* 1. 상점 그리드 (PC: 2열 배치) */
+    .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr) !important; /* ★ PC도 1열 */
+        gap: 25px;
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* 2. 상점 카드 (PC: 큼직하고 여유롭게) */
+    .shop-card {
+        min-height: 80px;
+        padding: 25px;
+    }
+    .shop-name { font-size: 1.3em !important; margin-bottom: 8px; }
+    .shop-desc { font-size: 0.95em !important; }
+
+    .night-life-card {
+        padding: 20px;
+        min-height: 120px; /* 유흥지구도 슬림하게 */
+        display: flex; /* PC에서는 가로 배치로 변경하여 공간 절약 */
+        align-items: center;
+        justify-content: space-between;
+        text-align: left !important;
+    }
+    .night-life-card .item-image-box { margin-right: 20px; }
+    .night-life-card .item-info { flex: 1; }
+    
+    .neon-sign { font-size: 1.8em; margin-bottom: 0 !important; }
+
+    /* PC 호버 효과 */
+    .shop-card:hover, .night-life-card:hover {
+        transform: translateY(-3px) scale(1.01); /* 움직임 미세하게 조정 */
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+}
+    .neon-sign { font-size: 2em; } /* 네온 사인 크게 */
+
+    /* 4. 주식/도박장 레이아웃 (PC) */
+    .stock-card {
+        padding: 12px 20px !important; /* PC는 패딩 넉넉히 */
+        gap: 15px;
+    }
+    .gamble-board {
+        max-width: 600px; /* 도박판 너무 안 넓어지게 */
+        margin: 0 auto 30px auto;
+        padding: 40px;
+    }
+    .bet-btn { height: 120px; } /* 베팅 버튼 큼직하게 */
+    .bet-type { font-size: 2em; }
+
+    /* PC 전용 호버 효과 (마우스 올렸을 때 화려하게) */
+    .shop-card:hover, .night-life-card:hover, .gamble-premium-card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+}
+
+
+
+/* =========================================
+   [Common] 디자인 상세 설정 (PC/Mobile 공통 적용)
+   ========================================= */
+
+/* 1. 상점 카드 스타일 (유리 질감 + 빗살무늬) */
+.shop-card {
+    position: relative; display: flex; align-items: center;
+    cursor: pointer; overflow: hidden;
+    background: rgba(30, 35, 45, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1;
+}
+
+.shop-name { color: #ffffff !important; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.shop-desc { color: #b0b0b0 !important; font-weight: 500; }
+
+/* 배경 패턴 및 빛 효과 */
+.shop-card::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 60%);
+    z-index: -1; transition: opacity 0.3s;
+}
+.shop-card::after {
+    content: ""; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    transform: skewX(-25deg); z-index: -1; transition: left 0.5s;
+}
+/* PC 호버 시 빗살무늬 이동 */
+@media (min-width: 769px) {
+    .shop-card:hover::after { left: 150%; transition: left 0.7s ease-in-out; }
+}
+
+/* 2. 테마별 상점 색상 (Bright Neon) */
+.shop-equip {
+    background: linear-gradient(135deg, rgba(220, 20, 60, 0.15), rgba(255, 50, 50, 0.25));
+    border-left: 4px solid #ff4757; border: 1px solid rgba(255, 71, 87, 0.2);
+}
+.shop-potion {
+    background: linear-gradient(135deg, rgba(0, 100, 255, 0.15), rgba(0, 180, 255, 0.25));
+    border-left: 4px solid #00d2d3; border: 1px solid rgba(0, 210, 211, 0.2);
+}
+.shop-gacha {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(255, 200, 0, 0.25));
+    border-left: 4px solid #ffa502; border: 1px solid rgba(255, 165, 2, 0.2);
+}
+.shop-synth {
+    background: linear-gradient(135deg, rgba(0, 180, 80, 0.15), rgba(50, 220, 100, 0.25));
+    border-left: 4px solid #2ed573; border: 1px solid rgba(46, 213, 115, 0.2);
+}
+
+/* 3. 유흥 지구 & 도박장 (Luxury & Neon) */
+.night-life-card {
+    background: linear-gradient(135deg, rgba(140, 20, 252, 0.15), rgba(255, 0, 128, 0.15));
+    border-radius: 20px; cursor: pointer;
+    border: 1px solid rgba(224, 86, 253, 0.4);
+    box-shadow: 0 0 15px rgba(142, 68, 173, 0.2);
+    text-align: center; position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+}
+.neon-sign {
+    font-weight: 900; color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #e056fd, 0 0 40px #ff00de;
+    margin-bottom: 8px; animation: neonFlicker 3s infinite alternate;
+}
+.night-desc { color: #e0aaff; font-size: 0.9em; font-weight: 500; text-shadow: 0 0 5px rgba(224, 86, 253, 0.5); }
+
+/* 도박장 프리미엄 카드 (Casino Luxury) */
+.gamble-premium-card {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.4), rgba(60, 50, 20, 0.5)) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+    border-left: 4px solid #ffd700 !important;
+    border-radius: 15px !important;
+    padding: 15px 20px !important;
+    transition: all 0.3s ease !important; position: relative; overflow: hidden;
+}
+.gamble-premium-card .shop-name { color: #ffd700 !important; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+.gamble-premium-card .shop-desc { color: #ddd !important; }
+
+
+/* =========================================
+   [Header] 헤더 디자인 리메이크 (통합)
+   ========================================= */
+.page-header-box {
+    text-align: center; margin-bottom: 20px; padding: 15px 0 10px;
+    position: relative; overflow: hidden;
+}
+
+/* 타이틀 텍스트 (그라데이션 & 애니메이션) */
+.page-title-text {
+    font-size: 1.8em; font-weight: 900; margin: 0; letter-spacing: 1px;
+    text-transform: uppercase; display: inline-block;
+    background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: slideDownFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+.page-subtitle-text {
+    font-size: 0.9em; margin-top: 5px; font-weight: 500;
+    opacity: 0; animation: fadeInUpCard 0.6s ease forwards 0.2s;
+}
+.page-header-divider {
+    width: 60px; height: 3px; margin: 10px auto 0; border-radius: 2px;
+    opacity: 0; animation: expandWidthSmall 0.6s ease forwards 0.3s;
+}
+
+/* 테마별 헤더 색상 */
+.theme-shop .page-title-text {
+    background-image: linear-gradient(135deg, #ffffff 0%, #f1c40f 60%, #b7950b 100%);
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(241, 196, 15, 0.6));
+}
+.theme-shop .page-subtitle-text { color: #fcf3cf; text-shadow: 0 0 5px rgba(241, 196, 15, 0.3); }
+.theme-shop .page-header-divider { background: linear-gradient(90deg, transparent, #f1c40f, transparent); box-shadow: 0 0 15px rgba(241, 196, 15, 0.8); }
+
+.theme-casino .page-title-text {
+    background-image: linear-gradient(135deg, #ff00cc 0%, #333399 100%);
+    text-shadow: 0 0 10px rgba(224, 86, 253, 0.8); filter: drop-shadow(0 0 15px #e056fd);
+}
+.theme-casino .page-subtitle-text { color: #e0aaff; font-style: italic; text-shadow: 0 0 5px #e056fd; }
+.theme-casino .page-header-divider { background: linear-gradient(90deg, transparent, #e056fd, transparent); box-shadow: 0 0 15px #be2edd; }
+
+.theme-gamble .page-title-text {
+    background-image: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    filter: drop-shadow(0 0 10px rgba(255, 62, 62, 0.8));
+}
+.theme-gamble .page-subtitle-text { color: #ffcccc; text-shadow: 0 0 8px rgba(255, 0, 0, 0.5); }
+.theme-gamble .page-header-divider { background: linear-gradient(90deg, transparent, #ff4757, transparent); box-shadow: 0 0 15px #ff4757; }
+
+.theme-stock .page-title-text {
+    background-image: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+}
+.theme-stock .page-subtitle-text { color: #a2ded0; font-family: 'Consolas', monospace; text-shadow: 0 0 5px rgba(46, 204, 113, 0.5); }
+.theme-stock .page-header-divider { background: linear-gradient(90deg, transparent, #00f260, #3498db, transparent); box-shadow: 0 0 15px rgba(0, 242, 96, 0.6); }
+
+/* =========================================
+   [Button] 가격 | 구매 통합 버튼 (.btn-price-buy)
+   ========================================= */
+.btn-price-buy {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    /* 배경: 어두운 유리 + 은은한 골드 */
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.6), rgba(60, 50, 20, 0.4));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    padding: 8px 15px;
+    min-width: 130px; /* 버튼 최소 너비 확보 */
+    
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+/* 호버 효과 */
+.shop-card:hover .btn-price-buy {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(0, 0, 0, 0.6));
+    border-color: rgba(255, 215, 0, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.15);
+}
+
+/* 클릭 효과 */
+.btn-price-buy:active {
+    transform: scale(0.96);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+/* 내부 텍스트 스타일 */
+.btn-price-buy .price-part {
+    font-weight: 800;
+    color: #ffd700;
+    font-size: 1.1em;
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+.btn-price-buy .divider {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.2); /* 구분선 색상 */
+    margin: 0 12px;
+}
+
+.btn-price-buy .text-part {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+
+
+/* =========================================
+   [Stock] 주식 거래소 디자인 (사이버펑크)
+   ========================================= */
+.stock-summary-card {
+    background: linear-gradient(135deg, rgba(20, 30, 50, 0.7), rgba(10, 15, 20, 0.8));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 16px;
+    margin-bottom: 25px; overflow: hidden;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.15); transition: transform 0.3s;
+}
+.summary-header {
+    background: linear-gradient(90deg, rgba(52, 152, 219, 0.15), transparent);
+    padding: 12px 20px; font-size: 0.9em; font-weight: 900; color: #3498db;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2); text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+}
+.summary-header::before {
+    content: ''; display: block; width: 8px; height: 8px;
+    background: #3498db; border-radius: 50%; box-shadow: 0 0 8px #3498db;
+}
+.summary-content { padding: 20px; text-align: left; font-size: 1em; line-height: 1.8; color: #ecf0f1; font-family: 'Pretendard', sans-serif; }
+
+/* 주식 종목 카드 (그리드 레이아웃) */
+.stock-card {
+    display: grid !important;
+    align-items: center;
+    background: linear-gradient(145deg, rgba(30, 30, 50, 0.7), rgba(20, 20, 35, 0.8));
+    backdrop-filter: blur(8px);
+    border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 8px;
+}
+
+.stock-main-name { font-size: 0.9rem !important; font-weight: bold; color: #fff; }
+.stock-sub-data { font-size: 0.8em; margin-top: 2px; display: flex; gap: 5px; align-items: center; color: #aaa; }
+
+/* 가격/수량 셀 */
+.stock-price-cell {
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+    background: rgba(0, 0, 0, 0.3); padding: 5px 10px;
+    border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.stock-cur-price { font-size: 0.85rem !important; color: #fff; font-weight: bold; }
+.stock-owned-count { color: #f1c40f; font-weight: 600; font-size: 0.85em; }
+
+/* 등락률 & 버튼 */
+.stock-rate-info { min-width: 65px; text-align: right; }
+.rate-badge { padding: 3px 6px !important; border-radius: 4px !important; font-size: 0.7em !important; display: inline-block; font-weight: bold; }
+.stock-owned-info {
+    grid-column: 1 / span 3;
+    background: rgba(255, 255, 255, 0.03); padding: 4px 10px !important;
+    border-radius: 4px; margin-top: 4px; display: flex; justify-content: space-between; font-size: 0.72em; color: #ccc;
+}
+.stock-actions { display: flex !important; gap: 4px !important; margin-top: 0 !important; }
+.stock-actions button {
+    flex: 1; border-radius: 6px !important; font-size: 0.82em !important; font-weight: 700 !important;
+    border: none !important; color: white !important; cursor: pointer;
+}
+.buy-btn { background: linear-gradient(135deg, #ff4757, #ff6b81) !important; }
+.sell-btn { background: linear-gradient(135deg, #2e7bff, #579aff) !important; }
+
+/* 등락 색상 */
+.up-color { color: #ff4757 !important; }
+.down-color { color: #2e7bff !important; }
+.up-bg { background: rgba(255, 71, 87, 0.2) !important; color: #ff4757 !important; }
+.down-bg { background: rgba(46, 123, 255, 0.2) !important; color: #2e7bff !important; }
+
+
+/* =========================================
+   [Gamble] 도박장 & 모달 (사이버 카지노)
+   ========================================= */
+.gamble-board {
+    background: linear-gradient(145deg, rgba(30, 10, 40, 0.85), rgba(10, 5, 20, 0.95));
+    backdrop-filter: blur(15px); border-radius: 24px;
+    border: 1px solid rgba(224, 86, 253, 0.3);
+    box-shadow: 0 0 30px rgba(180, 50, 220, 0.2), inset 0 0 50px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.gamble-board::before {
+    content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(224, 86, 253, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px; opacity: 0.5; z-index: 0; pointer-events: none;
+}
+
+/* 지갑 */
+.gamble-wallet {
+    position: relative; z-index: 1;
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(0,0,0,0.3));
+    padding: 15px 20px; border-radius: 12px;
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+    border: 1px solid rgba(255, 215, 0, 0.3); border-left: 5px solid #ffd700;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.wallet-label { font-size: 0.9em; color: #ccc; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+.wallet-value { font-family: 'Consolas', monospace; font-weight: 900; color: #ffd700; font-size: 1.25em; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+
+/* 입력창 & 버튼 */
+.bet-input {
+    width: 100%; background: rgba(0, 0, 0, 0.6); border: 2px solid #444; color: #fff;
+    padding: 15px; border-radius: 12px; text-align: center;
+    font-family: 'Consolas', monospace; font-size: 1.5em; font-weight: bold; letter-spacing: 1px;
+    margin-bottom: 12px; transition: all 0.3s; z-index: 1; position: relative;
+}
+.bet-input:focus { border-color: #e056fd; box-shadow: 0 0 15px rgba(224, 86, 253, 0.3); outline: none; }
+
+.bet-quick-btns { display: flex; gap: 8px; margin-bottom: 25px; position: relative; z-index: 1; }
+.bet-quick-btns button {
+    flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #eee; padding: 10px 0; border-radius: 8px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;
+}
+.bet-quick-btns button:hover { background: rgba(255, 255, 255, 0.2); border-color: #e056fd; color: #e056fd; }
+
+/* 홀/짝 버튼 */
+.bet-action-area { display: flex; gap: 20px; position: relative; z-index: 1; }
+.bet-btn {
+    flex: 1; border: none; border-radius: 16px; cursor: pointer; transition: all 0.1s;
+    position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.3);
+}
+.bet-btn.odd {
+    background: linear-gradient(135deg, #ff0055, #c00040); border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 6px 0 #800020, 0 0 20px rgba(255, 0, 85, 0.3);
+}
+.bet-btn.even {
+    background: linear-gradient(135deg, #00d2d3, #008080); border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 6px 0 #005050, 0 0 20px rgba(0, 210, 211, 0.3);
+}
+.bet-type { font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.4); letter-spacing: 2px; }
+.bet-rate { font-size: 0.85em; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; margin-top: 5px; }
+
+/* 로그창 */
+.gamble-history-log {
+    height: 120px; background: rgba(10, 10, 15, 0.95); border-radius: 12px; padding: 12px;
+    font-family: 'Consolas', monospace; font-size: 0.85em; color: #00ff00; line-height: 1.6;
+    border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); overflow-y: auto; scrollbar-width: none;
+}
+.gamble-history-log::-webkit-scrollbar { display: none; }
+
+/* 공통 액션 버튼 (확률/도움말 등) */
+.btn-action {
+    width: 100% !important; height: 100% !important; min-height: 50px !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; border-radius: 10px !important;
+    display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; position: relative !important; overflow: hidden !important;
+    transition: all 0.2s ease !important; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+.btn-label { font-size: 0.6rem !important; color: #bbb !important; margin-bottom: 2px !important; font-weight: bold !important; }
+.btn-value { font-size: 1rem !important; color: #fff !important; font-weight: 800 !important; }
+
+/* 모달창 (주식/아이템 등 공용) */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+    display: flex; justify-content: center; align-items: center; z-index: 9999; animation: fadeIn 0.3s ease-out;
+}
+.modal-content {
+    background: rgba(30, 39, 46, 0.95); color: #fff; padding: 30px; border-radius: 20px;
+    width: 340px; text-align: center; border: 2px solid #3d3d3d;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.05);
+    position: relative; overflow: hidden;
+}
+.modal-content input {
+    width: 90%; background: #0f141a; border: 1px solid #4b7bec; color: #00d2ff;
+    padding: 12px; margin: 20px 0; border-radius: 10px; text-align: center; font-size: 1.2rem; font-weight: bold; outline: none; transition: 0.3s;
+}
+.modal-content input:focus { box-shadow: 0 0 15px rgba(75, 123, 236, 0.5); border-color: #00d2ff; }
+.modal-btns { display: flex; gap: 15px; margin-top: 10px; }
+.modal-btns button {
+    flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: transform 0.1s, filter 0.2s;
+}
+.confirm-btn { background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3); }
+.cancel-btn { background: linear-gradient(135deg, #eb3b5a, #fa8231); color: #fff; box-shadow: 0 4px 15px rgba(235, 59, 90, 0.3); }
+
+/* 시퀀스 애니메이션 (순차 등장) */
+.page.active .shop-card:nth-child(1) { animation-delay: 0.1s; }
+.page.active .shop-card:nth-child(2) { animation-delay: 0.2s; }
+.page.active .shop-card:nth-child(3) { animation-delay: 0.3s; }
+.page.active .shop-card:nth-child(4) { animation-delay: 0.4s; }
+.page.active .night-life-card { animation-delay: 0.5s; }
+.shop-card, .night-life-card { opacity: 0; animation: fadeInUpPremium 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* =========================================
+   [Modal] 상점 전용 모달 (.modal_shop_buy)
+   ========================================= */
+
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeInModal 0.2s ease-out;
+}
+
+.modal_shop_buy {
+    width: 85%; max-width: 340px;
+    background: linear-gradient(145deg, rgba(35, 40, 50, 0.95), rgba(20, 24, 30, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transform: scale(0.95);
+    animation: popInModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    text-align: center;
+    color: #fff;
+}
+
+.modal-header {
+    padding: 20px 20px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#modal-item-name {
+    margin: 0; font-size: 1.4em; font-weight: 800;
+    color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    letter-spacing: -0.5px;
+}
+
+.modal-content { padding: 20px; }
+
+.modal-desc-box {
+    font-size: 0.95em; color: #b0b0b0; line-height: 1.5;
+    margin-bottom: 20px; min-height: 40px;
+    word-break: keep-all;
+}
+
+.modal-price-row {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px; padding: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+}
+.modal-price-row .label { font-size: 0.8em; font-weight: 700; color: #666; letter-spacing: 1px; }
+.modal-price-row .value { font-size: 1.2em; font-weight: 800; color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+
+.modal-footer {
+    display: flex; border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shop-btn {
+    flex: 1; padding: 18px 0; border: none; background: transparent;
+    font-size: 1em; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+}
+
+.shop-btn.cancel { color: #888; background: rgba(255, 255, 255, 0.02); }
+.shop-btn.cancel:active { background: rgba(255, 255, 255, 0.05); color: #fff; }
+
+.shop-btn.confirm {
+    color: #202020;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+}
+.shop-btn.confirm:active { opacity: 0.9; }
+
+@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popInModal { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* [여기까지] */
+
+
+
+/* ==========================================================================
+   [Style.js] 통합 스타일 (광산 카드 클릭형 + 반응형 리뉴얼)
+   ========================================================================== */
+
+/* 1. [광산 카드] - 버튼 제거 & 카드 전체 클릭형 디자인 */
+.mine-card {
+    position: relative;
+    background: rgba(30, 30, 35, 0.95);
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    /* ★ 클릭 가능하도록 변경 */
+    cursor: pointer;
+    user-select: none; /* 텍스트 드래그 방지 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 광산 카드 내용물 정렬 */
+.mine-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* 광산 제목 스타일 (강조) */
+.mine-card h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #f1c40f; /* 골드 컬러 포인트 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 광산 설명 텍스트 */
+.mine-card p {
+    margin: 0;
+    font-size: 0.95em;
+    color: #ccc;
+}
+
+/* 2. [아이템 카드 리마스터] - 최종 강화 버전 */
+.item-card {
+    position: relative;
+    display: flex !important; /* flex 강제 */
+    flex-direction: row;
+    align-items: center;
+    background: linear-gradient(145deg, #1e2024, #121212);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    min-height: 100px;
+    padding: 10px; /* 패딩 추가 */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.item-image-box {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0; /* 크기 고정 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.item-image-box img {
+    max-width: 85%;
+    max-height: 85%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+}
+
+/* 아이템 정보 영역 */
+.item-info {
+    flex: 1;
+    margin-left: 15px; /* 이미지와의 간격 */
+    overflow: hidden;
+    text-align: left;
+}
+
+.item-name {
+    font-size: 1.15em;
+    font-weight: 900;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.item-desc {
+    font-size: 0.9em;
+    color: #aeb6bf;
+    font-weight: 500;
+}
+
+/* 아이템 버튼 그룹 */
+.card-actions {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* 액션 버튼 디자인 */
+.btn-action {
+    flex: 1;
+    height: 42px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+    transition: all 0.1s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.btn-action:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+
+/* 버튼 색상 */
+.btn-up { background: linear-gradient(to bottom, #34495e, #2c3e50); border-bottom: 2px solid #1a252f; }
+.btn-eq { background: linear-gradient(to bottom, #3498db, #2980b9); border-bottom: 2px solid #1a5276; }
+.btn-sl { background: linear-gradient(to bottom, #e74c3c, #c0392b); border-bottom: 2px solid #922b21; }
+
+/* 3. [광산 그리드 레이아웃] */
+.grid-4 {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    margin: 20px 0;
+    min-height: 300px;
+}
+
+.mine-cell {
+    aspect-ratio: 1 / 1;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: background 0.2s;
+}
+
+.mine-cell:empty {
+    background: rgba(255, 255, 255, 0.05);
+    cursor: default;
+}
+
+/* 4. [새 광맥 찾기 버튼] - 프리미엄 */
+.btn-refresh-premium {
+    position: relative;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 900;
+    font-size: 1.1em;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3), inset 0 0 10px rgba(255,255,255,0.5);
+    transition: all 0.2s ease;
+}
+
+.btn-refresh-premium:active { transform: translateY(1px); }
+
+.refresh-shine {
+    position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: shine-sweep 3s infinite;
+}
+
+.refresh-content { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.refresh-icon { font-size: 1.4em; filter: drop-shadow(0 0 5px rgba(0,0,0,0.3)); }
+
+@keyframes shine-sweep { 0% { left: -100%; } 20% { left: 150%; } 100% { left: 150%; } }
+
+
+/* ==========================================================================
+   [미디어 쿼리] - 화면 크기별 최적화
+   ========================================================================== */
+
+/* ---------------------------------------------------
+   [데스크탑 모드] (가로 769px 이상)
+   --------------------------------------------------- */
+@media (min-width: 769px) {
+
+    /* 광산 카드: 마우스 올렸을 때 붕 뜨는 효과 */
+    .mine-card:hover {
+        transform: translateY(-5px);
+        background: rgba(45, 45, 55, 1) !important;
+        border-color: #7f8c8d;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+    /* 광산 카드: 클릭 시 꾹 눌리는 효과 */
+    .mine-card:active {
+        transform: scale(0.98);
+        background: rgba(25, 25, 30, 1) !important;
+    }
+
+    .btn-refresh-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(241, 196, 15, 0.5);
+    }
+
+    .mine-cell:hover { background: #333; }
+
+    /* 아이템 카드: 가로 일자 정렬 */
+    .item-card {
+        padding: 0 15px 0 0;
+        min-height: 100px;
+        flex-direction: row;
+    }
+
+    .card-actions {
+        flex-direction: row;
+        align-items: center;
+        margin-left: 15px;
+        min-width: 220px;
+    }
+
+    .grid-4 { gap: 10px; padding: 15px; }
+}
+
+/* =========================================
+   [광산 카드 - 우측 열쇠 정보 디자인]
+   ========================================= */
+
+/* 1. 우측 정보 컨테이너 (정렬 보강) */
+.mine-key-info {
+    display: flex !important;
+    flex-direction: column !important; /* 세로로 쌓이게 강제 */
+    align-items: flex-end !important;  /* 우측 밀착 */
+    justify-content: center;
+    padding: 8px 8px;
+    background: rgba(0, 0, 0, 12);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    min-width: 100px; /* 폭을 조금 더 확보 */
+    margin-left: auto; /* 우측 끝으로 밀기 */
+    flex-shrink: 0;   /* 부모가 좁아져도 찌그러지지 않게 함 */
+}
+
+
+/* 카드 호버 효과 */
+.mine-card:hover .mine-key-info {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 2. 열쇠 이름 (우측 정렬 강제) */
+.key-name {
+    width: 100%;       /* 전체 폭 사용 */
+    text-align: right; /* 글자 우측 정렬 */
+    font-size: 0.75em;
+    color: #95a5a6;
+    margin-bottom: 4px;
+    display: block;
+}
+
+/* 3. 보유 개수 (우측 정렬 강제) */
+.key-count {
+    width: 100%;       /* 전체 폭 사용 */
+    justify-content: flex-end; /* flex 내부 우측 정렬 */
+    font-size: 1.1m;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* --- 상태별 컬러 스타일 --- */
+
+.key-count.has-key {
+    color: #2ecc71;
+    text-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+}
+
+.key-count.no-key {
+    color: #e74c3c;
+    text-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
+}
+
+.key-count.free-pass {
+    color: #f1c40f;
+    text-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
+    font-size: 1.0em;
+}
+
+
+/* =========================================
+   [모바일 반응형 수정] - 기존 캡슐 스타일 유지
+   ========================================= */
+@media (max-width: 768px) {
+    .mine-key-info {
+        position: absolute;
+        top: 35px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+        align-items: center;
+        flex-direction: row; /* 모바일은 가로로 배치 */
+        gap: 6px;
+        margin: 0;
+        min-width: auto;
+    }
+
+    .key-name {
+        font-size: 0.5em;
+        margin-bottom: 0;
+        color: #ddd;
+    }
+
+    .key-count {
+        font-size: 0.7em;
+    }
+}
+
+/* ========================== [Mobile] 3열 유지형 스탯 대시보드 ============================== */
+
+/* [1] 3열 그리드 유지 및 간격 최소화 */
+.status-dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3열 강제 유지 */
+    gap: 6px; /* 박스 사이 간격을 최소화 */
+    margin-bottom: 15px;
+    padding: 0 4px;
+}
+
+/* [2] 스탯 카드: 크기를 줄이고 컴팩트하게 변경 */
+.stat-card {
+    background: linear-gradient(145deg, rgba(30, 35, 45, 0.95), rgba(15, 20, 30, 1));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px 4px; /* 내부 여백을 대폭 줄임 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0; /* 텍스트 넘침 방지 */
+}
+
+/* [3] 내부 요소 크기 대폭 축소 */
+.stat-icon {
+    font-size: 1.4em !important; /* 아이콘 크기 축소 */
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.65em !important; /* 라벨 폰트 축소 */
+    color: #94a3b8;
+    font-weight: 700;
+    margin-bottom: 2px;
+    white-space: nowrap; /* 줄바꿈 방지 */
+}
+
+.stat-value {
+    font-size: 0.95em !important; /* 값 폰트 축소 (모바일 가독성 한계치) */
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 숫자가 너무 길면 ... 처리 */
+}
+
+/* [4] 전투력(CP) 박스: 3열 아래에 자연스럽게 배치 */
+.cp-display-box {
+    grid-column: span 3; /* CP는 전체 너비 사용 */
+    background: rgba(233, 69, 96, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(233, 69, 96, 0.3);
+    margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.cp-label {
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+.cp-value {
+    font-size: 1.1em;
+    font-weight: 900;
+}
+
+/* 아주 작은 기기(iPhone SE 등)를 위한 추가 보정 */
+@media (max-width: 340px) {
+    .stat-value { font-size: 0.8em !important; }
+    .stat-label { font-size: 0.6em !important; }
+}
+
+
+
+
+/* =========================================
+   [합성소 전용 버튼 스타일 - Toxic Green]
+   ========================================= */
+.btn-synth-action {
+    /* 에메랄드 & 딥 그린 그라데이션 */
+    background: linear-gradient(135deg, #2ecc71 0%, #1e8449 100%) !important;
+    border: 1px solid rgba(46, 204, 113, 0.4) !important;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3) !important;
+}
+
+.btn-synth-action:hover {
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.6) !important;
+    border-color: #2ecc71 !important;
+    transform: translateY(-2px);
+}
+
+.btn-synth-action:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+}
+
+/* 버튼 텍스트 색상 */
+.btn-synth-action .btn-price-val { color: #fff !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.btn-synth-action .btn-buy-text { color: rgba(255,255,255,0.9) !important; }
+
+
+
+/* =========================================
+   [1] 기본 레이아웃 및 애니메이션 키프레임
+   ========================================= */
+@keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+@keyframes gloomPulse { from { opacity: 0.3; } to { opacity: 0.7; } }
+@keyframes manaFlow { 0% { left: -150%; opacity: 0; } 50% { opacity: 1; } 100% { left: 150%; opacity: 0; } }
+
+/* =========================================
+   [2] 레벨 구간별 전용 스타일 (5단위)
+   ========================================= */
+
+/* Lv.5 - 투박한 돌산 (기본형) */
+.mine-card-lv5 {
+    border-left: 5px solid #95a5a6 !important;
+    background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+}
+
+/* Lv.10 - 구리 광맥지 */
+.mine-card-lv10 {
+    border-left: 5px solid #d35400 !important;
+    background: linear-gradient(135deg, #3e2723, #5d4037) !important;
+}
+
+/* Lv.15 - 강철의 절벽 */
+.mine-card-lv15 {
+    border-left: 5px solid #bdc3c7 !important;
+    background: linear-gradient(135deg, #2c3e50, #7f8c8d) !important;
+}
+
+/* Lv.20 - 검은 석탄 산맥 (먼지 효과) */
+.mine-card-lv20 {
+    border-left: 5px solid #2c3e50 !important;
+    background: linear-gradient(135deg, #1a1a1a, #434343) !important;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+}
+
+/* Lv.25 - 은빛 침묵의 광산 (Shining 효과 시작) */
+.mine-card-lv25 {
+    border-left: 5px solid #ecf0f1 !important;
+    background: linear-gradient(135deg, #2c3e50, #95a5a6) !important;
+    position: relative; overflow: hidden;
+}
+.mine-card-lv25::after { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); transform: skewX(-25deg); animation: shine 6s infinite; }
+
+/* Lv.30 - 황동 주물 광산 */
+.mine-card-lv30 {
+    border-left: 5px solid #e67e22 !important;
+    background: linear-gradient(135deg, #873600, #ba4a00) !important;
+}
+
+/* Lv.35 - 황금빛 갈망의 굴 (Radiant 효과) */
+.mine-card-lv35 {
+    border-left: 5px solid #f1c40f !important;
+    background: linear-gradient(135deg, #b7950b, #f1c40f) !important;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+}
+
+/* Lv.40 - 백금의 제단 */
+.mine-card-lv40 {
+    border-left: 5px solid #3498db !important;
+    background: linear-gradient(135deg, #2e4053, #5dade2) !important;
+}
+
+/* Lv.45 - 금강석 매립지 (강력한 발광) */
+.mine-card-lv45 {
+    border-left: 5px solid #aeb6bf !important;
+    background: linear-gradient(135deg, #1a2a6c, #2980b9) !important;
+    position: relative; overflow: hidden;
+}
+.mine-card-lv45::after { content: ""; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent); transform: skewX(-25deg); animation: shine 4s infinite; }
+
+/* Lv.50 - 마력의 수정 동굴 (Pulse 효과) */
+.mine-card-lv50 {
+    border-left: 5px solid #8e44ad !important;
+    background: linear-gradient(135deg, #2e1a47, #4b0082) !important;
+}
+.mine-card-lv50::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50%, rgba(142, 68, 173, 0.2), transparent); animation: gloomPulse 3s infinite alternate; }
+
+/* Lv.55 - 흑다이아몬드 지층 (Abyss 느낌) */
+.mine-card-lv55 {
+    border-left: 5px solid #34495e !important;
+    background: radial-gradient(circle at center, #2c3e50, #000000) !important;
+}
+
+/* Lv.60 - 팔라듐의 계곡 */
+.mine-card-lv60 {
+    border-left: 5px solid #16a085 !important;
+    background: linear-gradient(135deg, #0b251c, #16a085) !important;
+}
+
+/* Lv.65 - 티타늄 요새 */
+.mine-card-lv65 {
+    border-left: 5px solid #2e86c1 !important;
+    background: linear-gradient(135deg, #1b4f72, #2e86c1) !important;
+}
+
+/* Lv.70 - 신비로운 미스릴굴 */
+.mine-card-lv70 {
+    border-left: 5px solid #5dade2 !important;
+    background: linear-gradient(135deg, #154360, #21618c) !important;
+    box-shadow: inset 0 0 20px rgba(93, 173, 226, 0.3);
+}
+
+/* Lv.75 - 코발트 심해 광산 */
+.mine-card-lv75 {
+    border-left: 5px solid #2874a6 !important;
+    background: linear-gradient(135deg, #061161, #2874a6) !important;
+}
+
+/* Lv.80 - 전설의 오리할콘광산 (강력한 열기) */
+.mine-card-lv80 {
+    border-left: 5px solid #e74c3c !important;
+    background: linear-gradient(135deg, #641e16, #922b21) !important;
+    border: 1px solid rgba(231, 76, 60, 0.5) !important;
+}
+
+/* Lv.85 - 태고의 아다만티움 */
+.mine-card-lv85 {
+    border-left: 5px solid #dc7633 !important;
+    background: linear-gradient(135deg, #5e3307, #a04000) !important;
+}
+
+/* Lv.90 - 떨어진 별의 잔해 (Cosmic 효과 시작) */
+.mine-card-lv90 {
+    border-left: 5px solid #f4d03f !important;
+    background: radial-gradient(circle at center, #1b2631, #000000) !important;
+    position: relative; overflow: hidden;
+}
+.mine-card-lv90::after { content: ""; position: absolute; top: -50%; left: -150%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(244, 208, 63, 0.1), transparent); transform: rotate(45deg); animation: manaFlow 4s infinite linear; }
+
+/* Lv.95 - 제네시스 코어 구역 */
+.mine-card-lv95 {
+    border-left: 5px solid #a29bfe !important;
+    background: linear-gradient(135deg, #2d3436, #000000) !important;
+    box-shadow: 0 0 15px rgba(162, 155, 254, 0.4);
+}
+
+/* Lv.99 - 오르비스의 성지 (최종 테마) */
+.mine-card-lv99 {
+    border-left: 5px solid #9b59b6 !important;
+    background: linear-gradient(135deg, #240b36, #0f0c29, #000000) !important;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 25px rgba(155, 89, 182, 0.6);
+}
+.mine-card-lv99::after { content: ""; position: absolute; top: -50%; left: -150%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(224, 86, 253, 0.3), transparent); transform: rotate(25deg); animation: manaFlow 2.5s infinite linear; }
+
+.inventory-container {
+        padding: 10px;
+        overflow-x: hidden; /* 가로 스크롤 강제 차단 */
+    }
+
+/* =========================================
+   [광산 입장 버튼 디자인 수정]
+   ========================================= */
+
+/* 카드 오른쪽의 버튼 영역 (여백 확보) */
+.item-card .card-actions {
+    padding: 10px !important; /* 내부 여백 */
+    background: transparent !important; /* 배경을 완전히 투명하게 */
+        border-left: none !important;       /* 왼쪽 테두리 선 제거 */
+}
+
+/* 입장 버튼 본체 */
+.btn-mine-enter {
+    width: 100%;
+    height: 100%;
+    /* 버튼 색상: 진한 남색 그라데이션 (기본) */
+    background: linear-gradient(to bottom, #34495e, #2c3e50);
+    border: 1px solid #465f75;
+    border-radius: 8px; /* 둥근 모서리 */
+    color: #ecf0f1;
+    font-weight: bold;
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    box-shadow: 0 4px 0 #1a252f; /* 입체감 있는 그림자 */
+    transition: all 0.1s;
+    z-index: 2; /* 카드 효과보다 위에 표시 */
+    position: relative;
+}
+
+/* 마우스 올렸을 때 */
+.btn-mine-enter:hover {
+    background: linear-gradient(to bottom, #3b556e, #2c3e50);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* 클릭했을 때 (눌리는 효과) */
+.btn-mine-enter:active {
+    transform: translateY(3px); /* 아래로 눌림 */
+    box-shadow: 0 1px 0 #1a252f; /* 그림자 줄어듦 */
+}
+
+/* 입장료 텍스트 스타일 */
+.mine-cost-text {
+    font-size: 0.8em;
+    color: #f1c40f; /* 골드 색상 */
+    font-weight: 800;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+}
+/* =========================================
+   [채광 플레이 페이지 - 그리드]
+   ========================================= */
+
+#mine-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+.mine-cell {
+    aspect-ratio: 1/1;
+    background: #2c3e50;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    cursor: pointer;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.3);
+    transition: transform 0.1s, background 0.2s;
+}
+
+.mine-cell:hover:not(.empty) {
+    transform: scale(1.05);
+    background: #34495e;
+}
+
+.mine-cell:active:not(.empty) {
+    transform: scale(0.95);
+}
+
+.mine-cell.empty {
+    background: #1a1a2e;
+    box-shadow: none;
+    cursor: default;
+    opacity: 0.5;
+}
+
+/* [1] 광산 선택 리스트 레이아웃 호응 보완 */
+#mine-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* mine.js에서 생성하는 카드 스타일링 */
+.item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 카드에 마우스를 올렸을 때 (호응) */
+.item-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px); /* 옆으로 살짝 밀리는 효과 */
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 특수 광산 카드 효과들 */
+.mine-card-gold { border-left: 5px solid #f1c40f !important; }
+.mine-card-mana { border-left: 5px solid #9b59b6 !important; }
+
+/* [2] 채광 페이지 호응 요소 (애니메이션) */
+
+/* 제목이 두근거리는 효과 (채광 중 느낌 강조) */
+#mine-title {
+    font-weight: bold;
+    letter-spacing: 1px;
+    animation: title-pulse 2s infinite ease-in-out;
+}
+
+@keyframes title-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.03); opacity: 1; }
+}
+
+/* 새로운 광맥 탐사 버튼 (강력한 호응) */
+.btn-refresh-premium {
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0; /* 위아래 간격 */
+
+    /* 기존 분홍색 -> 고급스러운 파란색/보라색 그라데이션 */
+    background: linear-gradient(135deg, #3498db, #8e44ad);
+    border: 1px solid #a9dfbf;
+    border-radius: 10px;
+
+    color: white;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+
+    /* 입체감과 발광 효과 */
+    box-shadow: 0 4px 0 #5b2c6f, 0 0 15px rgba(52, 152, 219, 0.4);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+
+    transition: all 0.1s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-refresh-premium:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 6px 0 #5b2c6f, 0 0 20px rgba(52, 152, 219, 0.6);
+}
+
+.btn-refresh-premium:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #5b2c6f;
+}
+
+.btn-nav-container {
+    position: absolute; /* center-area 내부 바닥에 고정 */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: rgba(22, 33, 62, 0.95);
+    display: flex;
+    gap: 8px;
+}
+
+/* 나가기 / 홈 버튼 스타일 통일 */
+#page-mine-play .btn-nav {
+    margin: 0 !important; /* 불필요한 마진 제거 */
+    flex: 1; /* 공간 균등 분배 */
+}
+
+/* 홈 버튼은 작게 유지하고 싶다면 */
+#page-mine-play .btn-home {
+    flex: 0 0 50px !important; /* 너비 고정 */
+}
+/* 광산 리스트 아이콘 이미지 스타일 */
+.mine-icon-img {
+    width: 80%;       /* 박스 안에서 적당한 크기 */
+    height: 80%;
+    object-fit: contain; /* 비율 유지하며 포함 */
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); /* 그림자 효과 */
+    transition: transform 0.2s;
+}
+
+/* 마우스 올렸을 때 아이콘 살짝 커짐 */
+.item-card:hover .mine-icon-img {
+    transform: scale(1.1) rotate(5deg);
+}
+.mine-item-img {
+    width: 70%;          /* 칸 크기의 70%로 설정 (적당한 여백) */
+    height: 70%;
+    object-fit: contain; /* 비율 유지하며 포함 */
+    filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); /* 입체감 그림자 */
+    pointer-events: none; /* 이미지 클릭해도 부모 div(cell) 클릭으로 인식 */
+    transition: transform 0.1s;
+}
+
+/* 마우스를 올렸을 때 살짝 커짐 (호응) */
+.mine-cell:hover .mine-item-img {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* 클릭했을 때 살짝 눌림 */
+.mine-cell:active .mine-item-img {
+    transform: scale(0.95);
+}
+
+/* 1. 인벤토리 컨테이너 높이 및 스크롤 설정 */
+.inventory-container {
+    /* 기존 스타일 유지 */
+    background: #1e293b;
+    border: 1px solid #34495e;
+    border-radius: 0 0 8px 8px;
+    padding: 10px;
+    min-height: 200px;
+
+    /* ★ 스크롤을 위한 필수 추가 속성 ★ */
+    max-height: 400px; /* 이 높이를 넘어가면 스크롤 생성 (조절 가능) */
+    overflow-y: auto;  /* 세로 스크롤 허용 */
+}
+
+/* 2. 커스텀 스크롤바 디자인 (.custom-scroll 클래스 활용) */
+.custom-scroll::-webkit-scrollbar {
+    width: 8px; /* 스크롤바 너비 (너무 얇으면 클릭하기 힘듦) */
+}
+
+/* 스크롤바 막대 (Thumb) */
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15); /* 평소에는 은은하게 */
+    border-radius: 10px; /* 둥글게 */
+    border: 2px solid transparent; /* 여백을 주는 효과 */
+    background-clip: content-box;  /* 아이콘과 겹치지 않게 */
+}
+
+/* 스크롤바 막대에 마우스 올렸을 때 */
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4); /* 마우스 올리면 밝게 */
+}
+
+/* 스크롤바 트랙 (배경) */
+.custom-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); /* 아주 연한 어두운 배경 */
+    border-radius: 0 0 8px 0; /* 컨테이너의 둥근 모서리에 맞춤 */
+}
+
+
+
+/* ==========================아티팩트 페이지 전용 스타일============================== */
+
+
+/* [1] 헤더 박스: 대비와 깊이감 강화 */
+.theme-artifact {
+    background: #0d0d1a !important; 
+    border: 2px solid #e056fd !important;
+    box-shadow: 0 0 15px rgba(224, 86, 253, 0.4) !important;
+    position: relative;
+    padding: 25px 10px !important;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+/* [2] 타이틀 텍스트: 선명한 화이트 & 네온 쉐도우 */
+#page-artifact .page-title-text {
+    filter: none !important; 
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    font-size: 1.7em;
+    text-shadow: 2px 2px 0px #000, 0 0 10px rgba(224, 86, 253, 0.8) !important;
+    letter-spacing: 1.5px;
+    text-align: center;
+    display: block !important;
+}
+
+/* [3] 슬롯 그리드 & 개별 슬롯 디자인 */
+.art-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 15px 0;
+    background: rgba(5, 5, 10, 0.9);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(224, 86, 253, 0.3);
+}
+
+.art-slot {
+    position: relative;
+    aspect-ratio: 1/1;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* 별 푸터가 삐져나가지 않게 함 */
+    transition: all 0.2s ease;
+}
+
+.art-slot.filled {
+    border: 1.5px solid #e056fd;
+    background: rgba(224, 86, 253, 0.1);
+    box-shadow: inset 0 0 15px rgba(224, 86, 253, 0.2);
+}
+
+.art-slot.locked {
+    background: #050505;
+    border-color: #222;
+    opacity: 0.7;
+}
+
+/* [4] 슬롯 내부 이미지 & 별 표시 (중앙 하단 고정) */
+.art-slot img {
+    width: 75%;
+    height: 75%;
+    object-fit: contain; /* 찌그러짐 방지 */
+    mix-blend-mode: screen; /* 검은 배경 투명화 */
+    filter: drop-shadow(0 0 5px rgba(224, 86, 253, 0.4));
+    margin-bottom: 5px; /* 별 표시 공간 확보 */
+}
+
+.art-star-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 18px;
+    background: rgba(0, 0, 0, 0.8); /* 별 가독성을 위한 어두운 바 */
+    color: #f1c40f;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+    border-top: 1px solid rgba(224, 86, 253, 0.2);
+}
+
+/* [5] 보유 리스트 카드 디자인 */
+.artifact-item-card {
+    background: #121220;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.2s;
+}
+
+.artifact-item-card.equipped {
+    border: 1.5px solid #e056fd !important;
+    background: rgba(224, 86, 253, 0.08) !important;
+    box-shadow: 0 0 15px rgba(224, 86, 253, 0.2) !important;
+}
+
+/* 카드 내 아이콘 컨테이너 */
+.art-icon-container {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    background: #000;
+    border: 1px solid rgba(224, 86, 253, 0.4);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.art-icon-container img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+    mix-blend-mode: screen;
+    filter: brightness(1.1) contrast(1.1);
+    image-rendering: -webkit-optimize-contrast;
+}
+
+/* [6] 버튼 및 텍스트 선명도 보강 */
+.btn-enhance-new, .btn-equip-new {
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 900;
+    text-shadow: 1px 1px 2px #000;
+    filter: none !important;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: 0.1s;
+}
+
+.btn-enhance-new:active, .btn-equip-new:active {
+    transform: scale(0.96);
+}
+
+.lock-lv-text {
+    font-size: 11px;
+    color: #555;
+    font-weight: bold;
+    text-align: center;
+}
+
+.artifact-scroll-area {
+    height: 45vh;
+    overflow-y: auto;
+    padding: 12px;
+    background: rgba(5, 5, 10, 0.7);
+    border-radius: 12px;
+    border: 1px solid rgba(224, 86, 253, 0.15);
+}
+
+/* 슬롯 기본 구조 */
+.art-slot {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: #000;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* 이미지가 슬롯에 가득 차도록 설정 */
+.art-img-container-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-img {
+    width: 100%;       /* 가로 꽉 채움 */
+    height: 100%;      /* 세로 꽉 채움 */
+    object-fit: cover; /* 비율을 유지하며 슬롯을 가득 채움 (투명 영역 최소화) */
+    mix-blend-mode: screen; 
+    filter: drop-shadow(0 0 5px rgba(224, 86, 253, 0.4));
+}
+
+/* 별 표시: 이미지 하단에 겹쳐서 표시 */
+.art-star-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent); /* 하단 가독성을 위한 그라데이션 */
+    color: #f1c40f;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 2px;
+    z-index: 5;
+    pointer-events: none; /* 클릭 방해 금지 */
+    text-shadow: 0 0 5px #000;
+}
+
+/* ========================== 아티팩트 페이지 모바일 최적화 스타일 ============================== */
+
+/* [1] 헤더 박스: 모바일 대응 패딩 및 높이 조정 */
+.theme-artifact {
+    background: #0d0d1a !important; 
+    border: 2px solid #e056fd !important;
+    box-shadow: 0 0 10px rgba(224, 86, 253, 0.3) !important;
+    position: relative;
+    padding: 15px 10px !important; /* 모바일 대응 패딩 축소 */
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+/* [2] 타이틀 텍스트: 크기 조정 */
+#page-artifact .page-title-text {
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    font-size: 1.4em !important; /* 모바일에서 너무 크지 않게 조정 */
+    text-shadow: 1px 1px 0px #000, 0 0 8px rgba(224, 86, 253, 0.6) !important;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* [3] 슬롯 그리드: 간격 및 터치 영역 최적화 */
+.art-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px; /* 간격 축소 */
+    margin: 10px 0;
+    background: rgba(5, 5, 10, 0.9);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(224, 86, 253, 0.2);
+}
+
+.art-slot {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px; /* 모바일은 조금 더 둥글게 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.1s active; /* 터치 피드백 */
+}
+
+.art-slot:active { transform: scale(0.95); } /* 터치 시 눌리는 효과 */
+
+.art-slot.filled { border: 1.5px solid #e056fd; }
+
+/* [4] 슬롯 이미지 & 별 표시 (가득 채우기 최적화) */
+.art-img-container-inner {
+    width: 100%;
+    height: 100%;
+}
+
+.floating-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지를 슬롯에 꽉 채움 */
+    mix-blend-mode: screen; 
+    filter: drop-shadow(0 0 5px rgba(224, 86, 253, 0.4));
+}
+
+.art-star-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 16px; /* 높이 약간 축소 */
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 30%, transparent); 
+    color: #f1c40f;
+    font-size: 9px; /* 모바일 폰트 크기 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+    z-index: 5;
+    text-shadow: 0 0 3px #000;
+}
+
+/* [5] 보유 리스트 카드: 가로 배치 최적화 */
+.artifact-item-card {
+    background: #121220;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px; /* 내부 여백 축소 */
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 카드 내 상단 정보 (이미지+텍스트) 레이아웃 */
+.art-card-top {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.art-icon-container {
+    width: 44px; /* 크기 약간 축소 */
+    height: 44px;
+    min-width: 44px;
+    background: #000;
+    border: 1px solid rgba(224, 86, 253, 0.3);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* [6] 스크롤 영역: 모바일 화면 비율 대응 */
+.artifact-scroll-area {
+    height: 40vh; /* 다양한 폰 규격 대응 */
+    overflow-y: auto;
+    padding: 8px;
+    background: rgba(5, 5, 10, 0.5);
+    border-radius: 10px;
+    /* 스크롤바 숨기기 (선택 사항) */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.artifact-scroll-area::-webkit-scrollbar { display: none; }
+
+
+
+/* =========================================
+   [통합] 강화/아이템 선택 모달 리스트 디자인
+   ========================================= */
+
+/* 1. 리스트 컨테이너 */
+#modal-item-list {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 2. 아이템 카드 (데스크톱 기본) */
+#modal-item-list .inven-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(35, 40, 50, 0.95), rgba(20, 20, 25, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 5px solid #7f8c8d;
+    border-radius: 14px;
+    padding: 12px 18px;
+    min-height: 85px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#modal-item-list .inven-item:hover {
+    transform: translateX(5px);
+    background: linear-gradient(135deg, rgba(45, 50, 65, 0.98), rgba(25, 25, 35, 1));
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 3. 아이콘 영역 */
+#modal-item-list .inven-item-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: #0f1115;
+    border: 1px solid #333;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    flex-shrink: 0; /* 찌그러짐 방지 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#modal-item-list .inven-item-icon img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+}
+
+/* 4. 텍스트 정보 영역 */
+#modal-item-list .inven-item-info {
+    flex: 1;
+    text-align: left;
+    margin-left: 15px;
+    min-width: 0; /* 긴 텍스트 생략용 */
+}
+
+#modal-item-list .inven-item-name {
+    font-size: 1.1em;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#modal-item-list .inven-item-desc {
+    color: #aaa;
+    font-size: 0.85em;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 5. 선택 버튼 (데스크톱) */
+#modal-item-list .inven-select-btn {
+    background: linear-gradient(to bottom, #3498db, #2980b9);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 800;
+    font-size: 0.9em;
+    margin-left: 15px;
+    box-shadow: 0 4px 0 #1a5276;
+    transition: all 0.1s;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#modal-item-list .inven-select-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1a5276;
+}
+
+/* =========================================
+   [통합] 모달 하단 닫기 버튼
+   ========================================= */
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.modal-footer .btn-close {
+    background: linear-gradient(to bottom, #e74c3c, #c0392b);
+    color: white;
+    width: 100%;
+    max-width: 300px;
+    padding: 15px 0;
+    font-size: 1.1em;
+    font-weight: 800;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 0 #922b21, 0 10px 20px rgba(0,0,0,0.4);
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.modal-footer .btn-close:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 #922b21, 0 15px 25px rgba(231, 76, 60, 0.3);
+}
+
+.modal-footer .btn-close:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #922b21;
+}
+
+/* =========================================
+   📱 모바일 최적화 (768px 이하)
+   ========================================= */
+@media (max-width: 768px) {
+    /* 카드를 세로형/혼합형으로 변경하여 겹침 방지 */
+    #modal-item-list .inven-item {
+        flex-wrap: wrap; /* 줄바꿈 허용 */
+        padding: 12px;
+        min-height: auto;
+    }
+
+    /* 아이콘과 텍스트를 한 줄에 유지 */
+    #modal-item-list .inven-item-info {
+        margin-left: 12px;
+    }
+
+    #modal-item-list .inven-item-name {
+        font-size: 1.05em;
+    }
+
+    /* [핵심] 모바일에서 버튼을 아래로 내려 가독성 및 터치 영역 확보 */
+    #modal-item-list .inven-select-btn {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 12px;
+        padding: 12px 0;
+        font-size: 1em;
+        text-align: center;
+    }
+    
+    .modal-footer .btn-close {
+        max-width: 90%; /* 모바일에서 더 넓게 사용 */
+    }
+}
+
+
+
+/* 1. 전체 게임창 (부모) */
+.center-area {
+    display: flex !important;
+    flex-direction: column !important; /* 위에서 아래로 쌓음 */
+    position: relative !important;
+    overflow: hidden !important;       /* 전체 스크롤 방지 */
+    height: 100% !important;           /* 부모 높이 꽉 채움 */
+}
+
+/* 2. 상단바 (고정 영역) */
+.top-bar-container {
+    /* fixed 대신 sticky 사용으로 자리를 차지하게 함 */
+    position: sticky !important;
+    top: 0 !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+    
+    /* 배경 처리 (뒤쪽 본문 안 비치게) */
+    background: var(--panel);
+    flex-shrink: 0; /* 높이가 압축되지 않도록 고정 */
+    
+    /* 디자인 마감 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 3. 본문 페이지 (스크롤 영역) */
+.page {
+    flex: 1 !important;        /* 상단바 제외 남은 공간 다 쓰기 */
+    overflow-y: auto !important; /* 여기서만 스크롤 발생 */
+    padding: 15px !important;    /* 이제 padding-top 120px 같은 노가다가 필요 없음 */
+    box-sizing: border-box !important;
+    
+    /* 스크롤 시 부드럽게 */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 4. 부모 패딩 초기화 */
+.desktop-wrapper {
+    padding-top: 0 !important;
+}
+
+/* =========================================
+   [PC & 모바일 공통 대응]
+   ========================================= */
+@media (max-width: 768px) {
+    /* 모바일에서 상단바가 너무 답답하면 여백만 살짝 조정 */
+    .top-bar-container {
+        padding: 8px 12px;
+    }
+}
+
+
+
+
+
+/* =========================================
+       [2] 레이아웃 공통 (Mobile First)
+       ========================================= */
+ .center-area {
+        flex: 1 1 600px;
+        max-width: 700px;
+        height: 100%;
+        background: #1a1a2e;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+        z-index: 10;
+    }
+
+    .desktop-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        min-height: 100vh;
+        height: auto;
+        background: #0f172a;
+        box-sizing: border-box;
+        padding: 10px;
+        padding-top: 0 !important;
+    }
+
+    .side-panel { display: none !important; } /* 기본적으로 숨김 */
+
+    .center-area {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #game-container {
+        background: var(--panel);
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        border: none;
+        border-radius: 0;
+        overflow: visible;
+        display: block;
+        flex: 1;
+    }
+
+    .page { display: none; animation: fadeIn 0.2s; padding-bottom: 20px; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 1. 버튼 가로 나열 그룹 */
+.main-action-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.main-action-group .main-action-btn {
+    flex: 1; /* 반반씩 정확히 나눠 가짐 */
+    margin: 0 !important;
+    padding: 12px 5px;
+    font-size: 0.9em;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* 동냥하기 전용 색상 */
+.btn-begging {
+    background: linear-gradient(to bottom, #555, #333) !important;
+    border: 1px solid #666 !important;
+}
+
+/* =========================================
+   📱 [Mobile] 통합 모바일 최적화 스타일
+   (PC 스타일 덮어쓰기용 - 맨 아래 배치)
+   ========================================= */
+@media (max-width: 768px) {
+
+    /* 1. 레이아웃 & 그리드 (1열 배치) */
+    .shop-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        padding: 10px !important;
+        max-width: 100% !important;
+    }
+
+    .shop-container { padding: 5px; }
+
+    /* 2. 상점 카드 (슬림하지만 터치하기 좋게) */
+    .shop-card, .item-card {
+        min-height: 90px !important; /* 적절한 높이 유지 */
+        padding: 12px 15px !important; /* 좌우 패딩 확보 */
+        border-radius: 16px !important;
+        gap: 10px !important; /* 내부 요소 간격 */
+    }
+
+    /* 호버 효과 제거 (모바일 터치 씹힘 방지) 및 클릭 효과 강화 */
+    .shop-card:hover, .item-card:hover { transform: none !important; }
+    .shop-card:active, .item-card:active {
+        transform: scale(0.98) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* 3. 아이콘 & 텍스트 최적화 */
+    .item-image-box {
+        width: 45px !important;
+        height: 45px !important;
+        margin-right: 0 !important; /* gap으로 대체 */
+    }
+    .item-image-box span, .shop-card > div:first-child {
+        font-size: 1.8em !important; /* 아이콘 크기 조정 */
+    }
+
+    /* 텍스트 영역 (말줄임표 처리 및 공간 확보) */
+    .shop-card > div:nth-child(2), 
+    .item-info {
+        flex: 1 !important;
+        min-width: 0 !important; /* 텍스트 넘침 방지 필수 코드 */
+        margin-right: 5px !important;
+    }
+
+    .shop-name, .item-name {
+        font-size: 1.1em !important;
+        margin-bottom: 4px !important;
+    }
+    .shop-desc, .item-desc {
+        font-size: 0.8em !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        opacity: 0.8;
+    }
+
+    /* 4. [중요] 가격|구매 버튼 잘림 해결 */
+    .card-right-action {
+        margin-left: auto !important;
+        flex-shrink: 0 !important; /* 공간 부족해도 줄어들지 않음 */
+        padding-left: 0 !important;
+        min-width: auto !important;
+    }
+
+    .btn-price-buy {
+        min-width: auto !important; /* 고정 너비 해제 */
+        padding: 6px 10px !important; /* 내부 여백 축소 */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+    }
+    .btn-price-buy .price-part { font-size: 0.95em !important; }
+    .btn-price-buy .divider { margin: 0 8px !important; height: 10px !important; }
+    .btn-price-buy .text-part { font-size: 0.8em !important; }
+
+
+    /* 5. 유흥 지구 (Night District) - 가로 배치 (수정됨) */
+    .night-life-card {
+        flex-direction: row !important; /* 세로(column) -> 가로(row) 변경 */
+        text-align: left !important;    /* 텍스트 왼쪽 정렬 */
+        padding: 12px 15px !important;  /* 다른 카드와 동일한 패딩 */
+        min-height: 90px !important;    /* 높이 통일 */
+        justify-content: flex-start !important; /* 왼쪽부터 정렬 */
+        align-items: center !important; /* 수직 중앙 정렬 */
+    }
+
+    .night-life-card .item-image-box {
+        margin: 0 15px 0 0 !important; /* 아이콘 오른쪽 여백만 줌 */
+        width: 45px !important;        /* 아이콘 크기 고정 */
+        height: 45px !important;
+    }
+
+    .neon-sign { 
+        font-size: 1.1em !important;   /* 제목 크기 통일 */
+        margin-bottom: 3px !important;
+    }
+    
+    .night-desc { 
+        font-size: 0.8em !important; 
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important; /* 내용 길면 ... 처리 */
+        opacity: 0.8;
+    }
+
+
+    /* 6. 주식 시스템 (모바일 그리드) */
+    .stock-card {
+        grid-template-columns: 1.2fr 1fr auto !important; /* 비율 조정 */
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+    .stock-main-name { font-size: 0.9em !important; }
+    .stock-actions button {
+        height: 34px !important;
+        font-size: 0.8em !important;
+        padding: 0 8px !important;
+    }
+    .stock-price-cell {
+        min-width: auto !important;
+        padding: 4px 8px !important;
+    }
+    .stock-cur-price { font-size: 0.8em !important; }
+
+
+    /* 7. 도박장 (Gambling) */
+    .gamble-board { padding: 15px !important; }
+    .gamble-wallet {
+        padding: 10px 15px !important;
+        margin-bottom: 20px !important;
+    }
+    .wallet-value { font-size: 1.1em !important; }
+    
+    .bet-input {
+        font-size: 1.2em !important;
+        padding: 10px !important;
+    }
+    .bet-btn {
+        height: 80px !important; /* 터치하기 좋은 높이 */
+    }
+    .bet-type { font-size: 1.5em !important; }
+
+
+    /* 8. 모달창 (화면 꽉 차게) */
+    .modal_shop_buy, .modal-content {
+        width: 90% !important;
+        max-width: none !important;
+        padding: 20px !important;
+    }
+    .modal-header h3 { font-size: 1.2em !important; }
+    .modal-price-row .value { font-size: 1.1em !important; }
+    .shop-btn, .modal-btns button { padding: 14px 0 !important; } /* 버튼 높이 확보 */
+}
+
+/* =========================================
+   [Mobile] 캐릭터 정보 페이지 (3열 구조 완벽 고정)
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. 3열 그리드 해제 방지 및 가로폭 강제 */
+    .status-dashboard {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important; 
+        gap: 8px !important;
+        margin-bottom: 15px !important;
+        padding: 0 5px !important;
+        width: 100% !important;
+    }
+
+    /* 2. 스탯 카드: 내부 요소가 밖으로 나가지 않도록 hidden 처리 */
+    .stat-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 12px 4px !important;
+        min-width: 0 !important; /* 텍스트가 박스를 늘리는 것 방지 */
+        overflow: hidden !important; 
+        background: linear-gradient(145deg, rgba(40, 45, 55, 0.95), rgba(25, 30, 40, 0.98)) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* 3. 아이콘 크기 제한 (이미지가 깨지는 주범) */
+    .stat-icon {
+        font-size: 1.4em !important;
+        margin-bottom: 4px !important;
+        display: block !important;
+    }
+
+    /* 4. 텍스트가 한 줄을 넘지 않도록 설정 */
+    .stat-label {
+        font-size: 0.65em !important;
+        white-space: nowrap !important; /* 절대 줄바꿈 금지 */
+        margin-bottom: 2px !important;
+        color: #94a3b8 !important;
+    }
+
+    .stat-value {
+        font-size: 0.95em !important;
+        font-weight: 900 !important;
+        color: #fff !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important; /* 숫자가 너무 길면 ... 표시 */
+    }
+
+    /* 5. 전투력(CP) 박스: 3열 아래 가로로 길게 배치 */
+    .cp-display-box {
+        grid-column: span 3 !important; /* 3열 전체 너비 차지 */
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 10px !important;
+        background: rgba(233, 69, 96, 0.1) !important;
+        border: 1px solid rgba(233, 69, 96, 0.3) !important;
+        border-radius: 10px !important;
+    }
+}
+
+   /* 6. 모바일 반응형 추가 보정 */
+    @media (max-width: 600px) {
+        .inventory-container {
+            padding: 10px; /* 모바일에서는 패딩을 조금 줄임 */
+        }
+        .tab-btn { 
+            font-size: 0.85em; 
+            padding: 12px 5px; 
+        }
+        .section-title {
+            font-size: 1em;
+            margin: 20px 0 10px 5px;
+        }
+    }
+/* =========================================
+   [Mobile] 강화 페이지 스타일 (터치 최적화)
+   ========================================= */
+
+/* [0] 공통 애니메이션 (동일) */
+@keyframes shine { 100% { left: 200%; } }
+
+/* [1] 강화 슬롯 (터치하기 좋게) */
+.upgrade-slot {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px dashed #555;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+    transition: transform 0.1s, border-color 0.2s;
+}
+/* 모바일 Active: 터치 시 살짝 작아짐 */
+.upgrade-slot:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+.upgrade-slot.active {
+    border: 2px solid var(--point);
+    background: rgba(233, 69, 96, 0.1);
+}
+
+.support-slot {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.9em; /* 폰트 조금 키움 */
+    color: #aaa;
+    margin-bottom: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* 모바일에서 터치 영역 확보를 위해 여백 추가 */
+.support-slot:active { background: rgba(255,255,255,0.1); color: white; }
+
+.divider-line { height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0; }
+
+/* [2] RPG 버튼 공통 스타일 (모바일) */
+.rpg-btn {
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    color: white;
+    transition: transform 0.1s;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3); /* 그림자 높이 약간 낮춤 */
+    display: flex; align-items: center; justify-content: center;
+}
+/* 모바일은 Hover 제거, Active 강화 */
+.rpg-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+    filter: brightness(0.9);
+}
+.rpg-btn:disabled {
+    background: #444 !important; color: #888;
+    box-shadow: none; transform: none;
+}
+
+/* 모바일 버튼 높이 통일 (최소 48px 이상 권장) */
+.btn-select { background: linear-gradient(to bottom, #3498db, #2980b9); width: 100%; height: 50px; font-size: 1.05em; }
+.btn-sub { background: linear-gradient(to bottom, #9b59b6, #8e44ad); width: 100%; height: 44px; font-size: 0.95em; }
+.btn-cancel { background: #444; width: 50px; height: 50px; font-size: 1.2em; flex-shrink: 0; }
+
+/* [3] 메인 강화 버튼 (화면 하단 꽉 채우기) */
+.btn-upgrade-main {
+    background: linear-gradient(to bottom, #e74c3c, #c0392b);
+    width: 100%;
+    height: 65px; /* 엄지손가락으로 누르기 편하게 */
+    font-size: 1.3em;
+    margin: 10px 0;
+    border-bottom: 4px solid #922b21;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.btn-shine {
+    position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: shine 3s infinite;
+    pointer-events: none;
+}
+
+/* [4] 정보 박스 */
+.upgrade-info-box {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin: 10px 0;
+}
+.info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.9em; }
+.info-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+
+/* [5] 자동 강화 & 컨트롤 (모바일 배치 최적화) */
+.auto-upgrade-control {
+    display: flex; gap: 8px; align-items: stretch; /* 높이 맞춤 */
+    background: rgba(255,255,255,0.05);
+    padding: 8px; border-radius: 8px;
+}
+.btn-auto {
+    flex: 1; height: auto; min-height: 48px; /* 높이 확보 */
+    background: linear-gradient(to bottom, #27ae60, #1e8449);
+    border-bottom: 3px solid #145a32;
+    font-size: 1em; padding: 0;
+}
+
+/* 안전모드 토글 (터치 영역 확대) */
+.safe-mode-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.3);
+    padding: 5px 12px; border-radius: 6px;
+    flex: 1.2; /* 버튼보다 조금 더 넓게 */
+}
+.safe-mode-toggle label {
+    text-align: left; font-size: 0.8em; line-height: 1.2;
+    width: 100%; /* 라벨이 남은 공간 다 차지 */
+}
+.safe-mode-toggle span { display: block; color: #fff; font-weight: bold; margin-bottom: 2px; }
+.safe-mode-toggle small { color: #aaa; font-size: 0.85em; }
+.safe-mode-toggle input { width: 22px; height: 22px; accent-color: var(--point); flex-shrink: 0; }
+
+/* 판매 버튼 (빨강) */
+.btn-sell-red {
+   background-color: #e74c3c; color: white;
+   border: none; border-radius: 4px;
+   padding: 6px 12px; font-size: 12px; font-weight: bold; /* 패딩 키움 */
+   margin-top: 5px;
+}
+.btn-sell-red:active { background-color: #c0392b; opacity: 0.8; }
+
+/* =========================================
+   [Common] 디자인 상세 설정 (PC/Mobile 공통 적용)
+   ========================================= */
+
+/* 1. 상점 카드 스타일 (유리 질감 + 빗살무늬) */
+.shop-card {
+    position: relative; display: flex; align-items: center;
+    cursor: pointer; overflow: hidden;
+    background: rgba(30, 35, 45, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1;
+}
+
+.shop-name { color: #ffffff !important; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.shop-desc { color: #b0b0b0 !important; font-weight: 500; }
+
+/* 배경 패턴 및 빛 효과 */
+.shop-card::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 60%);
+    z-index: -1; transition: opacity 0.3s;
+}
+.shop-card::after {
+    content: ""; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    transform: skewX(-25deg); z-index: -1; transition: left 0.5s;
+}
+/* PC 호버 시 빗살무늬 이동 */
+@media (min-width: 769px) {
+    .shop-card:hover::after { left: 150%; transition: left 0.7s ease-in-out; }
+}
+
+/* 2. 테마별 상점 색상 (Bright Neon) */
+.shop-equip {
+    background: linear-gradient(135deg, rgba(220, 20, 60, 0.15), rgba(255, 50, 50, 0.25));
+    border-left: 4px solid #ff4757; border: 1px solid rgba(255, 71, 87, 0.2);
+}
+.shop-potion {
+    background: linear-gradient(135deg, rgba(0, 100, 255, 0.15), rgba(0, 180, 255, 0.25));
+    border-left: 4px solid #00d2d3; border: 1px solid rgba(0, 210, 211, 0.2);
+}
+.shop-gacha {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(255, 200, 0, 0.25));
+    border-left: 4px solid #ffa502; border: 1px solid rgba(255, 165, 2, 0.2);
+}
+.shop-synth {
+    background: linear-gradient(135deg, rgba(0, 180, 80, 0.15), rgba(50, 220, 100, 0.25));
+    border-left: 4px solid #2ed573; border: 1px solid rgba(46, 213, 115, 0.2);
+}
+
+/* 3. 유흥 지구 & 도박장 (Luxury & Neon) */
+.night-life-card {
+    background: linear-gradient(135deg, rgba(140, 20, 252, 0.15), rgba(255, 0, 128, 0.15));
+    border-radius: 20px; cursor: pointer;
+    border: 1px solid rgba(224, 86, 253, 0.4);
+    box-shadow: 0 0 15px rgba(142, 68, 173, 0.2);
+    text-align: center; position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+}
+.neon-sign {
+    font-weight: 900; color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #e056fd, 0 0 40px #ff00de;
+    margin-bottom: 8px; animation: neonFlicker 3s infinite alternate;
+}
+.night-desc { color: #e0aaff; font-size: 0.9em; font-weight: 500; text-shadow: 0 0 5px rgba(224, 86, 253, 0.5); }
+
+/* 도박장 프리미엄 카드 (Casino Luxury) */
+.gamble-premium-card {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.4), rgba(60, 50, 20, 0.5)) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+    border-left: 4px solid #ffd700 !important;
+    border-radius: 15px !important;
+    padding: 15px 20px !important;
+    transition: all 0.3s ease !important; position: relative; overflow: hidden;
+}
+.gamble-premium-card .shop-name { color: #ffd700 !important; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+.gamble-premium-card .shop-desc { color: #ddd !important; }
+
+/* 모바일 추가 보정 */
+@media (max-width: 600px) {
+    .custom-modal { padding: 25px 20px; }
+    .modal-title { font-size: 1.5em; }
+    .modal-btn { padding: 12px; font-size: 1em; }
+}
+
+/* 모바일 추가 보정 */
+@media (max-width: 600px) {
+    .custom-modal { padding: 25px 20px; }
+    .modal-title { font-size: 1.5em; }
+    .modal-btn { padding: 12px; font-size: 1em; }
+}
+
+/* =========================================
+   [Mobile] 사냥터 & 테마 & CP 최적화 통합본
+   ========================================= */
+
+/* [1] 카드 컨테이너: 높이 자동 및 터치 반응 */
+.hunt-card {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+
+    width: 96% !important;           /* 좌우 여백 살짝 줘서 답답함 해소 */
+    margin: 0 auto 10px auto !important; /* 중앙 정렬 및 아래 간격 */
+
+    /* ★ 핵심: 높이 문제 해결 */
+    min-height: 90px !important;     /* 내용이 적어도 찌그러지지 않게 */
+    height: auto !important;         /* 텍스트가 길어지면 자동으로 늘어남 (잘림 방지) */
+
+    padding: 12px 14px !important;   /* 내부 공간 최적화 */
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;             /* 모서리 둥글게 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+
+    /* 터치 인터랙션 최적화 */
+    cursor: pointer;
+    transition: transform 0.1s, filter 0.1s;
+    will-change: transform;
+}
+
+/* 터치했을 때 (Active) 효과 */
+.hunt-card:active {
+    transform: scale(0.96) !important; /* 꾹 눌리는 느낌 */
+    filter: brightness(1.2) !important; /* 살짝 밝아짐 */
+}
+/* 모바일에서 Hover 효과 제거 (스크롤 시 방해됨) */
+.hunt-card:hover { transform: none !important; box-shadow: none !important; }
+
+
+/* [2] 카드 헤더: 가로 배치 (이름 [난이도] --- [레벨]) */
+.hunt-card-header {
+    display: flex !important;
+    flex-direction: row !important;      /* 무조건 가로 정렬 */
+    justify-content: space-between !important; /* 양 끝으로 벌리기 */
+    align-items: center !important;      /* 수직 중앙 정렬 */
+    width: 100% !important;
+    margin-bottom: 6px !important;
+    gap: 8px;
+}
+
+/* 왼쪽 텍스트 그룹 (이름 + 난이도) */
+.hunt-header-text {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px;
+
+    /* ★ 핵심: 이름이 길어져도 레이아웃 깨짐 방지 */
+    flex: 1;        /* 남은 공간 차지 */
+    min-width: 0;   /* 말줄임표(...) 작동을 위한 필수 속성 */
+}
+
+/* 사냥터 이름 */
+.hunt-name {
+    margin-bottom: 0 !important;
+    font-size: 1.15em !important;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 3px rgba(0,0,0,0.8);
+    line-height: 1.2;
+
+    /* 긴 이름 처리 (한 줄 넘어가면 ...) */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* 난이도 배지 (이름 바로 옆) */
+.hunt-difficulty {
+    font-size: 0.65em !important;
+    padding: 2px 6px !important;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
+
+    /* 형태 유지 (절대 찌그러지지 않음) */
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    margin-top: 1px;
+}
+
+/* 레벨 배지 (우측 상단) */
+.hunt-lv-badge {
+    font-size: 0.75em !important;
+    padding: 3px 8px !important;
+    background: linear-gradient(145deg, #1a1a1a, #000);
+    color: #ffd700;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+
+    /* 형태 유지 */
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    margin-left: 0 !important;
+
+    /* 반짝임 효과용 */
+    position: relative;
+    overflow: hidden;
+}
+.hunt-lv-badge::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,215,0,0.3), transparent);
+    transform: rotate(45deg); animation: badgeShine 3s infinite;
+}
+
+
+/* [3] 카드 푸터: 비용 및 권장전투력 */
+.hunt-card-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: auto !important;     /* 항상 바닥에 붙음 */
+    padding-top: 8px !important;
+    border-top: 1px solid rgba(255,255,255,0.15); /* 구분선 얇게 */
+}
+
+.hunt-cost {
+    font-size: 0.8em !important;
+    color: #fff;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 8px !important;
+    border-radius: 6px;
+    display: flex; align-items: center; gap: 4px;
+}
+
+/* [4] 상단 헤더 (MY CP) 최적화 */
+.cp-info-box {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 2px 0; margin-bottom: 5px; width: 100%;
+}
+.cp-label { color: #95a5a6; font-size: 0.75em; font-weight: bold; }
+.cp-value { font-family: 'Verdana', sans-serif; font-size: 1.1em; font-weight: 900; }
+
+
+/* [5] 테마 색상 (모바일/PC 공통) */
+.zone-theme-newbie { background: radial-gradient(circle at 20% 30%, #2ecc71 0%, #1b5e20 100%) !important; box-shadow: inset 0 0 20px rgba(46, 204, 113, 0.3); }
+.zone-theme-0 { background: linear-gradient(135deg, #f0932b, #eb4d4b) !important; }
+.zone-theme-1 { background: linear-gradient(135deg, #0984e3, #6c5ce7) !important; }
+.zone-theme-2 { background: linear-gradient(135deg, #eb4d4b, #b71540) !important; }
+.zone-theme-3 { background: linear-gradient(135deg, #2f3640, #191919) !important; }
+.zone-theme-4 { background: linear-gradient(135deg, #27ae60, #145a32) !important; }
+.zone-theme-5 { background: linear-gradient(135deg, #2980b9, #154360) !important; }
+.zone-theme-6 { background: linear-gradient(135deg, #8e44ad, #4a235a) !important; }
+.zone-theme-7 { background: linear-gradient(135deg, #d35400, #5e2700) !important; }
+.zone-theme-8 { background: linear-gradient(135deg, #7f8c8d, #2c3e50) !important; }
+.zone-theme-9 { background: linear-gradient(135deg, #c0392b, #4d0500) !important; }
+.zone-theme-10 { background: linear-gradient(135deg, #16a085, #0b5345) !important; }
+.zone-theme-11 { background: linear-gradient(135deg, #2c3e50, #000000) !important; }
+.zone-theme-12 { background: linear-gradient(135deg, #f39c12, #7e5109) !important; }
+.zone-theme-13 { background: linear-gradient(135deg, #4b6cb7, #182848) !important; }
+.zone-theme-14 { background: linear-gradient(135deg, #61045f, #200122) !important; }
+.zone-theme-15 { background: linear-gradient(135deg, #485563, #29323c) !important; }
+.zone-theme-16 { background: linear-gradient(135deg, #ff4d4d, #000000) !important; }
+.zone-theme-17 { background: linear-gradient(135deg, #00d2ff, #3a7bd5) !important; }
+.zone-theme-18 { background: linear-gradient(135deg, #000000, #434343) !important; }
+.zone-theme-19 { background: linear-gradient(135deg, #f1c40f, #000000) !important; }
+.zone-theme-20 { background: radial-gradient(circle, #e94560 0%, #000000 100%) !important; }
+
+/* 유리막 효과 */
+.hunt-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+
+/* =========================================
+   [FINAL] 몰입형 전투 & 애니메이션 통합 스타일
+   ========================================= */
+
+/* 1. 스테이지 레이아웃 (전체 화면 구성) */
+.immersive-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column; /* 위에서 아래로 배치 */
+    justify-content: space-between; /* 상단, 중앙, 하단 분산 배치 */
+    z-index: 10;
+    overflow: hidden; /* 이펙트가 박스 밖으로 넘치지 않게 */
+}
+
+/* 2. 좌측 상단 HUD (이름표) */
+.stage-hud-top {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 왼쪽 정렬 */
+    z-index: 20;
+    pointer-events: none; /* 클릭 통과 (오터치 방지) */
+}
+
+.hud-name-badge {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px); /* 유리 질감 */
+    border-left: 4px solid #fff; /* 왼쪽 포인트 컬러 */
+    border-radius: 4px;
+    padding: 8px 12px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: baseline; /* 글자 아래 라인 맞춤 */
+    gap: 8px;
+    animation: slideRight 0.5s ease-out; /* 왼쪽에서 스르륵 등장 */
+}
+
+.hud-lv { font-size: 0.95em; color: #f1c40f; font-weight: 800; white-space: nowrap; }
+.hud-tags { font-size: 0.85em; color: #ff7675; font-weight: 700; white-space: nowrap; }
+.hud-name { font-size: 1.1em; font-weight: 900; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap; }
+
+.hud-boss-warning {
+    font-size: 0.75em; color: #e74c3c; font-weight: 900; margin-bottom: 4px;
+    letter-spacing: 1px; animation: blinkRed 1s infinite alternate;
+}
+
+/* 3. 중앙 몬스터 비주얼 (이미지) */
+.stage-monster-visual {
+    flex: 1; /* 남은 공간을 모두 차지하여 정중앙 확보 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 15;
+}
+
+.stage-monster-visual img {
+    max-width: 200px; max-height: 200px;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    transition: transform 0.1s; /* 피격 시 흔들림 부드럽게 */
+}
+/* 보스는 좀 더 크게 */
+.stage-monster-visual img.is-boss-img { max-width: 260px; max-height: 260px; }
+
+
+/* 4. 하단 HUD (멘트 + HP바) */
+.stage-hud-bottom {
+    width: 100%;
+    padding: 0 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    z-index: 20;
+}
+
+/* 보스 멘트 (HP바 위에 뜸) */
+.boss-combat-quote {
+    font-size: 0.95em; color: #ecf0f1; font-style: italic;
+    text-align: center; text-shadow: 0 2px 5px #000;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 16px; border-radius: 20px;
+    max-width: 90%;
+    animation: fadeInUpCard 0.5s ease-out;
+}
+
+/* 화려한 HP바 틀 */
+.hud-hp-container {
+    width: 100%; max-width: 500px; height: 28px;
+    background: #1e272e; border: 2px solid #576574;
+    border-radius: 14px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 2px 5px rgba(0,0,0,0.8);
+    position: relative; overflow: hidden;
+}
+
+/* HP바 내부 (색상) */
+.hud-hp-fill {
+    height: 100%; position: relative;
+    background: linear-gradient(90deg, #ff9f43, #ff6b6b, #ee5253, #c0392b);
+    box-shadow: 0 0 15px rgba(238, 82, 83, 0.7);
+    border-right: 2px solid rgba(255,255,255,0.6);
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* HP바 내부 (흐르는 빗살무늬 패턴) */
+.hud-hp-fill::after {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+        linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.1) 100%),
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.15) 10px, rgba(255, 255, 255, 0.15) 20px);
+    background-size: 100% 100%, 200% 100%;
+    animation: patternMove 1s linear infinite;
+}
+
+.hud-hp-text {
+    position: absolute; width: 100%; text-align: center;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 0.85em; color: #fff; font-weight: 900; z-index: 10;
+    text-shadow: 0 1px 2px #000, 0 0 5px rgba(0,0,0,0.8);
+    font-family: 'Verdana', sans-serif; pointer-events: none;
+}
+
+/* 승리 화면 오버레이 */
+.victory-overlay {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle, rgba(241, 196, 15, 0.1) 0%, rgba(0,0,0,0.8) 80%);
+    animation: fadeIn 0.5s ease-out;
+}
+.victory-title {
+    font-size: 3em; font-weight: 900; font-style: italic;
+    background: linear-gradient(to bottom, #fff, #f1c40f);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(241, 196, 15, 0.8));
+    animation: victoryPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    margin-bottom: 20px;
+}
+.victory-loot-box {
+    width: 80%; background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(241, 196, 15, 0.3); border-radius: 12px; padding: 15px;
+    backdrop-filter: blur(5px); display: flex; flex-direction: column; gap: 8px;
+    animation: slideUp 0.6s ease-out 0.3s forwards; opacity: 0; transform: translateY(20px);
+}
+.victory-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; color: #ddd; font-size: 0.9em; }
+.victory-row:last-child { border-bottom: none; }
+.val-gold { color: #f1c40f; font-weight: bold; } .val-exp { color: #3498db; font-weight: bold; }
+
+/* === 애니메이션 키프레임 모음 === */
+@keyframes patternMove { 0% { background-position: 0 0; } 100% { background-position: 28.28px 0; } }
+@keyframes monsterFlashPop {
+    0% { opacity: 0; transform: scale(0.2) translateY(50px); filter: brightness(5); }
+    40% { opacity: 0.8; transform: scale(1.3) translateY(0); filter: brightness(3); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+}
+@keyframes bossDropIn {
+    0% { opacity: 0; transform: translateY(-200px) scale(1.5); filter: brightness(0); }
+    60% { transform: translateY(20px) scale(1); }
+    80% { transform: translateY(-10px); filter: sepia(1) hue-rotate(-50deg); }
+    100% { opacity: 1; transform: translateY(0); filter: brightness(1); }
+}
+@keyframes stageEarthquake {
+    0%, 100% { transform: translate(0, 0); }
+    10%, 30%, 50%, 70%, 90% { transform: translate(-5px, 3px); background-color: rgba(231, 76, 60, 0.2); }
+    20%, 40%, 60%, 80% { transform: translate(5px, -3px); }
+}
+@keyframes monsterFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes blinkRed { from { opacity: 0.7; } to { opacity: 1; } }
+@keyframes victoryPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+@keyframes slideRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+    `;
+
+    // 2. <style> 태그 생성 및 헤더에 주입
+    const styleElement = document.createElement('style');
+    styleElement.type = 'text/css';
+
+    // 스타일 적용
+    if (styleElement.styleSheet) {
+        styleElement.styleSheet.cssText = cssContent;
+    } else {
+        styleElement.appendChild(document.createTextNode(cssContent));
+    }
+
+    document.head.appendChild(styleElement);
+    console.log("🎨 게임 스타일이 성공적으로 적용되었습니다.");
+
+})();

@@ -1,0 +1,358 @@
+/* =========================================
+   [File: css/Gather_menu.css]
+   약초밭 (Garden) 전용 스타일
+   - 4x4 그리드, 업그레이드 패널, 씨앗 선택 팝업
+   ========================================= */
+
+/* 1. 기본 레이아웃 & 4x4 그리드 */
+.garden-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4열 */
+    gap: 10px; /* 슬롯 간격 */
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    max-width: 400px; /* 너무 커지지 않게 제한 */
+    margin: 0 auto; /* 중앙 정렬 */
+}
+
+/* 개별 땅 슬롯 (Slot) */
+.garden-slot {
+    aspect-ratio: 1 / 1; /* 정사각형 비율 유지 */
+    background: #3f2e26; /* 흙 색깔 (Dark Brown) */
+    border: 2px solid #5d4037;
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s;
+    overflow: hidden;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.garden-slot:hover {
+    border-color: #10b981; /* 호버 시 초록색 테두리 */
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* 상태별 스타일 */
+.garden-slot.empty::after {
+    content: '+';
+    color: rgba(255, 255, 255, 0.1);
+    font-size: 2rem;
+}
+
+.garden-slot.growing {
+    background: #4e342e; /* 조금 더 밝은 흙 */
+}
+.garden-slot.growing .plant-icon {
+    font-size: 1.5rem;
+    animation: growPulse 2s infinite;
+}
+
+.garden-slot.ready {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.2), #3f2e26);
+    border-color: #fbbf24; /* 황금색 테두리 */
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+.garden-slot.ready .plant-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 5px #fff);
+    animation: shakePlant 3s infinite ease-in-out;
+}
+
+/* 잠긴 슬롯 */
+.garden-slot.locked {
+    background: repeating-linear-gradient(
+        45deg,
+        #1e293b,
+        #1e293b 10px,
+        #0f172a 10px,
+        #0f172a 20px
+    );
+    border-color: #334155;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.garden-slot.locked::after {
+    content: '🔒';
+    font-size: 1.5rem;
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+/* 티어 태그 (T1, T2...) */
+.tier-tag {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fbbf24;
+    font-size: 0.65rem;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 800;
+    pointer-events: none;
+}
+
+/* 애니메이션 */
+@keyframes growPulse {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    50% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.8); opacity: 0.7; }
+}
+@keyframes shakePlant {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+.garden-info {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+/* =========================================
+   2. 상단 업그레이드 패널
+   ========================================= */
+.garden-header-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.garden-level-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.garden-lv-badge {
+    color: #10b981;
+    font-weight: 800;
+    font-size: 0.95rem;
+}
+
+.garden-size-text {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.upgrade-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: 0.2s;
+}
+.upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+}
+.upgrade-btn:disabled {
+    background: #475569 !important;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* =========================================
+   3. [New] 씨앗 선택 패널
+   ========================================= */
+.seed-control-panel {
+    background: rgba(16, 185, 129, 0.1); /* 은은한 녹색 배경 */
+    border: 1px solid #059669;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.current-seed-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.current-seed-info .label {
+    font-size: 0.7rem;
+    color: #34d399; /* 밝은 녹색 */
+    margin-bottom: 3px;
+    font-weight: bold;
+}
+
+.seed-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.seed-name {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+}
+
+.seed-count {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.change-seed-btn {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.change-seed-btn:hover {
+    background: #10b981;
+    border-color: #10b981;
+    color: #000;
+}
+
+/* =========================================
+   4. [New] 모달(팝업) 스타일
+   ========================================= */
+.modal-overlay {
+    position: fixed; /* 화면 고정 */
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* 배경 어둡게 */
+    z-index: 999; /* 최상단 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px); /* 배경 블러 효과 */
+}
+
+.modal-content {
+    background: #0f172a;
+    width: 90%;
+    max-width: 360px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    overflow: hidden;
+    animation: popUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh; /* 화면 높이의 80%까지만 */
+}
+
+@keyframes popUp {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    background: #1e293b;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 1.1rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* 씨앗 리스트 스크롤 영역 */
+.seed-list-grid {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto; /* 스크롤 가능 */
+}
+
+/* 개별 씨앗 버튼 */
+.seed-item-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 12px;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: left;
+}
+
+.seed-item-btn:hover {
+    background: #334155;
+    transform: translateX(3px);
+}
+
+/* 선택된 씨앗 강조 */
+.seed-item-btn.active {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+}
+
+/* 잠긴 씨앗 (비활성) */
+.seed-item-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #0f172a;
+    border-color: #1e293b;
+    transform: none;
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-tier-badge {
+    background: #000;
+    color: #fbbf24;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid #fbbf24;
+}
